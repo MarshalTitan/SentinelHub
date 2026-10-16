@@ -1,11 +1,10 @@
-Sentinel Hub 0.3.0.0 adds opt-in Quest Convenience proving.
+Sentinel Hub 0.3.1.0 updates utility ownership guidance for HUD 0.8.5.0.
 
-- Default-OFF module with ordinary dialogue, cutscene skipping and Manual/First/Current Job/Allagan Piece reward modes.
-- Explicit import copies HUD's three public quest preferences only; original HUD settings remain saved.
-- Requires HUD 0.8.4.7+ ownership acknowledgment when loaded; installed legacy/unknown HUD blocks actions.
-- Preserves accepted HUD native/policy source, including the submarine/base-addon cutscene fix and manual choices.
-- Ownership loss, option changes, logout and unload clear pending work. No delayed native actions survive a handoff.
-- Anti-AFK's reported acceptance is retained and its implementation/settings are unchanged.
-- HUD keeps its fallback engine pending supervised replacement acceptance. Latency/Weaving remains inactive.
+- Anti-AFK and Quest engines, options, imports and ownership checks are unchanged.
+- HUD 0.8.5.0 removes duplicate engines; turning a module or Hub off now turns its utility actions off.
+- Prior compatible HUD builds still resume their retained preferences when Hub releases ownership.
+- Saved HUD preferences remain available for explicit import. No automatic enable or reimport.
+- Scoped Quest user PASS recorded; reward mode unspecified, submarine not separately confirmed.
+- Camera, HUD visuals, Core packages, navigation and other consumers remain unchanged.
 
-Follow docs/QUEST_CONVENIENCE_MIGRATION.md for the exact test and rollback. This proving publication does not certify native gameplay behavior.
+Update Hub first, then HUD. Follow [cleanup acceptance and rollback](UTILITY_CLEANUP.md).

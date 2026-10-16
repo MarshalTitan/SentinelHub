@@ -198,7 +198,7 @@ public sealed class MainWindow : Window, IDisposable
         if (changed) { config.AntiAfkEnabled = enabled; save(); }
         ImGui.TextWrapped(view.Description);
         ImGui.TextWrapped("Default Off. Preserves the existing HUD behavior: check every 10 seconds and reset inactivity timers above 30 seconds. No keys, movement or chat.");
-        ImGui.TextWrapped("Update HUD to 0.8.4.6 or later. A loaded HUD must acknowledge exclusive ownership before Hub can act. HUD retains its saved preference and resumes when Hub is disabled.");
+        ImGui.TextWrapped("HUD 0.8.4.6 or later supports ownership acknowledgment. HUD 0.8.5.0 and later stores preferences for import and runs no utility actions. With those builds, disabling Hub turns Anti-AFK off. Older compatible HUD builds resume their saved preference.");
         ImGui.BeginDisabled(view.HudPreference is null);
         if (Button("Import saved HUD preference") && view.HudPreference is { } preference)
         {
@@ -244,7 +244,7 @@ public sealed class MainWindow : Window, IDisposable
             Notice = "Copied HUD's dialogue, cutscene and reward preferences. The original HUD settings are retained.";
         }
         ImGui.EndDisabled();
-        ImGui.TextWrapped("While enabled, Hub owns all three features, including those set Off or Manual. Disable this module or Hub to restore HUD's saved preferences.");
+        ImGui.TextWrapped("While enabled, Hub owns all three features, including those set Off or Manual. HUD 0.8.5.0 and later runs no quest actions, so disabling this module or Hub turns them off. HUD 0.8.4.7 resumes its saved preferences.");
         ImGui.TextWrapped("Dialogue: " + view.Dialogue);
         ImGui.TextWrapped("Cutscenes: " + view.Cutscene);
         ImGui.TextWrapped("Rewards: " + view.Reward);
@@ -284,7 +284,7 @@ public sealed class MainWindow : Window, IDisposable
     private void DrawAbout()
     {
         Card("about", "MVP", SentinelModernPillTone.Accent,
-            ["Sentinel Hub 0.3.0.0", "Optional Sentinel ecosystem control center.",
+            ["Sentinel Hub 0.3.1.0", "Optional Sentinel ecosystem control center.",
              "Core UI 0.4.1, bundled with Hub. No separately installed Core plugin.",
              "Other Sentinel plugins work normally when Hub is disabled or absent.",
              "Camera, HUD rendering, hunt policy, Frontline strategy, gear switching, Profiles and Relay remain owned by their existing plugins.",

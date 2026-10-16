@@ -286,4 +286,14 @@ Test("Quest diagnostics export only allowlisted state, never native status strin
  Check(json.Contains("\"QuestConvenience\"")&&json.Contains("\"Active\"")&&!json.Contains("PRIVATE")&&!json.Contains("HudPreferences"));
 });
 
+Test("cleaned HUD remains compatible without bypassing fresh acknowledgment", () => {
+ foreach(var version in new[]{"0.8.5.0","0.8.5.1"}){
+  Check(AntiAfkOwnershipPolicy.Resolve(true,true,true,true,version,false)==AntiAfkState.WaitingForHud);
+  Check(AntiAfkOwnershipPolicy.Resolve(true,true,true,true,version,true)==AntiAfkState.Active);
+  Check(AntiAfkOwnershipPolicy.Resolve(false,true,true,true,version,true)==AntiAfkState.Off);
+  Check(QuestConvenienceOwnershipPolicy.Resolve(true,true,true,true,version,false)==QuestConvenienceState.WaitingForHud);
+  Check(QuestConvenienceOwnershipPolicy.Resolve(true,true,true,true,version,true)==QuestConvenienceState.Active);
+  Check(QuestConvenienceOwnershipPolicy.Resolve(false,true,true,true,version,true)==QuestConvenienceState.Off);
+ }
+});
 Console.WriteLine(passed + " policy test groups passed.");
