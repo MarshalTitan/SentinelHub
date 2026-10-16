@@ -17,12 +17,12 @@ public static class Catalog
     ];
     public static readonly Dependency[] Dependencies =
     [
-        new("vnavmesh", "vnavmesh", ["vnavmesh"], "S Rank Sentinel, PvP Sentinel", "Movement for enabled automation; not globally required.", "vnavmesh.Nav.IsReady"),
-        new("Lifestream", "Lifestream", ["Lifestream"], "S Rank Sentinel", "Travel companion; current SRank also uses native world travel.", "Lifestream.IsBusy"),
+        new("vnavmesh", "vnavmesh", ["vnavmesh"], "S Rank Sentinel, PvP Sentinel, Sentinel Hunts", "Movement for enabled automation; not globally required.", "vnavmesh.Nav.IsReady"),
+        new("Lifestream", "Lifestream", ["Lifestream"], "S Rank Sentinel, Sentinel Hunts", "Travel for Sentinel Hunts; optional SRank companion alongside native world travel.", "Lifestream.IsBusy"),
         new("RotationSolver", "RotationSolverReborn", ["RotationSolver", "RotationSolverReborn"], "PvP Sentinel", "External combat provider when selected in PvP settings.", "RotationSolverReborn.AutorotationActive"),
-        new("Splatoon", "Splatoon", ["Splatoon"], "Sentinel HUD", "Optional visual danger integration where configured."),
-        new("HuntAlerts", "HuntAlerts", ["HuntAlerts"], "S Rank Sentinel", "Optional report provider alongside direct Faloop."),
-        new("SonarPlugin", "Sonar", ["SonarPlugin", "Sonar"], "S Rank Sentinel", "Optional hunt report provider."),
+        new("Splatoon", "Splatoon", ["Splatoon"], "Sentinel HUD", "Optional visual danger integration; response does not prove geometry availability.", "Splatoon.IsLoaded"),
+        new("HuntAlerts", "HuntAlerts", ["HuntAlerts"], "S Rank Sentinel, Sentinel Hunts", "Optional report provider; SRank also has direct Faloop."),
+        new("SonarPlugin", "Sonar", ["SonarPlugin", "Sonar"], "S Rank Sentinel, Sentinel Hunts", "Optional hunt report provider."),
     ];
     public static Component? Find(string id) => Components.FirstOrDefault(c => c.Id == id);
 }

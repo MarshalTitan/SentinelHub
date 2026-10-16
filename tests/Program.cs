@@ -33,7 +33,7 @@ Test("case-insensitive discovery and dependency aliases", () => {
 Test("only enabled verified probes are called", () => {
  var calls = new List<string>();
  var s = StatusPolicy.Build([Loaded("vnavmesh"), new("Lifestream", false, "1.0"), Loaded("Splatoon")], true, d => { calls.Add(d.Id); return Response.NotReady; });
- Check(calls.SequenceEqual(new[] { "vnavmesh" }));
+ Check(calls.SequenceEqual(new[] { "vnavmesh", "Splatoon" }));
  Check(s.Dependencies.Single(d => d.Dependency.Id == "vnavmesh").Response == Response.NotReady);
 });
 Test("responding does not claim ready or combat-active", () => {

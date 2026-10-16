@@ -6,7 +6,7 @@ Hub is never required by SRankSentinel, PvPSentinel, SentinelHUD, ClassySentinel
 
 ## MVP
 
-Dashboard, Plugins, Dependencies, Profiles, Utilities, Diagnostics, Appearance and About. Inventory comes from public Dalamud installed-plugin interfaces. Loaded means enabled in Dalamud, not gameplay-ready or automation-enabled. Only verified read-only boolean dependency IPC is called.
+Dashboard, Plugins, Dependencies, Profiles, Utilities, Diagnostics, Appearance and About. Inventory comes from public Dalamud installed-plugin interfaces. Loaded means enabled in Dalamud, not gameplay-ready or automation-enabled. Only verified read-only boolean dependency IPC is called (vnavmesh, Lifestream, RotationSolverReborn and Splatoon).
 
 Consumer settings use a fixed source-verified command allowlist; some consumers toggle their windows. Disabled/missing/restricted components have unavailable actions. No reflection, private configuration reads, consumer assembly references or required Hub service.
 
