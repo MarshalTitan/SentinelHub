@@ -1,3 +1,13 @@
+# Live/dev discovery correction — 0.3.1.1
+
+The user passed the Hub 0.3.1.0 / HUD 0.8.5.1 cleanup checklist and reported SRank inventory reading a dev version instead of the installed live 0.7.56.0. The original first-match lookup ignored public IsDev; it also read Manifest.AssemblyVersion rather than the effective public Version.
+
+The patch captures IsDev and Version, prefers the non-dev component instance in inventory/fresh quick-open checks, and labels dev-only copies. Dependency selection/probes, utilities, saved settings, Core/UI 0.4.1, HUD and all SRank source/binaries remain unchanged.
+
+Added policy cases cover both discovery orders and every loaded-state combination, case-insensitive IDs, restricted/disabled live versus loaded dev, dev-only fallback, fresh unload, all known component IDs and future versions without hardcoding. Native UI fixtures include duplicate and dev-only rows at both themes/widths and all scales. Existing ownership/native-source/package/privacy checks remain required. [Focused live acceptance](LIVE_DEV_DISCOVERY.md) is pending.
+
+## Historical cleanup validation
+
 # Current validation — 0.3.1.0 / HUD 0.8.5.0
 
 The latest Quest checklist received scoped user PASS. Reward mode was not named; submarine was not separately confirmed. The engineering phase continues with separate HUD utility cleanup. Hub native algorithms, controllers, configuration and Core/UI 0.4.1 pins are unchanged; the current Hub change updates UI guidance and release metadata. HUD removes the two native engines/call sites, retains schema 12/preferences/v1 IPC and keeps Core/UI 0.3.1.

@@ -1,8 +1,8 @@
 namespace SentinelHub.Ecosystem;
 public enum Presence { Unknown, Missing, Disabled, Loaded, Degraded }
 public enum Response { Unknown, Responding, Ready, NotReady, Unavailable }
-public sealed record InstalledPlugin(string Id, bool Loaded, string? Version, bool Restricted = false);
-public sealed record PluginStatus(Component Component, Presence State, string Version);
+public sealed record InstalledPlugin(string Id, bool Loaded, string? Version, bool Restricted = false, bool IsDev = false);
+public sealed record PluginStatus(Component Component, Presence State, string Version, bool IsDev = false);
 public sealed record DependencyStatus(Dependency Dependency, Presence State, string Version, Response Response);
 public sealed record HubSnapshot(DateTimeOffset CapturedAt, bool DiscoveryAvailable, PluginStatus[] Plugins, DependencyStatus[] Dependencies)
 {
@@ -10,6 +10,10 @@ public sealed record HubSnapshot(DateTimeOffset CapturedAt, bool DiscoveryAvaila
 }
 public static class StatusPolicy
 {
+    // The live installed copy owns its inventory row even when a development copy is loaded first.
+    public static InstalledPlugin? SelectPlugin(IEnumerable<InstalledPlugin> installed, string id) =>
+        installed.Where(p => p.Id.Equals(id, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(p => p.IsDev).FirstOrDefault();
     public static Presence PresenceOf(InstalledPlugin? plugin, bool available) =>
         !available ? Presence.Unknown : plugin is null ? Presence.Missing :
         plugin.Restricted ? Presence.Degraded : plugin.Loaded ? Presence.Loaded : Presence.Disabled;
@@ -20,8 +24,8 @@ public static class StatusPolicy
             all.FirstOrDefault(p => ids.Contains(p.Id, StringComparer.OrdinalIgnoreCase));
         var plugins = Catalog.Components.Select(c =>
         {
-            var p = Find([c.Id]);
-            return new PluginStatus(c, PresenceOf(p, available), NumericVersion(p?.Version));
+            var p = SelectPlugin(all, c.Id);
+            return new PluginStatus(c, PresenceOf(p, available), NumericVersion(p?.Version), p?.IsDev == true);
         }).ToArray();
         var deps = Catalog.Dependencies.Select(d =>
         {
@@ -35,7 +39,7 @@ public static class StatusPolicy
     public static string NumericVersion(string? input) =>
         input is { Length: <= 40 } && System.Version.TryParse(input, out var version) ? version.ToString() : "Unknown";
     public static bool CanOpen(Component? component, IEnumerable<InstalledPlugin> current, bool available) =>
-        available && component is not null && current.Any(p => p.Id.Equals(component.Id, StringComparison.OrdinalIgnoreCase) && p.Loaded && !p.Restricted);
+        available && component is not null && SelectPlugin(current, component.Id) is { Loaded: true, Restricted: false };
     public static string DependencyText(DependencyStatus status) => status.State != Presence.Loaded ? PresenceText(status.State) : status.Response switch
     {
         Response.Ready => "Ready (mesh available)",

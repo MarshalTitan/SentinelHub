@@ -46,6 +46,9 @@ internal static class Program
                         .Concat(Catalog.Dependencies.Select(d => new InstalledPlugin(d.Id, true, "1.0.0.0"))), true, _ => Response.Unavailable),
                     StatusPolicy.Build(Catalog.Components.Select(c => new InstalledPlugin(c.Id, false, "0.1.0.0", true))
                         .Concat(Catalog.Dependencies.Select(d => new InstalledPlugin(d.Id, true, "1.0.0.0"))), true, _ => Response.NotReady),
+                    StatusPolicy.Build([new("SRankSentinel", true, "0.7.61.0", IsDev: true)], true, _ => Response.Unknown),
+                    StatusPolicy.Build([new("SRankSentinel", true, "0.7.61.0", IsDev: true),
+                        new("SRankSentinel", false, "0.7.56.0")], true, _ => Response.Unknown),
                 };
                 int pages = 0;
                 foreach (var scale in new[] { 1f, 1.5f, 2f })

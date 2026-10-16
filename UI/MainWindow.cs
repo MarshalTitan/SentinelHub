@@ -156,6 +156,8 @@ public sealed class MainWindow : Window, IDisposable
     private void PluginCard(PluginStatus p, bool detail)
     {
         var lines = new List<string> { p.Component.Name, StatusPolicy.PresenceText(p.State), "Installed version: " + p.Version };
+        if (p.State != Presence.Missing && p.State != Presence.Unknown)
+            lines.Add(p.IsDev ? "Installation: development (no live installation found)" : "Installation: live");
         if (detail) lines.Add(p.Component.Purpose);
         if (detail)
         {
@@ -284,7 +286,7 @@ public sealed class MainWindow : Window, IDisposable
     private void DrawAbout()
     {
         Card("about", "MVP", SentinelModernPillTone.Accent,
-            ["Sentinel Hub 0.3.1.0", "Optional Sentinel ecosystem control center.",
+            ["Sentinel Hub 0.3.1.1", "Optional Sentinel ecosystem control center.",
              "Core UI 0.4.1, bundled with Hub. No separately installed Core plugin.",
              "Other Sentinel plugins work normally when Hub is disabled or absent.",
              "Camera, HUD rendering, hunt policy, Frontline strategy, gear switching, Profiles and Relay remain owned by their existing plugins.",
