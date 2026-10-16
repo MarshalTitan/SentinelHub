@@ -1,5 +1,7 @@
 # Anti-AFK migration gate — Hub 0.2.0.0 / HUD 0.8.4.6
 
+> Historical replacement procedure for HUD 0.8.4.6/0.8.4.7. With HUD 0.8.5.0, utility engines have moved to Hub and disabling Hub leaves their actions off. Use [current cleanup acceptance and rollback](UTILITY_CLEANUP.md). Scoped replacement acceptance is recorded in the ecosystem test matrix.
+
 Update both plugins through the existing catalog. Hub Anti-AFK defaults OFF, including upgrades. HUD retains its setting, implementation and schema. No Quest Convenience/submarine/reward, camera, hunt or Frontline behavior is changed.
 
 Open /shub → Utilities. Enable Anti-AFK explicitly or click Import saved HUD preference to copy only that bool. The original HUD preference stays saved for rollback. A loaded compatible HUD must acknowledge the current in-memory session claim before Hub can touch timers. Legacy/unknown HUD installations block Hub, including disabled legacy installs that might be hot-loaded.

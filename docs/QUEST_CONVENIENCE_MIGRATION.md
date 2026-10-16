@@ -1,5 +1,7 @@
 # Quest Convenience proving — Hub 0.3.0.0 / HUD 0.8.4.7
 
+> Historical replacement procedure for HUD 0.8.4.6/0.8.4.7. With HUD 0.8.5.0, utility engines have moved to Hub and disabling Hub leaves their actions off. Use [current cleanup acceptance and rollback](UTILITY_CLEANUP.md). Scoped replacement acceptance is recorded in the ecosystem test matrix.
+
 Update both through the existing Sentinel catalog. Anti-AFK's reported four-step PASS is retained; no repeated idle test is requested. Its engine/preferences are unchanged. Quest Convenience is a separate module, default OFF with dialogue/cutscene flags false and rewards Manual for new installs and upgrades.
 
 Open /shub → Utilities → Quest Convenience. Configure the features and enable the module, or explicitly import HUD quest preferences. Import copies only the public dialogue/cutscene/reward settings; it enables the module only if an imported feature is active. It does not change either plugin's Anti-AFK setting or HUD's saved preferences.
