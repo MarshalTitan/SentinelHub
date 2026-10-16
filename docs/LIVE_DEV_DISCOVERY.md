@@ -1,6 +1,6 @@
 # Live/dev inventory acceptance — Hub 0.3.1.1
 
-Update [Sentinel Hub 0.3.1.1](https://github.com/MarshalTitan/SentinelHub/releases/tag/v0.3.1.1) through Dalamud, then /shub → Plugins → Refresh inventory.
+Update [Sentinel Hub 0.3.1.1](https://github.com/MarshalTitan/SentinelHub/releases/tag/v0.3.1.1) through Dalamud, then /shub → Dashboard → Refresh inventory, then open Plugins.
 
 With live SRank 0.7.56.0 and the development copy still installed, expect **Installed version: 0.7.56.0** and **Installation: live**, with the live copy's loaded/not-loaded state. Dashboard must agree. Open settings is available only when the selected live copy is loaded and unrestricted; a loaded dev copy must not substitute for a disabled live copy.
 
