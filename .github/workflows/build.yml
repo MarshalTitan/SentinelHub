@@ -41,6 +41,9 @@ jobs:
       - name: Prepare peer lease simulation and audit icon metadata
         shell: pwsh
         run: ./.github/scripts/Prepare-AntiAfk-Fixture.ps1
+      - name: Verify accepted Quest native source and prepare peer contract
+        shell: pwsh
+        run: ./.github/scripts/Prepare-Quest-Fixture.ps1
       - name: Restore exact dependencies
         run: dotnet restore SentinelHub.csproj --locked-mode
       - name: Policy tests

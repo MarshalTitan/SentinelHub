@@ -1,10 +1,11 @@
-Sentinel Hub 0.2.0.0 begins the staged Anti-AFK migration.
+Sentinel Hub 0.3.0.0 adds opt-in Quest Convenience proving.
 
-- Removes the retired Sentinel Hunts test component from Hub inventory and dependency uses.
-- Adds IconUrl/RepoUrl to the installed plugin manifest and validates the public PNG.
-- Adds default-OFF Anti-AFK, preserving HUD's 10-second checks and 30-second threshold without input/movement/chat.
-- Requires a fresh ownership acknowledgment from loaded HUD 0.8.4.6+. Legacy/unknown HUD installations block Hub's writer.
-- Keeps HUD's saved preference and implementation. Import only on explicit click. Disable/unload Hub to return to the retained HUD preference.
-- Quest Convenience and latency remain unchanged/inactive in Hub.
+- Default-OFF module with ordinary dialogue, cutscene skipping and Manual/First/Current Job/Allagan Piece reward modes.
+- Explicit import copies HUD's three public quest preferences only; original HUD settings remain saved.
+- Requires HUD 0.8.4.7+ ownership acknowledgment when loaded; installed legacy/unknown HUD blocks actions.
+- Preserves accepted HUD native/policy source, including the submarine/base-addon cutscene fix and manual choices.
+- Ownership loss, option changes, logout and unload clear pending work. No delayed native actions survive a handoff.
+- Anti-AFK's reported acceptance is retained and its implementation/settings are unchanged.
+- HUD keeps its fallback engine pending supervised replacement acceptance. Latency/Weaving remains inactive.
 
-This is a proving release. Supervised native behavior and plugin reload/ownership acceptance are required before HUD cleanup. No cleanup/removal is included.
+Follow docs/QUEST_CONVENIENCE_MIGRATION.md for the exact test and rollback. This proving publication does not certify native gameplay behavior.

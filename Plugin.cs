@@ -7,6 +7,7 @@ using SentinelHub.Diagnostics;
 using SentinelHub.Ecosystem;
 using SentinelHub.UI;
 using SentinelHub.Utilities.AntiAfk;
+using SentinelHub.Utilities.Quest;
 namespace SentinelHub;
 public sealed class Plugin : IDalamudPlugin
 {
@@ -15,6 +16,11 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
     [PluginService] internal static IChatGui Chat { get; private set; } = null!;
     [PluginService] internal static IClientState Client { get; private set; } = null!;
+    [PluginService] internal static IGameGui GameGui { get; private set; } = null!;
+    [PluginService] internal static ICondition Condition { get; private set; } = null!;
+    [PluginService] internal static IObjectTable Objects { get; private set; } = null!;
+    [PluginService] internal static IDataManager Data { get; private set; } = null!;
+    private readonly QuestConvenienceController quest;
     private readonly AntiAfkController antiAfk;
     private readonly WindowSystem windows = new("SentinelHub");
     private readonly Configuration.Configuration settings;
@@ -29,10 +35,11 @@ public sealed class Plugin : IDalamudPlugin
         settings.Normalize();
         discovery = new(Pi, faults);
         antiAfk = new(Pi, Client, settings, faults);
+        quest = new(Pi, Client, GameGui, Condition, Objects, Data, settings, faults);
         quickOpen = new(discovery.Capture, Commands.ProcessCommand, faults);
         window = new(settings, () => discovery.Snapshot, faults, Save, () => discovery.Refresh(true),
             (id, diagnostics) => quickOpen.Open(id, diagnostics), Export,
-            () => Pi.UiBuilder.ShouldUseReducedMotion, antiAfkView: () => antiAfk.View);
+            () => Pi.UiBuilder.ShouldUseReducedMotion, antiAfkView: () => antiAfk.View, questView: () => quest.View);
         windows.AddWindow(window);
         Commands.AddHandler("/shub", new CommandInfo(OnCommand) { HelpMessage = "Open Sentinel Hub. /shub export saves sanitized Hub diagnostics." });
         Pi.UiBuilder.Draw += windows.Draw;
@@ -41,7 +48,7 @@ public sealed class Plugin : IDalamudPlugin
         Framework.Update += Update;
         discovery.Refresh(true);
     }
-    private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); antiAfk.Tick(); } }
+    private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); antiAfk.Tick(); quest.Tick(); } }
     private void Open() => window.OpenAndExpand();
     private void OnCommand(string _, string arguments)
     {
@@ -61,7 +68,7 @@ public sealed class Plugin : IDalamudPlugin
             var directory = Path.Combine(Pi.GetPluginConfigDirectory(), "diagnostics");
             Directory.CreateDirectory(directory);
             var name = "sentinel-hub-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + ".json";
-            File.WriteAllText(Path.Combine(directory, name), DiagnosticExport.Serialize(discovery.Snapshot, faults.Snapshot(), antiAfk.View));
+            File.WriteAllText(Path.Combine(directory, name), DiagnosticExport.Serialize(discovery.Snapshot, faults.Snapshot(), antiAfk.View, quest.View));
             window.Notice = "Saved " + name + " in Hub's configuration diagnostics folder.";
             Chat.Print("[Sentinel Hub] " + window.Notice);
         }
@@ -75,6 +82,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         disposed = true;
         Framework.Update -= Update;
+        quest.Dispose();
         antiAfk.Dispose();
         Pi.UiBuilder.Draw -= windows.Draw;
         Pi.UiBuilder.OpenConfigUi -= Open;

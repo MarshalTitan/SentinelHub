@@ -1,3 +1,4 @@
+using SentinelHub.Utilities.Quest;
 using System.Text.Json;
 using SentinelHub.Configuration;
 using SentinelHub.Ecosystem;
@@ -99,9 +100,9 @@ Test("diagnostics exclude arbitrary names, paths, secrets and private inventory"
  Check(doc.RootElement.GetProperty("Profiles").GetProperty("Status").GetString() == "Unknown");
 });
 Test("utility enable boundaries: no engines or active configuration", () => {
- Check(UtilityRegistry.Planned.Length == 2);
+ Check(UtilityRegistry.Planned.Length == 1);
  Check(UtilityRegistry.Planned.All(u => u.Status == "Planned / inactive"));
- Check(typeof(HubSettings).GetProperties().All(p => !p.Name.Contains("Quest") && !p.Name.Contains("Compensation")));
+ Check(typeof(HubSettings).GetProperties().All(p => !p.Name.Contains("Compensation")));
 });
 
 Test("quick-open dispatch is fixed, denied actions do not execute", () => {
@@ -195,6 +196,94 @@ Test("actual HUD lease and Hub engine simulate both callback orders and handoff"
   engine.Suspend();requested=false;Check(lease.Release(replacement));
   Check(HudMayWrite(5001) && engine.State==AntiAfkState.Off);
  }
+});
+
+
+Test("Quest defaults, explicit import and normalization preserve approved Anti-AFK settings", () => {
+ var old=JsonSerializer.Deserialize<HubSettings>("{\"Version\":1,\"AntiAfkEnabled\":true}")!;old.Normalize();
+ Check(old.AntiAfkEnabled && !old.QuestConvenienceEnabled && !old.QuestDialogue && !old.QuestCutscenes && old.QuestRewardMode==QuestRewardSelectionMode.Manual);
+ old.ImportQuestPreferences(11);Check(old.QuestConvenienceEnabled && old.QuestDialogue && old.QuestCutscenes && old.QuestRewardMode==QuestRewardSelectionMode.CurrentJobReward && old.AntiAfkEnabled);
+ var round=JsonSerializer.Deserialize<HubSettings>(JsonSerializer.Serialize(old))!;round.Normalize();
+ Check(round.QuestPreferenceImported && round.QuestRewardMode==old.QuestRewardMode && round.AntiAfkEnabled);
+ var before=JsonSerializer.Serialize(round);round.ImportQuestPreferences(999);Check(before==JsonSerializer.Serialize(round));
+ round.QuestRewardMode=(QuestRewardSelectionMode)999;round.Normalize();Check(round.QuestRewardMode==QuestRewardSelectionMode.Manual);
+ round.ImportQuestPreferences(0);Check(!round.QuestConvenienceEnabled && round.AntiAfkEnabled);
+});
+Test("Quest ownership never enables native work on legacy, unloaded or unacknowledged discovery failures", () => {
+ Check(QuestConvenienceOwnershipPolicy.Resolve(false,true,false,false,null,false)==QuestConvenienceState.Off);
+ Check(QuestConvenienceOwnershipPolicy.Resolve(true,false,false,false,null,false)==QuestConvenienceState.WaitingForLogin);
+ Check(QuestConvenienceOwnershipPolicy.Resolve(true,true,true,false,"0.8.4.6",false)==QuestConvenienceState.LegacyHudInstalled);
+ Check(QuestConvenienceOwnershipPolicy.Resolve(true,true,true,true,null,true)==QuestConvenienceState.LegacyHudInstalled);
+ Check(QuestConvenienceOwnershipPolicy.Resolve(true,true,true,true,"0.8.4.7",false)==QuestConvenienceState.WaitingForHud);
+ Check(QuestConvenienceOwnershipPolicy.Resolve(true,true,true,true,"0.8.4.7",true)==QuestConvenienceState.Active);
+ Check(QuestConvenienceOwnershipPolicy.Resolve(true,true,false,false,null,false)==QuestConvenienceState.Active);
+ Check(QuestConvenienceOwnershipPolicy.Resolve(true,true,true,false,"0.8.4.7",false)==QuestConvenienceState.Active);
+});
+Test("Quest session revokes pending work on ownership loss, option changes and faults", () => {
+ int actions=0,resets=0;bool pending=false;
+ var session=new QuestExecutionSession(_=>{actions++;pending=true;},()=>{resets++;pending=false;});
+ foreach(var state in Enum.GetValues<QuestConvenienceState>().Where(x=>x!=QuestConvenienceState.Active))session.Tick(state,3,0);
+ Check(actions==0);
+ session.Tick(QuestConvenienceState.Active,3,0);Check(actions==1&&pending);
+ session.Tick(QuestConvenienceState.WaitingForHud,3,1);Check(!pending&&actions==1);
+ session.Tick(QuestConvenienceState.Active,3,2);var previous=resets;
+ session.Tick(QuestConvenienceState.Active,7,3);Check(resets==previous+1&&actions==3);
+ session.Stop();Check(!pending&&session.State==QuestConvenienceState.Off);
+ int failures=0;var fault=new QuestExecutionSession(_=>{failures++;throw new Exception("PRIVATE");},()=>{});
+ fault.Tick(QuestConvenienceState.Active,1,100);fault.Tick(QuestConvenienceState.Active,1,1099);
+ Check(failures==1&&fault.State==QuestConvenienceState.Faulted);
+ fault.Tick(QuestConvenienceState.Active,1,1100);Check(failures==2);
+});
+Test("Quest wire preferences round-trip the actual HUD v1 contract", () => {
+ foreach(var dialogue in new[]{false,true})foreach(var skip in new[]{false,true})for(int mode=0;mode<4;mode++){
+  var packed=SentinelHUD.Core.QuestConvenienceHandoff.Encode(dialogue,skip,mode);
+  Check(QuestPreferenceCodec.TryDecode(packed,out var opts));
+  Check(opts.SkipDialogue==dialogue && opts.SkipCutscenes==skip && (int)opts.QuestRewardSelection==mode && QuestPreferenceCodec.Encode(opts)==packed);
+ }
+ Check(!QuestPreferenceCodec.TryDecode(-1,out _)&&!QuestPreferenceCodec.TryDecode(16,out _));
+});
+Test("Quest and Anti-AFK leases are independent in both initial callback orders", () => {
+ foreach(var hudFirst in new[]{false,true}){
+  var lease=new SentinelHUD.Core.AntiAfkLease();var anti=new SentinelHUD.Core.AntiAfkLease();var token=Guid.NewGuid().ToString("N");
+  bool HudMayAct(long now,bool requested)=>!SentinelHUD.Core.QuestConvenienceHandoff.ShouldYield(lease.IsClaimed(now),true,"0.3.0.0",requested);
+  if(hudFirst)Check(!HudMayAct(0,true));
+  Check(lease.TryClaim(token,0,true));Check(!HudMayAct(0,true)&&!anti.IsClaimed(0));
+  Check(!lease.TryClaim(Guid.NewGuid().ToString("N"),1,true));Check(!lease.Release(Guid.NewGuid().ToString("N")));
+  Check(lease.Release(token));Check(HudMayAct(1,false));
+  Check(!SentinelHUD.Core.QuestConvenienceHandoff.ShouldYield(false,true,"0.2.0.0",null));
+ }
+});
+Test("Quest cutscene prompt identity, cancellation and deadline preserve the submarine fix", () => {
+ foreach(var name in new[]{"SelectString","CutSceneSelectString"})Check(CutsceneSkipPromptPolicy.TryMatch(name,42,42,out _));
+ foreach(var name in new[]{"SelectYesno","Talk","JournalResult",null})Check(!CutsceneSkipPromptPolicy.TryMatch(name,42,42,out _));
+ Check(!CutsceneSkipPromptPolicy.TryMatch("SelectString",41,42,out _)&&!CutsceneSkipPromptPolicy.TryMatch("SelectString",0,0,out _));
+ var state=CutsceneSkipConfirmationState.Begin(0,5000);
+ Check(CutsceneSkipConfirmationPolicy.Evaluate(ref state,1,false,false)==CutsceneSkipConfirmationDecision.Wait);
+ Check(CutsceneSkipConfirmationPolicy.Evaluate(ref state,2,true,false)==CutsceneSkipConfirmationDecision.Wait);
+ Check(CutsceneSkipConfirmationPolicy.Evaluate(ref state,3,true,true)==CutsceneSkipConfirmationDecision.Confirm);
+ Check(CutsceneSkipConfirmationPolicy.Evaluate(ref state,4,false,false)==CutsceneSkipConfirmationDecision.Dismissed);
+ state=CutsceneSkipConfirmationState.Begin(0,5000);Check(CutsceneSkipConfirmationPolicy.Evaluate(ref state,5000,true,true)==CutsceneSkipConfirmationDecision.TimedOut);
+ state=default;Check(CutsceneSkipConfirmationPolicy.Evaluate(ref state,100,true,true)==CutsceneSkipConfirmationDecision.Wait);
+});
+Test("Quest reward policy preserves manual, job specificity, vendor quantity and first fallback", () => {
+ var list=new[]{
+  new QuestRewardCandidate(0,1,1,"FIRST",false,0,1,false,1),
+  new QuestRewardCandidate(1,2,1,"JOB",true,900,10,false,1),
+  new QuestRewardCandidate(2,3,1,"BROAD",true,800,1000,false,1),
+  new QuestRewardCandidate(3,5824,9,"PIECE",false,0,1,true,100),
+  new QuestRewardCandidate(4,5825,1,"PIECE2",false,0,1,true,500)};
+ Check(QuestRewardSelectionPolicy.Select(QuestRewardSelectionMode.Manual,list)==null);
+ Check(QuestRewardSelectionPolicy.Select(QuestRewardSelectionMode.CurrentJobReward,list)?.Index==1);
+ Check(QuestRewardSelectionPolicy.Select(QuestRewardSelectionMode.AllaganPiece,list)?.Index==3);
+ Check(QuestRewardSelectionPolicy.Select(QuestRewardSelectionMode.FirstReward,list)?.Index==0);
+ Check(QuestRewardSelectionPolicy.Select(QuestRewardSelectionMode.CurrentJobReward,new[]{list[0]})?.Index==0);
+ Check(QuestRewardSelectionPolicy.Select(QuestRewardSelectionMode.AllaganPiece,new[]{list[0]})?.Index==0);
+ Check(QuestRewardSelectionPolicy.Select((QuestRewardSelectionMode)999,list)==null);
+ Check(QuestRewardSelectionPolicy.Select(QuestRewardSelectionMode.FirstReward,Array.Empty<QuestRewardCandidate>())==null);
+});
+Test("Quest diagnostics export only allowlisted state, never native status strings or saved preferences", () => {
+ var json=DiagnosticExport.Serialize(HubSnapshot.Unknown,[],quest:new(QuestConvenienceState.Active,15,"PRIVATE dialogue","PRIVATE cutscene","PRIVATE reward"));
+ Check(json.Contains("\"QuestConvenience\"")&&json.Contains("\"Active\"")&&!json.Contains("PRIVATE")&&!json.Contains("HudPreferences"));
 });
 
 Console.WriteLine(passed + " policy test groups passed.");
