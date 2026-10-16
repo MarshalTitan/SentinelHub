@@ -284,7 +284,7 @@ public sealed class MainWindow : Window, IDisposable
     private void DrawAbout()
     {
         Card("about", "MVP", SentinelModernPillTone.Accent,
-            ["Sentinel Hub 0.2.0.0", "Optional Sentinel ecosystem control center.",
+            ["Sentinel Hub 0.3.0.0", "Optional Sentinel ecosystem control center.",
              "Core UI 0.4.1, bundled with Hub. No separately installed Core plugin.",
              "Other Sentinel plugins work normally when Hub is disabled or absent.",
              "Camera, HUD rendering, hunt policy, Frontline strategy, gear switching, Profiles and Relay remain owned by their existing plugins.",
