@@ -1,4 +1,5 @@
 using SentinelHub.Utilities.Quest;
+using SentinelHub.Utilities;
 namespace SentinelHub.Configuration;
 public enum HubPage { Dashboard, Plugins, Profiles, Dependencies, Utilities, Diagnostics, Appearance, About }
 public class HubSettings
@@ -6,6 +7,7 @@ public class HubSettings
     public int Version { get; set; } = 1;
     public int Theme { get; set; } = 1;
     public HubPage Page { get; set; }
+    public LatencyMode LatencyMode { get; set; } // Additive preference; new installs/upgrades stay Off.
     public bool AntiAfkEnabled { get; set; } // New installs and upgrades default OFF.
     public bool AntiAfkPreferenceImported { get; set; }
     public bool QuestConvenienceEnabled { get; set; }
@@ -28,6 +30,7 @@ public class HubSettings
     public void Normalize()
     {
         Version = 1;
+        if (!Enum.IsDefined(LatencyMode)) LatencyMode = SentinelHub.Utilities.LatencyMode.Off;
         if (!Enum.IsDefined(QuestRewardMode)) QuestRewardMode = QuestRewardSelectionMode.Manual;
         if (Theme is not (0 or 1)) Theme = 1;
         if (!Enum.IsDefined(Page)) Page = HubPage.Dashboard;

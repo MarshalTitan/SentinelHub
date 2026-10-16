@@ -31,3 +31,15 @@ Import is explicit and copies only three public quest preferences, without modif
 Public IExposedPlugin.IsDev and Version are captured without reflection/private configuration. For known component rows, a matching non-dev installation wins over dev copies regardless of enumeration order or load state. Version/state/source all come from the selected instance. A dev-only row is labeled explicitly. CanOpen applies the same policy to fresh discovery so a loaded dev cannot substitute for disabled/restricted live. Dependency lookup/probe behavior is unchanged. Utility controllers and settings are unchanged.
 
 The user reported cleanup PASS at 2026-10-16 01:38 America/Toronto, with the separate SRank version-display issue. Only the focused inventory acceptance remains for this patch.
+
+## Latency / Weaving — 0.4.0.0
+
+User explicitly requested the NoClippy-style module on 2026-10-16 01:55 America/Toronto. Its separate [design/source audit and native proving gate](LATENCY_WEAVING.md) follows the accepted utility cleanup. The live/dev inventory display check remains separate.
+
+LatencyMode adds Off=0/Measure=1/Compensate=2 without changing schema 1 or existing preferences. Native runtime creation is lazy behind explicit mode, login/transition/death/territory and conflict eligibility. Native request/effect delegates use current typed FFXIVClientStructs bindings. A generic nonallocating intercepted-call transaction is shared by the adapter and tests: observer failures never skip/repeat Original; original exceptions are not replayed.
+
+Managed natural-cast/category metadata is cached before installing hooks. The single pending action stores only numeric sequence/action/time/initial lock; no pointer survives an inline call. Matching response validation and bound calculation live in pure LatencySession; actual writes alone increment applied counts. Full native conflict checks precede eligible response writes. Off or loss of readiness disposes both hooks; construction is transactional. Fault/contention latches until Off. Hook callbacks and disposal share a reentrant lock so teardown cannot free a trampoline in an executing callback.
+
+Only the local ActionManager.AnimationLock field can be written, after Original Receive. Header, targets, cooldowns and action arguments are never modified; no task, packet-send hook or synthetic action exists. Unsupported/malformed/late responses are ignored. The source-supported narrow subset intentionally excludes natural cast-time actions and nonstandard locks. Conflict checks are scoped to known identities/exports plus observed-lock invariants; they do not promise detection of every custom mod.
+
+The native adapter is new, unlike the preserved Quest engine. Policy/source/compilation/render evidence cannot replace the dedicated real-game Measure→Compensate gate. Existing Anti-AFK/Quest native code, Core/UI 0.4.1 pin, HUD and consumer projects are unchanged.
