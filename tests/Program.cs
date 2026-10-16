@@ -126,4 +126,14 @@ Test("unsupported diagnostics and refused commands fail without guessing", () =>
  Check(!router.Open("SentinelHUD") && calls == 1 && faults.Snapshot().Length == 1);
 });
 
+
+Test("Hub absence does not change other components' status or availability", () => {
+ var consumers = Catalog.Components.Where(c => c.Id != "SentinelHub").Select(c => Loaded(c.Id)).ToArray();
+ var without = StatusPolicy.Build(consumers, true, _ => Response.Unknown);
+ var with = StatusPolicy.Build([..consumers, Loaded("SentinelHub")], true, _ => Response.Unknown);
+ Check(without.Plugins.Where(p => p.Component.Id != "SentinelHub").SequenceEqual(with.Plugins.Where(p => p.Component.Id != "SentinelHub")));
+ Check(without.Dependencies.SequenceEqual(with.Dependencies));
+ Check(StatusPolicy.CanOpen(Catalog.Find("SentinelHUD"), consumers, true));
+});
+
 Console.WriteLine(passed + " policy test groups passed.");

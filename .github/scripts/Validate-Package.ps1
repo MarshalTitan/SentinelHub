@@ -14,6 +14,9 @@ try {
  $reader = [IO.StreamReader]::new($manifest.Open())
  try { $m = $reader.ReadToEnd() | ConvertFrom-Json } finally { $reader.Dispose() }
  if ($m.InternalName -ne 'SentinelHub' -or $m.AssemblyVersion -ne $ExpectedVersion -or $m.DalamudApiLevel -ne 15) { throw 'Manifest identity/version/API mismatch' }
+ foreach ($consumer in @('SRankSentinel','PvPSentinel','SentinelHUD','ClassySentinel','SentinelProfiles','SentinelRelay','SentinelHunts')) {
+  if ($names -contains "$consumer.dll") { throw 'Hub must not bundle or require consumer assemblies' }
+ }
  foreach ($dll in @('SentinelCore','SentinelCore.UI')) {
   $pkg = [IO.Compression.ZipFile]::OpenRead((Resolve-Path ".packages/MarshalTitan.$dll.0.4.1.nupkg"))
   try {
