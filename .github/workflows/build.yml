@@ -12,6 +12,8 @@ concurrency:
 jobs:
   validate:
     runs-on: windows-latest
+    outputs:
+      version: ${{ steps.version.outputs.value }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -28,6 +30,17 @@ jobs:
       - name: Prepare verified Core packages and Dalamud fixtures
         shell: pwsh
         run: ./.github/scripts/Prepare.ps1
+      - name: Read version
+        id: version
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content SentinelHub.csproj -Raw
+          $version = [string]$project.Project.PropertyGroup.Version
+          if ($version -notmatch '^\d+\.\d+\.\d+\.\d+$') { throw 'Four-part version required' }
+          "value=$version" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+      - name: Prepare peer lease simulation and audit icon metadata
+        shell: pwsh
+        run: ./.github/scripts/Prepare-AntiAfk-Fixture.ps1
       - name: Restore exact dependencies
         run: dotnet restore SentinelHub.csproj --locked-mode
       - name: Policy tests
@@ -41,7 +54,7 @@ jobs:
         run: ./.github/scripts/Validate-Package.ps1 -PackagePath bin/Release/SentinelHub/latest.zip
       - uses: actions/upload-artifact@v4
         with:
-          name: SentinelHub-0.1.0.0
+          name: SentinelHub-${{ steps.version.outputs.value }}
           path: bin/Release/SentinelHub/latest.zip
           if-no-files-found: error
   publish:
@@ -60,7 +73,7 @@ jobs:
         run: ./.github/scripts/Prepare.ps1
       - uses: actions/download-artifact@v4
         with:
-          name: SentinelHub-0.1.0.0
+          name: SentinelHub-${{ needs.validate.outputs.version }}
           path: release
       - name: Publish immutable release and bootstrap first child manifest
         shell: pwsh
@@ -71,6 +84,6 @@ jobs:
         uses: MarshalTitan/Sentinel/.github/actions/distribute@311b9d3446cca61c50213a320445f3e1d57a96f6
         with:
           internal-name: SentinelHub
-          version: '0.1.0.0'
-          tag: v0.1.0.0
+          version: ${{ needs.validate.outputs.version }}
+          tag: v${{ needs.validate.outputs.version }}
           notification-token: ${{ secrets.DALAMUD_CATALOG_TOKEN }}

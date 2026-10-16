@@ -1,17 +1,18 @@
-# Automated validation — Sentinel Hub 0.1.0.0
+# Automated validation — Sentinel Hub 0.2.0.0
 
-Source: [ac1e7411788ba89b973073576d421a9c2a024127](https://github.com/MarshalTitan/SentinelHub/commit/ac1e7411788ba89b973073576d421a9c2a024127), merged [PR #1](https://github.com/MarshalTitan/SentinelHub/pull/1).
-Final PR validation: [38846223646](https://github.com/MarshalTitan/SentinelHub/actions/runs/38846223646).
-Source-linked release/distribution: [38846452080](https://github.com/MarshalTitan/SentinelHub/actions/runs/38846452080).
+Migration source review: [PR #2](https://github.com/MarshalTitan/SentinelHub/pull/2), head `34e382299353297e8441ab8660e77cab4de08f38`.
+Cloud validation: [38849930385](https://github.com/MarshalTitan/SentinelHub/actions/runs/38849930385), completed successfully.
 
-- **21 policy groups PASS:** discovery missing/disabled/restricted/unknown, alias/probe behavior, numeric versions, fresh fixed quick-open dispatch and failures, persistence, Hub-absence status independence, typed bounded faults, diagnostics allowlist and inactive utility boundaries.
-- **480 native ImGui cases PASS:** all eight pages, five installation/dependency states, two widths, two themes and three UI scales. Balanced stacks, rail reachability, collapse/restore and native keyboard/controller switch activation passed.
-- Compilation: **zero warnings/errors**. PowerShell publication scripts parsed successfully.
-- Exact published Core/UI 0.4.1 SHA256 and NuGet locks verified. Installable ZIP identity/API/version/paths and bundled DLL bytes match pinned libraries. No consumer assemblies are bundled.
-- Saved-collapsed startup width, verified Splatoon response, Sentinel Hunts dependency uses and unavailable/not-ready warning tones were reviewed before publication.
-- Public release ZIP was downloaded/validated and hash-compared with the tested artifact before child-manifest creation.
-- Public ZIP SHA256: `7ee080adf3cec91e92f4b106aa0720ddf925a023ddb1a258da74a177ed0c0690`.
-- [Central registration PR #20](https://github.com/MarshalTitan/Sentinel/pull/20) passed generator/assets and Linux/Windows distribution checks. Public central/child equality was independently verified: eight total entries, all seven prior objects unchanged.
-- Core and all six pre-existing consumer source heads remained unchanged during the task.
+- **27 policy groups PASS:** inventory/quick-open/persistence/privacy regression coverage; default-OFF upgrades, login/legacy-HUD/acknowledgment gates, disabled-state no-write behavior, 10-second rate limit, finite 30-second threshold, bounded timer faults, explicit preference persistence and token exclusion.
+- The test compiles the actual HUD lease source pinned to `c86e688d747757e5c6d50aa95a44ce12bed53776` and simulates initial callback orders, handoff, expiration and replacement. This is policy evidence, not a live IPC claim.
+- **480 native page/state/width/theme/scale cases plus 42 Anti-AFK state/theme/scale cases PASS.** Keyboard/controller appearance activation, minimize/restore and balanced stacks passed.
+- Compilation: **zero warnings/errors**. PowerShell publication scripts parsed.
+- Exact Core/UI **0.4.1** hashes/locks and bundled DLLs verified. Installable ZIP identity/API/version/paths and installed IconUrl/RepoUrl passed; no consumer assemblies are bundled.
+- Direct audit of the public **0.1.0.0 ZIP** confirmed its installed manifest was missing IconUrl. The public replacement icon passed PNG signature validation.
+- HUD compatibility [PR #5](https://github.com/MarshalTitan/SentinelHUD/pull/5), head `c86e688d747757e5c6d50aa95a44ce12bed53776`, passed [build/tests](https://github.com/MarshalTitan/SentinelHUD/actions/runs/38849521851) and [release infrastructure checks](https://github.com/MarshalTitan/SentinelHUD/actions/runs/38849521862).
 
-**FFXIV acceptance pending.** Native rendering/policy checks do not establish real plugin lifecycle, consumer windows, game-restart placement or gameplay behavior. Use [the exact supervised checklist](ACCEPTANCE.md). Rollback is disabling/uninstalling Hub; no consumer migration is involved.
+The user reported the **0.1.0.0 dashboard looks good**, authorized retiring Sentinel Hunts from Hub and continuing migration, and reported the missing image. This is visual dashboard evidence; it does not certify every original MVP checklist step.
+
+**FFXIV Anti-AFK acceptance pending.** Native rendering/policy tests do not establish real timer behavior or IPC/plugin lifecycle. Follow [the supervised procedure](ANTI_AFK_MIGRATION.md). HUD cleanup remains gated; disabling Hub returns to HUD's retained preference. Public release and catalog verification must pass before the new versions are advertised as available.
+
+Historical MVP validation/publication: [0.1.0.0 release run](https://github.com/MarshalTitan/SentinelHub/actions/runs/38846452080), 21 policy groups and 480 native UI cases; public ZIP SHA256 `7ee080adf3cec91e92f4b106aa0720ddf925a023ddb1a258da74a177ed0c0690`.

@@ -1,5 +1,7 @@
 $ErrorActionPreference = 'Stop'
-$version = '0.1.0.0'
+[xml]$project = Get-Content SentinelHub.csproj -Raw
+$version = [string]$project.Project.PropertyGroup.Version
+if ($version -notmatch '^\d+\.\d+\.\d+\.\d+$') { throw 'Four-part version required' }
 $tag = "v$version"
 $repo = $env:GITHUB_REPOSITORY
 ./.github/scripts/Validate-Package.ps1 -PackagePath release/latest.zip -ExpectedVersion $version

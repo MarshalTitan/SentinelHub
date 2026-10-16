@@ -22,6 +22,7 @@ public sealed class MainWindow : Window, IDisposable
     private readonly Action export;
     private readonly Func<bool> systemReducedMotion;
     private readonly Func<ImFontPtr> iconFont;
+    private readonly Func<AntiAfkView> antiAfkView;
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
     private readonly SentinelModernNavItem[] navigation;
@@ -31,8 +32,9 @@ public sealed class MainWindow : Window, IDisposable
     public string Notice { get; set; } = "";
     public MainWindow(HubSettings config, Func<HubSnapshot> snapshot, FaultJournal faults,
         Action save, Action refresh, Func<string, bool, bool> open, Action export,
-        Func<bool> systemReducedMotion, Func<ImFontPtr>? iconFont = null) : base(WindowId)
+        Func<bool> systemReducedMotion, Func<ImFontPtr>? iconFont = null, Func<AntiAfkView>? antiAfkView = null) : base(WindowId)
     {
+        this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.config = config; this.snapshot = snapshot; this.faults = faults;
         this.save = save; this.refresh = refresh; this.open = open; this.export = export;
         this.systemReducedMotion = systemReducedMotion;
@@ -184,7 +186,29 @@ public sealed class MainWindow : Window, IDisposable
     }
     private void DrawUtilities()
     {
-        ImGui.TextWrapped("Utility engines are not included in Hub 0.1. Existing HUD utilities retain ownership and settings.");
+        var view = antiAfkView();
+        ImGui.TextWrapped("Prevent AFK Disconnect");
+        var enabled = config.AntiAfkEnabled;
+        var changed = modern
+            ? SentinelModernSwitch.Draw("anti-afk-enable", "Enable Anti-AFK", ref enabled, shell.Motion, ImGuiHelpers.GlobalScale)
+            : ImGui.Checkbox("Enable Anti-AFK", ref enabled);
+        if (changed) { config.AntiAfkEnabled = enabled; save(); }
+        ImGui.TextWrapped(view.Description);
+        ImGui.TextWrapped("Default Off. Preserves the existing HUD behavior: check every 10 seconds and reset inactivity timers above 30 seconds. No keys, movement or chat.");
+        ImGui.TextWrapped("Update HUD to 0.8.4.6 or later. A loaded HUD must acknowledge exclusive ownership before Hub can act. HUD retains its saved preference and resumes when Hub is disabled.");
+        ImGui.BeginDisabled(view.HudPreference is null);
+        if (Button("Import saved HUD preference") && view.HudPreference is { } preference)
+        {
+            config.AntiAfkEnabled = preference;
+            config.AntiAfkPreferenceImported = true;
+            save();
+            Notice = "Copied only the saved Anti-AFK preference. HUD's original setting is retained.";
+        }
+        ImGui.EndDisabled();
+        ImGui.TextWrapped(view.HudPreference is { } saved ? "Saved HUD preference: " + (saved ? "On" : "Off") : "HUD preference unavailable; no settings were imported.");
+        ImGui.TextWrapped("Successful timer checks this session: " + view.Cycles);
+        ImGui.Separator(); ImGui.Spacing();
+        ImGui.TextWrapped("Later utility migrations remain inactive. Quest Convenience stays in HUD.");
         foreach (var p in UtilityRegistry.Planned)
             Card(p.Name, "PLANNED", SentinelModernPillTone.Neutral, [p.Name, p.Status, p.NextGate]);
     }
@@ -220,7 +244,7 @@ public sealed class MainWindow : Window, IDisposable
     private void DrawAbout()
     {
         Card("about", "MVP", SentinelModernPillTone.Accent,
-            ["Sentinel Hub 0.1.0.0", "Optional Sentinel ecosystem control center.",
+            ["Sentinel Hub 0.2.0.0", "Optional Sentinel ecosystem control center.",
              "Core UI 0.4.1, bundled with Hub. No separately installed Core plugin.",
              "Other Sentinel plugins work normally when Hub is disabled or absent.",
              "Camera, HUD rendering, hunt policy, Frontline strategy, gear switching, Profiles and Relay remain owned by their existing plugins.",

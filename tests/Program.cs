@@ -65,7 +65,7 @@ Test("fresh unload observation refuses formerly loaded consumer", () => {
 });
 Test("settings commands contain no gameplay actions", () => {
  Check(Catalog.Components.Select(c => c.SettingsCommand).SequenceEqual(new[] {
- "/sranksentinel", "/pvpsentinel config", "/shud", "/classysentinel config", "/sprofiles", "/srelay", "/sentinelhunts", "/shub" }));
+ "/sranksentinel", "/pvpsentinel config", "/shud", "/classysentinel config", "/sprofiles", "/srelay", "/shub" }));
  Check(Catalog.Components.Count(c => c.DiagnosticsCommand is not null) == 1);
 });
 Test("settings normalize corrupt values", () => {
@@ -77,7 +77,7 @@ Test("appearance, page and expanded size persist without utility flags", () => {
  var json = JsonSerializer.Serialize(c);
  var result = JsonSerializer.Deserialize<HubSettings>(json)!; result.Normalize();
  Check(JsonSerializer.Serialize(result) == json);
- Check(!json.Contains("AntiAfk") && !json.Contains("Latency"));
+ Check(!result.AntiAfkEnabled && !result.AntiAfkPreferenceImported && !json.Contains("Latency"));
 });
 Test("faults are bounded and throttled by typed reason", () => {
  var journal = new FaultJournal();
@@ -99,9 +99,9 @@ Test("diagnostics exclude arbitrary names, paths, secrets and private inventory"
  Check(doc.RootElement.GetProperty("Profiles").GetProperty("Status").GetString() == "Unknown");
 });
 Test("utility enable boundaries: no engines or active configuration", () => {
- Check(UtilityRegistry.Planned.Length == 3);
+ Check(UtilityRegistry.Planned.Length == 2);
  Check(UtilityRegistry.Planned.All(u => u.Status == "Planned / inactive"));
- Check(typeof(HubSettings).GetProperties().All(p => !p.Name.Contains("Anti") && !p.Name.Contains("Quest") && !p.Name.Contains("Compensation")));
+ Check(typeof(HubSettings).GetProperties().All(p => !p.Name.Contains("Quest") && !p.Name.Contains("Compensation")));
 });
 
 Test("quick-open dispatch is fixed, denied actions do not execute", () => {
@@ -134,6 +134,67 @@ Test("Hub absence does not change other components' status or availability", () 
  Check(without.Plugins.Where(p => p.Component.Id != "SentinelHub").SequenceEqual(with.Plugins.Where(p => p.Component.Id != "SentinelHub")));
  Check(without.Dependencies.SequenceEqual(with.Dependencies));
  Check(StatusPolicy.CanOpen(Catalog.Find("SentinelHUD"), consumers, true));
+});
+
+
+Test("Anti-AFK remains default OFF on new settings and old JSON upgrades", () => {
+ Check(!new HubSettings().AntiAfkEnabled);
+ Check(!JsonSerializer.Deserialize<HubSettings>("{\"Version\":1}")!.AntiAfkEnabled);
+ Check(!Catalog.Components.Any(c => c.Id == "SentinelHunts"));
+ Check(!Catalog.Dependencies.Any(d => d.Uses.Contains("Sentinel Hunts")));
+});
+Test("Anti-AFK requires login, supported HUD and fresh acknowledgment", () => {
+ AntiAfkState Decide(bool enabled=true, bool login=true, bool installed=false, bool loaded=false, string? version=null, bool ack=false) =>
+  AntiAfkOwnershipPolicy.Resolve(enabled, login, installed, loaded, version, ack);
+ Check(Decide(false) == AntiAfkState.Off && Decide(login:false) == AntiAfkState.WaitingForLogin);
+ Check(Decide(installed:true, version:"0.8.4.5") == AntiAfkState.LegacyHudInstalled);
+ Check(Decide(installed:true, version:null) == AntiAfkState.LegacyHudInstalled);
+ Check(Decide(installed:true, loaded:true, version:"0.8.4.6") == AntiAfkState.WaitingForHud);
+ Check(Decide(installed:true, loaded:true, version:"0.8.4.6", ack:true) == AntiAfkState.Active);
+ Check(Decide() == AntiAfkState.Active);
+ Check(Decide(installed:true, loaded:false, version:"0.8.4.6") == AntiAfkState.Active);
+});
+Test("Anti-AFK timer adapter never runs off, logged out or without ownership", () => {
+ int calls=0; var engine=new AntiAfkEngine(() => { calls++; return true; });
+ foreach(var state in Enum.GetValues<AntiAfkState>().Where(s=>s!=AntiAfkState.Active)) engine.Tick(state,100000);
+ Check(calls==0);
+ engine.Tick(AntiAfkState.Active,100000); engine.Tick(AntiAfkState.Active,100001);
+ Check(calls==1 && engine.Cycles==1);
+ engine.Tick(AntiAfkState.Active,109999); Check(calls==1);
+ engine.Tick(AntiAfkState.Active,110000); Check(calls==2);
+ engine.Suspend(); Check(engine.State==AntiAfkState.Off);
+});
+Test("Anti-AFK preserves the accepted 30-second threshold with bounded faults", () => {
+ Check(!AntiAfkEngine.ShouldReset(30) && AntiAfkEngine.ShouldReset(30.01f));
+ Check(!AntiAfkEngine.ShouldReset(float.NaN) && !AntiAfkEngine.ShouldReset(float.PositiveInfinity));
+ int calls=0;var engine=new AntiAfkEngine(()=>{calls++;throw new Exception("PRIVATE");});
+ engine.Tick(AntiAfkState.Active,0);Check(engine.State==AntiAfkState.Faulted);
+ engine.Tick(AntiAfkState.Active,9999);Check(calls==1 && engine.State==AntiAfkState.Faulted);
+ engine.Tick(AntiAfkState.Active,10000);Check(calls==2);
+ var missing=new AntiAfkEngine(()=>false);missing.Tick(AntiAfkState.Active,0);Check(missing.State==AntiAfkState.TimerUnavailable);
+});
+Test("Anti-AFK import round-trips only explicit preference and export excludes lease identities", () => {
+ var config=new HubSettings { AntiAfkEnabled=true, AntiAfkPreferenceImported=true };
+ var round=JsonSerializer.Deserialize<HubSettings>(JsonSerializer.Serialize(config))!;
+ Check(round.AntiAfkEnabled && round.AntiAfkPreferenceImported);
+ var export=DiagnosticExport.Serialize(HubSnapshot.Unknown,[],new((AntiAfkState)999,4,true));
+ Check(export.Contains("\"State\": \"Unknown\"") && !export.Contains("HudPreference") && !export.Contains("token"));
+});
+Test("actual HUD lease and Hub engine simulate both callback orders and handoff", () => {
+ foreach(var hudFirst in new[]{true,false}) {
+  var lease=new SentinelHUD.Core.AntiAfkLease();var token=Guid.NewGuid().ToString("N");
+  int writes=0;var engine=new AntiAfkEngine(()=>{writes++;return true;});bool requested=true;
+  bool HudMayWrite(long now) => !SentinelHUD.Core.AntiAfkLease.ShouldYield(lease.IsClaimed(now),true,"0.2.0.0",requested);
+  if(hudFirst) Check(!HudMayWrite(0));
+  var ack=lease.TryClaim(token,0,requested);
+  engine.Tick(AntiAfkOwnershipPolicy.Resolve(true,true,true,true,"0.8.4.6",ack),0);
+  Check(!HudMayWrite(0) && writes==1);
+  Check(!HudMayWrite(5000));
+  var replacement=Guid.NewGuid().ToString("N");Check(lease.TryClaim(replacement,5000,true));
+  Check(!lease.Release(token));
+  engine.Suspend();requested=false;Check(lease.Release(replacement));
+  Check(HudMayWrite(5001) && engine.State==AntiAfkState.Off);
+ }
 });
 
 Console.WriteLine(passed + " policy test groups passed.");

@@ -5,6 +5,8 @@ public class HubSettings
     public int Version { get; set; } = 1;
     public int Theme { get; set; } = 1;
     public HubPage Page { get; set; }
+    public bool AntiAfkEnabled { get; set; } // New installs and upgrades default OFF.
+    public bool AntiAfkPreferenceImported { get; set; }
     public bool ReducedMotion { get; set; }
     public bool Collapsed { get; set; }
     public float ExpandedWidth { get; set; } = 860;
