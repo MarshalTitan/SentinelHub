@@ -2,7 +2,7 @@
 
 Optional ecosystem control center for MarshalTitan Sentinel plugins. Open with `/shub`; export sanitized diagnostics with `/shub export`.
 
-Hub is never required by SRankSentinel, PvPSentinel, SentinelHUD, ClassySentinel, SentinelProfiles or SentinelRelay. It does not enable plugins, apply profiles or move the player. The retired Sentinel Hunts test component is no longer listed in Hub.
+HUD visuals and camera, SRankSentinel, PvPSentinel, ClassySentinel, SentinelProfiles and SentinelRelay work independently of Hub. Anti-AFK and Quest Convenience are owned by Hub after HUD 0.8.5.0. It does not enable plugins, apply profiles or move the player. The retired Sentinel Hunts test component is no longer listed in Hub.
 
 ## Control center and utilities
 
@@ -12,11 +12,11 @@ Consumer settings use a fixed source-verified command allowlist; some consumers 
 
 Profiles selected/last-applied/drift status, Relay connectivity, consumer faults and update availability remain **unknown/not queried**. Consumers remain authoritative.
 
-**0.2.0.0 adds default-OFF Anti-AFK.** Hub uses the existing HUD timer behavior: one synchronous check every 10 seconds, resetting finite inactivity timers above 30 seconds. It generates no input, movement or chat. Compatible loaded HUD 0.8.4.6+ must acknowledge ownership before Hub writes; installed legacy/unknown HUD blocks Hub. Optional versioned primitive IPC prevents duplicate owners and preserves HUD's original preference. Import copies that single preference only on explicit click. Disabling/unloading Hub returns control to HUD.
+**0.2.0.0 adds default-OFF Anti-AFK.** Hub uses the existing HUD timer behavior: one synchronous check every 10 seconds, resetting finite inactivity timers above 30 seconds. It generates no input, movement or chat. Compatible loaded HUD 0.8.4.6+ must acknowledge ownership before Hub writes; installed legacy/unknown HUD blocks Hub. Optional versioned primitive IPC prevents duplicate owners and preserves HUD's original preference. Import copies that single preference only on explicit click. HUD 0.8.4.6/0.8.4.7 can resume their saved preferences when Hub stops; HUD 0.8.5.0 has no fallback engine and leaves actions off.
 
-**0.3.0.0 adds default-OFF Quest Convenience**, with explicit import, preserved ordinary-dialogue/manual-choice behavior, contextual cutscene skipping and reward selection. Compatible loaded HUD 0.8.4.7+ must acknowledge ownership. HUD retains its original quest preferences/engine for rollback. See [Quest acceptance](docs/QUEST_CONVENIENCE_MIGRATION.md).
+**0.3.0.0 adds default-OFF Quest Convenience**, with explicit import, preserved ordinary-dialogue/manual-choice behavior, contextual cutscene skipping and reward selection. Compatible loaded HUD 0.8.4.7+ must acknowledge ownership. HUD retains its original quest preferences. Its fallback engine was removed in 0.8.5.0 after scoped replacement acceptance. See [Quest acceptance](docs/QUEST_CONVENIENCE_MIGRATION.md).
 
-Latency/Weaving remains inactive. HUD utility cleanup is separate from replacement proving. See [migration acceptance and rollback](docs/ANTI_AFK_MIGRATION.md).
+**0.3.1.0** clarifies compatibility with HUD **0.8.5.0**: disabling Hub turns these utility actions off. Update Hub first, then HUD. Existing Hub opt-ins and native algorithms are unchanged. See [cleanup acceptance and rollback](docs/UTILITY_CLEANUP.md). Latency/Weaving remains inactive.
 
 ## Dependencies and build
 

@@ -1,6 +1,6 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
-    <Version>0.3.0.0</Version><Author>MTitan</Author><Name>Sentinel Hub</Name>
+    <Version>0.3.1.0</Version><Author>MTitan</Author><Name>Sentinel Hub</Name>
     <Punchline>Optional Sentinel ecosystem control center.</Punchline>
     <Description>Inspect Sentinel plugins, dependencies and sanitized diagnostics, and open their settings. Other Sentinel plugins work independently of Hub.</Description>
     <RepoUrl>https://github.com/MarshalTitan/SentinelHub</RepoUrl>
