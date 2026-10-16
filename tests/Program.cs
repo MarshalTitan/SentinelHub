@@ -78,7 +78,7 @@ Test("appearance, page and expanded size persist without utility flags", () => {
  var json = JsonSerializer.Serialize(c);
  var result = JsonSerializer.Deserialize<HubSettings>(json)!; result.Normalize();
  Check(JsonSerializer.Serialize(result) == json);
- Check(!result.AntiAfkEnabled && !result.AntiAfkPreferenceImported && !json.Contains("Latency"));
+ Check(!result.AntiAfkEnabled && !result.AntiAfkPreferenceImported && result.LatencyMode == LatencyMode.Off);
 });
 Test("faults are bounded and throttled by typed reason", () => {
  var journal = new FaultJournal();
@@ -99,8 +99,8 @@ Test("diagnostics exclude arbitrary names, paths, secrets and private inventory"
  Check(doc.RootElement.GetProperty("Schema").GetString() == "sentinel.hub.v1");
  Check(doc.RootElement.GetProperty("Profiles").GetProperty("Status").GetString() == "Unknown");
 });
-Test("utility enable boundaries: no engines or active configuration", () => {
- Check(UtilityRegistry.Planned.Length == 1);
+Test("remaining utility plans are inactive and compensation is explicit", () => {
+ Check(UtilityRegistry.Planned.Length == 0);
  Check(UtilityRegistry.Planned.All(u => u.Status == "Planned / inactive"));
  Check(typeof(HubSettings).GetProperties().All(p => !p.Name.Contains("Compensation")));
 });
@@ -330,4 +330,156 @@ Test("quick-open checks the same live instance and refuses a loaded dev substitu
  live=live with{Restricted=false,Loaded=false};Check(!router.Open("SRankSentinel")&&calls==1);
 });
 
+Test("Latency upgrades default Off and normalization preserves accepted utilities and layout", () => {
+ var fresh=new HubSettings(); Check(fresh.LatencyMode==LatencyMode.Off);
+ var old=JsonSerializer.Deserialize<HubSettings>("{\"Theme\":0,\"AntiAfkEnabled\":true,\"QuestDialogue\":true,\"ExpandedWidth\":900}")!;
+ old.Normalize();Check(old.LatencyMode==LatencyMode.Off&&old.AntiAfkEnabled&&old.QuestDialogue&&old.Theme==0&&old.ExpandedWidth==900);
+ old.LatencyMode=(LatencyMode)99;old.Normalize();Check(old.LatencyMode==LatencyMode.Off);
+ old.LatencyMode=LatencyMode.Measure;old.ImportQuestPreferences(15);Check(old.LatencyMode==LatencyMode.Measure);
+ var round=JsonSerializer.Deserialize<HubSettings>(JsonSerializer.Serialize(old))!;round.Normalize();Check(round.LatencyMode==LatencyMode.Measure);
+});
+Test("Latency action eligibility excludes cast-time and special categories", () => {
+ for(uint category=0;category<30;category++)for(int cast=0;cast<10;cast++)
+  Check(LatencyActionPolicy.IsEligible(category,cast)==(cast==0&&(category==2||category==3||category==4)));
+ Check(!LatencyActionPolicy.IsEligible(4,-1));
+});
+Test("Latency compensation lattice preserves intrinsic lock, buffer, cap and measure-only behavior", () => {
+ foreach(var mode in Enum.GetValues<LatencyMode>())
+ foreach(var wire in new[]{0.5f,0.6f,0.7f,0.75f,0.8f})
+ for(int delay=1;delay<500;delay++){
+  var session=new LatencySession(mode);var tracked=session.Track(1,100,0.5f,1000);
+  Check(tracked==(mode!=LatencyMode.Off));
+  var d=session.Receive(1,100,wire,0.5f-delay/1000f,wire,1000+delay);
+  Check(d.Write==(mode==LatencyMode.Compensate&&delay>40));
+  if(mode==LatencyMode.Off){Check(session.View.Samples==0);continue;}
+  Check(session.View.Samples==1&&session.View.Adjustments==0);
+  Check(float.IsFinite(d.RemainingLock)&&d.RemainingLock>=0.04f&&d.RemainingLock<=wire);
+  Check(wire-d.RemainingLock<=0.25001f);
+  Check(d.RemainingLock+delay/1000f+0.00001f>=wire+Math.Min(0.04f,delay/1000f));
+  session.RecordApplied();session.RecordApplied();
+  Check(session.View.Adjustments==(d.Write?1:0));
+  Check(session.View.TotalReductionMs>=0&&session.View.TotalReductionMs<=250.01);
+ }
+});
+Test("Latency correlates only latest sequence/action, rejects replay and handles sequence wrap", () => {
+ var s=new LatencySession(LatencyMode.Compensate);Check(s.Track(ushort.MaxValue,100,.5f,0));
+ Check(!s.Receive(1,100,.6f,.4f,.6f,100).Write&&s.Matches(ushort.MaxValue,100));
+ Check(!s.Receive(ushort.MaxValue,101,.6f,.4f,.6f,100).Write&&s.Matches(ushort.MaxValue,100));
+ Check(s.Track(1,200,.5f,20));
+ Check(!s.Receive(ushort.MaxValue,100,.6f,.4f,.6f,100).Write&&s.Matches(1,200));
+ Check(s.Receive(1,200,.6f,.4f,.6f,120).Write);s.RecordApplied();
+ Check(!s.Receive(1,200,.6f,.4f,.6f,121).Write&&s.View.Adjustments==1);
+ Check(!s.Track(0,200,.5f,0)&&!s.Track(2,0,.5f,0));
+});
+Test("Latency expires pending work and rejects invalid, long and inconsistent samples", () => {
+ foreach(var delay in new[]{-1,0,501,5000}){
+  var s=new LatencySession(LatencyMode.Compensate);s.Track(1,100,.5f,1000);
+  Check(!s.Receive(1,100,.6f,.4f,.6f,1000+delay).Write&&!s.Matches(1,100));
+ }
+ foreach(var wire in new[]{float.NaN,float.PositiveInfinity,float.NegativeInfinity,-1f,0f,.1f,.49f,.81f,2f,10f}){
+  var s=new LatencySession(LatencyMode.Compensate);s.Track(1,100,.5f,0);
+  Check(!s.Receive(1,100,wire,.4f,wire,100).Write&&s.View.Adjustments==0);
+ }
+ foreach(var before in new[]{float.NaN,float.PositiveInfinity,-1f,0f,.6f,.1f}){
+  var s=new LatencySession(LatencyMode.Compensate);s.Track(1,100,.5f,0);
+  Check(!s.Receive(1,100,.6f,before,.6f,100).Write);
+ }
+ var wrongPrediction=new LatencySession(LatencyMode.Compensate);
+ Check(!wrongPrediction.Track(1,100,.54f,0));
+});
+Test("Latency unexpected header/client locks latch contention without writing", () => {
+ foreach(var pair in new[]{(.6f,.55f),(.605f,.605f)}){
+  var s=new LatencySession(LatencyMode.Compensate);s.Track(1,100,.5f,0);
+  Check(!s.Receive(1,100,pair.Item1,.4f,pair.Item2,100).Write&&s.View.State==LatencyState.Contested);
+  Check(!s.Track(2,100,.5f,101)&&s.View.Adjustments==0);
+ }
+ var stopped=new LatencySession(LatencyMode.Compensate);stopped.Track(1,100,.5f,0);
+ stopped.Receive(1,100,.6f,.4f,.6f,100);stopped.Stop(LatencyState.Off);stopped.RecordApplied();
+ Check(stopped.View.Adjustments==0);
+});
+Test("Latency lifecycle creates no hooks Off or while ineligible and tears down on every boundary", () => {
+ var all=new List<FakeLatencyRuntime>();using var life=new LatencyLifecycle(mode=>{var r=new FakeLatencyRuntime(mode);all.Add(r);return r;});
+ life.Tick(LatencyMode.Off,LatencyState.Compensating);
+ foreach(var state in Enum.GetValues<LatencyState>().Where(s=>s!=LatencyState.Compensating))
+  life.Tick(LatencyMode.Measure,state);
+ Check(all.Count==0);
+ life.Tick(LatencyMode.Measure,LatencyState.Compensating);Check(all.Count==1&&life.View.State==LatencyState.Measuring);
+ life.Tick(LatencyMode.Compensate,LatencyState.Compensating);Check(all.Count==2&&all[0].Disposed);
+ foreach(var state in new[]{LatencyState.Paused,LatencyState.WaitingForLogin,LatencyState.NoClippyConflict,LatencyState.XivAlexanderConflict,LatencyState.ConflictCheckUnavailable}){
+  life.Tick(LatencyMode.Compensate,state);Check(all.Last().Disposed&&life.View.State==state);
+  life.Tick(LatencyMode.Compensate,LatencyState.Compensating);Check(!all.Last().Disposed);
+ }
+ life.Tick(LatencyMode.Off,LatencyState.Compensating);Check(all.Last().Disposed&&life.View.State==LatencyState.Off);
+ var count=all.Count;life.Tick((LatencyMode)999,LatencyState.Compensating);Check(all.Count==count);
+ life.Dispose();life.Tick(LatencyMode.Compensate,LatencyState.Compensating);Check(all.Count==count);
+});
+Test("Latency contention/factory faults require Off before a bounded retry", () => {
+ var all=new List<FakeLatencyRuntime>();using var life=new LatencyLifecycle(mode=>{var r=new FakeLatencyRuntime(mode);all.Add(r);return r;});
+ life.Tick(LatencyMode.Compensate,LatencyState.Compensating);all[0].View=new(LatencyState.Contested);
+ life.Tick(LatencyMode.Compensate,LatencyState.Compensating);Check(all[0].Disposed&&life.View.State==LatencyState.Contested);
+ life.Tick(LatencyMode.Measure,LatencyState.Compensating);Check(all.Count==1);
+ life.Tick(LatencyMode.Off,LatencyState.Compensating);life.Tick(LatencyMode.Measure,LatencyState.Compensating);Check(all.Count==2);
+ int attempts=0;using var failing=new LatencyLifecycle(_=>{attempts++;throw new Exception("PRIVATE");});
+ for(int i=0;i<20;i++)failing.Tick(LatencyMode.Compensate,LatencyState.Compensating);
+ Check(attempts==1&&failing.View.State==LatencyState.UnsupportedClient);
+ failing.Tick(LatencyMode.Off,LatencyState.Compensating);failing.Tick(LatencyMode.Compensate,LatencyState.Compensating);Check(attempts==2);
+});
+Test("Latency native transaction forwards Original exactly once even when observation fails", () => {
+ foreach(var result in new[]{false,true})
+ foreach(var before in new[]{false,true})
+ foreach(var after in new[]{false,true})
+ foreach(var fault in new[]{false,true}){
+  var trace=new LatencyCallTrace{Return=result,ThrowBefore=before,ThrowAfter=after,ThrowFault=fault};
+  var call=new FakeLatencyCall{Trace=trace};
+  Check(LatencyInterception.Invoke(ref call)==result&&trace.Originals==1);
+  Check(trace.Before==1&&trace.After==(before?0:1));
+  Check(trace.Faults==(before||after?1:0));
+ }
+ var original=new LatencyCallTrace{ThrowOriginal=true};var originalCall=new FakeLatencyCall{Trace=original};
+ try{LatencyInterception.Invoke(ref originalCall);throw new Exception("Expected original exception");}
+ catch(InvalidOperationException){Check(original.Originals==1&&original.After==0);}
+});
+Test("Latency detects loaded dev/live NoClippy and named or renamed Alexander modules", () => {
+ Check(LatencyConflictPolicy.IsNoClippy("NoClippy",true)&&LatencyConflictPolicy.IsNoClippy("noclippyPlus",true));
+ Check(!LatencyConflictPolicy.IsNoClippy("NoClippy",false)&&!LatencyConflictPolicy.IsNoClippy("OtherPlugin",true));
+ foreach(var name in new[]{"XivAlexander64.dll","XivAlexander32.dll","xivalexanderloader64.dll","XivAlexanderLoader32.dll"})
+  Check(LatencyConflictPolicy.IsAlexander(name,false,false,false));
+ Check(LatencyConflictPolicy.IsAlexander("renamed.dll",true,false,false));
+ Check(LatencyConflictPolicy.IsAlexander("d3d11.dll",false,true,true));
+ Check(!LatencyConflictPolicy.IsAlexander("d3d11.dll",false,false,false)&&!LatencyConflictPolicy.IsAlexander("other.dll",false,true,false));
+});
+Test("Latency export allows bounded numbers/state without native or action identifiers", () => {
+ var json=DiagnosticExport.Serialize(HubSnapshot.Unknown,[],latency:new(LatencyState.Compensating,3,2,120,100,80,160));
+ using var document=JsonDocument.Parse(json);
+ Check(document.RootElement.GetProperty("Latency").GetProperty("State").GetString()=="Compensating");
+ Check(!json.Contains("SourceSequence")&&!json.Contains("ActionId")&&!json.Contains("LatencyMode")&&!json.Contains("ModuleName"));
+ Check(Version.TryParse(document.RootElement.GetProperty("HubVersion").GetString(),out _));
+ var invalid=DiagnosticExport.Serialize(HubSnapshot.Unknown,[],latency:new((LatencyState)999,-1,-2,double.NaN,double.PositiveInfinity,-5,double.NegativeInfinity));
+ using var invalidDocument=JsonDocument.Parse(invalid);
+ var data=invalidDocument.RootElement.GetProperty("Latency");
+ Check(data.GetProperty("State").GetString()=="Unknown"&&data.GetProperty("Samples").GetInt64()==0);
+ Check(data.GetProperty("LastResponseMs").GetDouble()==0&&!invalid.Contains("NaN")&&!invalid.Contains("Infinity"));
+});
+
 Console.WriteLine(passed + " policy test groups passed.");
+
+sealed class FakeLatencyRuntime : ILatencyRuntime
+{
+ public LatencyView View { get; set; }
+ public bool Disposed { get; private set; }
+ public FakeLatencyRuntime(LatencyMode mode) { View=new(mode==LatencyMode.Measure?LatencyState.Measuring:LatencyState.Compensating); }
+ public void Dispose(){Disposed=true;}
+}
+sealed class LatencyCallTrace
+{
+ public int Before,Originals,After,Faults;
+ public bool Return,ThrowBefore,ThrowAfter,ThrowOriginal,ThrowFault;
+}
+struct FakeLatencyCall : ILatencyInterceptedCall
+{
+ public LatencyCallTrace Trace;
+ public void Before(){Trace.Before++;if(Trace.ThrowBefore)throw new Exception("observer");}
+ public bool Original(){Trace.Originals++;if(Trace.ThrowOriginal)throw new InvalidOperationException("original");return Trace.Return;}
+ public void After(bool result){Trace.After++;if(Trace.ThrowAfter)throw new Exception("observer");}
+ public void Fault(){Trace.Faults++;if(Trace.ThrowFault)throw new Exception("fault observer");}
+}

@@ -17,6 +17,11 @@ try {
  if ($m.InternalName -ne 'SentinelHub' -or $m.AssemblyVersion -ne $ExpectedVersion -or $m.DalamudApiLevel -ne 15) { throw 'Manifest identity/version/API mismatch' }
  if ($m.IconUrl -ne 'https://raw.githubusercontent.com/MarshalTitan/SentinelHub/main/assets/icon.png') { throw 'Installed manifest is missing its correct IconUrl' }
  if ($m.RepoUrl -ne 'https://github.com/MarshalTitan/SentinelHub') { throw 'Installed manifest RepoUrl mismatch' }
+ [xml]$project = Get-Content SentinelHub.csproj -Raw
+ $template = Get-Content SentinelHub.json -Raw | ConvertFrom-Json
+ $catalog = @(Get-Content repo.json -Raw | ConvertFrom-Json)[0]
+ $description = [string]$project.Project.PropertyGroup.Description
+ if ([string]::IsNullOrWhiteSpace($description) -or $m.Description -cne $description -or $template.Description -cne $description -or $catalog.Description -cne $description) { throw 'Project, template, child catalog and packaged descriptions must agree' }
  foreach ($consumer in @('SRankSentinel','PvPSentinel','SentinelHUD','ClassySentinel','SentinelProfiles','SentinelRelay','SentinelHunts')) {
   if ($names -contains "$consumer.dll") { throw 'Hub must not bundle or require consumer assemblies' }
  }

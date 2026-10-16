@@ -16,13 +16,21 @@ Profiles selected/last-applied/drift status, Relay connectivity, consumer faults
 
 **0.3.0.0 adds default-OFF Quest Convenience**, with explicit import, preserved ordinary-dialogue/manual-choice behavior, contextual cutscene skipping and reward selection. Compatible loaded HUD 0.8.4.7+ must acknowledge ownership. HUD retains its original quest preferences. Its fallback engine was removed in 0.8.5.0 after scoped replacement acceptance. See [Quest acceptance](docs/QUEST_CONVENIENCE_MIGRATION.md).
 
-**0.3.1.0** clarifies compatibility with HUD **0.8.5.0**: disabling Hub turns these utility actions off. Update Hub first, then HUD. Existing Hub opt-ins and native algorithms are unchanged. See [cleanup acceptance and rollback](docs/UTILITY_CLEANUP.md). Latency/Weaving remains inactive.
+**0.3.1.0** clarifies compatibility with HUD **0.8.5.0**: disabling Hub turns these utility actions off. Update Hub first, then HUD. Existing Hub opt-ins and native algorithms are unchanged. See [cleanup acceptance and rollback](docs/UTILITY_CLEANUP.md). Latency/Weaving follows as the default-OFF 0.4.0.0 module below.
 
 ## Live and development installations — 0.3.1.1
 
 Dashboard and Plugins prefer the non-development installation when Dalamud exposes both copies of the same plugin, even if the live copy is disabled. Version and loaded/restricted state come from that same copy; version uses Dalamud's effective installed version. Open settings checks that chosen copy again. A development-only installation is labeled explicitly. Versions are not pinned to catalog values.
 
 The user reported PASS for the Hub 0.3.1.0 / HUD 0.8.5.1 cleanup checklist, with this separate SRank inventory correction requested. Utility runtime/settings, HUD and SRank gameplay are unchanged. [Focused check](docs/LIVE_DEV_DISCOVERY.md).
+
+## Latency / Weaving — 0.4.0.0
+
+Default **Off**; optional **Measure only** and **Compensate** modes. Independently implemented, bounded correction of own instant-action response delay with a fixed 40 ms buffer and 250 ms maximum correction. Typed hooks forward original calls exactly once. Cast-time actions/long locks, packets, cooldowns and action selection are unchanged.
+
+Known loaded NoClippy and XivAlexander runtime/loader detection blocks this module, including identifying exports in renamed proxies. Unknown native checks pause it. Off, logout, death, transition, mode/territory change or unload clears pending work and releases hooks. Native setup/contention faults require Off before retry. Only typed state and bounded numerical measurements are exported; no action/actor IDs, module paths or packet text.
+
+[In-game proving procedure, limits and rollback](docs/LATENCY_WEAVING.md). Actual game-hook correctness and felt weaving improvement remain unverified until that gate passes. Other NoClippy features such as status prediction are outside this module.
 
 ## Dependencies and build
 

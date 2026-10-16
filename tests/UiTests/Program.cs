@@ -120,6 +120,22 @@ internal static class Program
                     Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Quest state overflow");
                     Check(content.ScrollMax.Y>0,"Quest page cannot scroll to all controls");
                 }
+                foreach(var theme in new[]{0,1})
+                foreach(var scale in new[]{1f,1.5f,2f})
+                foreach(var state in Enum.GetValues<LatencyState>())
+                foreach(var mode in Enum.GetValues<LatencyMode>())
+                {
+                    var settings=new HubSettings{Theme=theme,Page=HubPage.Utilities,LatencyMode=mode};
+                    using var latency=new MainWindow(settings,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>true,()=>{},()=>true,
+                        ()=>font,latencyView:()=>new(state,123,100,170,160,130,13000));
+                    var saved=JsonSerializer.Serialize(settings);
+                    for(var i=0;i<12;i++)Frame(latency,new(480,500),scale);
+                    var content=theme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
+                    Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Latency state overflow");
+                    Check(content.ScrollMax.Y>0,"Latency controls cannot be reached by scrolling");
+                    Check(JsonSerializer.Serialize(settings)==saved,"Latency drawing changed opt-ins");
+                }
+                Console.WriteLine("PASS 198 native Latency mode/state/theme/scale cases.");
                 Console.WriteLine("PASS 288 native Quest state/import/mode/theme/scale cases.");
                 Console.WriteLine("PASS 42 native Anti-AFK state/theme/scale cases.");
                 Console.WriteLine($"PASS {pages} native rendered page/state/width/theme/scale cases; collapse/restore and balanced stacks.");

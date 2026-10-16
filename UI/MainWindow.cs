@@ -25,6 +25,7 @@ public sealed class MainWindow : Window, IDisposable
     private readonly Func<ImFontPtr> iconFont;
     private readonly Func<AntiAfkView> antiAfkView;
     private readonly Func<QuestConvenienceView> questView;
+    private readonly Func<LatencyView> latencyView;
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
     private readonly SentinelModernNavItem[] navigation;
@@ -34,10 +35,11 @@ public sealed class MainWindow : Window, IDisposable
     public string Notice { get; set; } = "";
     public MainWindow(HubSettings config, Func<HubSnapshot> snapshot, FaultJournal faults,
         Action save, Action refresh, Func<string, bool, bool> open, Action export,
-        Func<bool> systemReducedMotion, Func<ImFontPtr>? iconFont = null, Func<AntiAfkView>? antiAfkView = null, Func<QuestConvenienceView>? questView = null) : base(WindowId)
+        Func<bool> systemReducedMotion, Func<ImFontPtr>? iconFont = null, Func<AntiAfkView>? antiAfkView = null, Func<QuestConvenienceView>? questView = null, Func<LatencyView>? latencyView = null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.questView = questView ?? (() => QuestConvenienceView.Off);
+        this.latencyView = latencyView ?? (() => LatencyView.Off);
         this.config = config; this.snapshot = snapshot; this.faults = faults;
         this.save = save; this.refresh = refresh; this.open = open; this.export = export;
         this.systemReducedMotion = systemReducedMotion;
@@ -215,9 +217,26 @@ public sealed class MainWindow : Window, IDisposable
         ImGui.Separator(); ImGui.Spacing();
         DrawQuestConvenience();
         ImGui.Separator(); ImGui.Spacing();
-        ImGui.TextWrapped("Latency / Weaving remains a future utility.");
+        DrawLatency();
         foreach (var p in UtilityRegistry.Planned)
             Card(p.Name, "PLANNED", SentinelModernPillTone.Neutral, [p.Name, p.Status, p.NextGate]);
+    }
+    private void DrawLatency()
+    {
+        var view = latencyView();
+        ImGui.TextWrapped("Latency / Weaving");
+        var mode = (int)config.LatencyMode;
+        ImGui.SetNextItemWidth(-1);
+        if (ImGui.Combo("##latency-mode", ref mode, new[] { "Off", "Measure only", "Compensate" }, 3))
+        { config.LatencyMode = (LatencyMode)mode; save(); }
+        ImGui.TextWrapped(view.Description);
+        ImGui.TextWrapped("Reduces added response delay for your own instant spells, weaponskills and abilities. Fixed 40 ms response buffer and maximum 250 ms correction per action.");
+        ImGui.TextWrapped("Measure only observes without adjusting. Cast-time actions and long/special locks are excluded. Keep other animation-lock tools disabled; detected NoClippy or XivAlexander blocks this module.");
+        ImGui.TextWrapped("Samples / applied adjustments: " + view.Samples + " / " + view.Adjustments);
+        ImGui.TextWrapped(view.Samples == 0 ? "No eligible action response measured yet." :
+            $"Action response: {view.LastResponseMs:0} ms last / {view.AverageResponseMs:0} ms average");
+        ImGui.TextWrapped($"Last calculated correction: {view.LastReductionMs:0} ms; applied total: {view.TotalReductionMs:0} ms");
+        ImGui.TextWrapped("Measurements include server and frame delay; they are not network ping. Counts reset when an active mode restarts. Set Off before retrying a stopped module.");
     }
     private void DrawQuestConvenience()
     {
@@ -286,7 +305,7 @@ public sealed class MainWindow : Window, IDisposable
     private void DrawAbout()
     {
         Card("about", "MVP", SentinelModernPillTone.Accent,
-            ["Sentinel Hub 0.3.1.1", "Optional Sentinel ecosystem control center.",
+            ["Sentinel Hub 0.4.0.0", "Optional Sentinel ecosystem control center.",
              "Core UI 0.4.1, bundled with Hub. No separately installed Core plugin.",
              "Other Sentinel plugins work normally when Hub is disabled or absent.",
              "Camera, HUD rendering, hunt policy, Frontline strategy, gear switching, Profiles and Relay remain owned by their existing plugins.",

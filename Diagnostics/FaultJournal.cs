@@ -1,5 +1,5 @@
 namespace SentinelHub.Diagnostics;
-public enum FaultCode { DiscoveryUnavailable, DependencyStatusUnavailable, OpenSettingsUnavailable, ExportUnavailable, ConfigurationSaveUnavailable, AntiAfkOwnershipUnavailable, QuestConvenienceOwnershipUnavailable }
+public enum FaultCode { DiscoveryUnavailable, DependencyStatusUnavailable, OpenSettingsUnavailable, ExportUnavailable, ConfigurationSaveUnavailable, AntiAfkOwnershipUnavailable, QuestConvenienceOwnershipUnavailable, LatencyUnavailable }
 public sealed record Fault(DateTimeOffset At, FaultCode Code);
 public sealed class FaultJournal
 {
