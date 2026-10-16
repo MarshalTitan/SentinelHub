@@ -15,3 +15,13 @@ Inspected live sources 2026-10-16 UTC: Sentinel, SentinelCore, SRankSentinel, Pv
 - Failure isolation: discovery failure invalidates current observations; individual dependency IPC exceptions become unavailable; save/export/command failures remain local typed faults.
 
 Hub does not bundle consumer assemblies. The optional HUD compatibility bridge is published separately; Hub absence preserves HUD behavior. Anti-AFK alone accesses the native inactivity timer module. No game hooks, action invocation, chat sending, Quest Convenience migration or latency compensation is introduced.
+
+## Quest Convenience transition — 0.3
+
+The user reported PASS for the latest four-step Anti-AFK procedure (active/managed, off returns HUD, Hub reload, idle beyond configured interval). This is scoped human evidence on the reported current pair, not blanket certification of unreported scenarios. Anti-AFK is unchanged.
+
+Quest Convenience is default-OFF with its own request, lease and engine. HUD 0.8.4.7's optional v1 primitive IPC exposes a packed public preference integer and token-scoped claim/release. It retains its engine/schema/preferences and clears pending cutscene/reward state synchronously before acknowledging; per-update request guarding covers hot reload. Old Hub 0.2 never requests quest ownership. The two utility leases are independent.
+
+Hub copies the accepted native service/policies from HUD 758068f68a76d72660fb6e2740f22d592130fdd7 with namespace/config adapter changes only; CI compares the complete text against that pinned source. The base-addon/live-ID submarine fix, prompt ownership/timeout and reward policy/fallback semantics remain intact. A pure execution session clears pending work on ownership loss, option changes, logout/unload and native exceptions, with a one-second fault retry bound. No tasks or stale native continuations exist. The native DiagnosticBuffer is bounded/local and excluded from export; exported quest data is only a typed module state.
+
+Import is explicit and copies only three public quest preferences, without modifying saved HUD values or Anti-AFK. Module/master OFF stops Hub before lease release. Native acceptance remains pending under QUEST_CONVENIENCE_MIGRATION.md; no HUD cleanup, latency or other consumer migration is included.

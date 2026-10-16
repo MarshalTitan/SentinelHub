@@ -14,7 +14,9 @@ Profiles selected/last-applied/drift status, Relay connectivity, consumer faults
 
 **0.2.0.0 adds default-OFF Anti-AFK.** Hub uses the existing HUD timer behavior: one synchronous check every 10 seconds, resetting finite inactivity timers above 30 seconds. It generates no input, movement or chat. Compatible loaded HUD 0.8.4.6+ must acknowledge ownership before Hub writes; installed legacy/unknown HUD blocks Hub. Optional versioned primitive IPC prevents duplicate owners and preserves HUD's original preference. Import copies that single preference only on explicit click. Disabling/unloading Hub returns control to HUD.
 
-Quest Convenience and Latency/Weaving remain inactive plans. HUD retains its utility implementations until separate supervised replacement acceptance. See [migration acceptance and rollback](docs/ANTI_AFK_MIGRATION.md).
+**0.3.0.0 adds default-OFF Quest Convenience**, with explicit import, preserved ordinary-dialogue/manual-choice behavior, contextual cutscene skipping and reward selection. Compatible loaded HUD 0.8.4.7+ must acknowledge ownership. HUD retains its original quest preferences/engine for rollback. See [Quest acceptance](docs/QUEST_CONVENIENCE_MIGRATION.md).
+
+Latency/Weaving remains inactive. HUD utility cleanup is separate from replacement proving. See [migration acceptance and rollback](docs/ANTI_AFK_MIGRATION.md).
 
 ## Dependencies and build
 

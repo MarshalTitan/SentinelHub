@@ -8,6 +8,7 @@ using SentinelHub.Configuration;
 using SentinelHub.Diagnostics;
 using SentinelHub.Ecosystem;
 using SentinelHub.Utilities;
+using SentinelHub.Utilities.Quest;
 namespace SentinelHub.UI;
 public sealed class MainWindow : Window, IDisposable
 {
@@ -23,6 +24,7 @@ public sealed class MainWindow : Window, IDisposable
     private readonly Func<bool> systemReducedMotion;
     private readonly Func<ImFontPtr> iconFont;
     private readonly Func<AntiAfkView> antiAfkView;
+    private readonly Func<QuestConvenienceView> questView;
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
     private readonly SentinelModernNavItem[] navigation;
@@ -32,9 +34,10 @@ public sealed class MainWindow : Window, IDisposable
     public string Notice { get; set; } = "";
     public MainWindow(HubSettings config, Func<HubSnapshot> snapshot, FaultJournal faults,
         Action save, Action refresh, Func<string, bool, bool> open, Action export,
-        Func<bool> systemReducedMotion, Func<ImFontPtr>? iconFont = null, Func<AntiAfkView>? antiAfkView = null) : base(WindowId)
+        Func<bool> systemReducedMotion, Func<ImFontPtr>? iconFont = null, Func<AntiAfkView>? antiAfkView = null, Func<QuestConvenienceView>? questView = null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
+        this.questView = questView ?? (() => QuestConvenienceView.Off);
         this.config = config; this.snapshot = snapshot; this.faults = faults;
         this.save = save; this.refresh = refresh; this.open = open; this.export = export;
         this.systemReducedMotion = systemReducedMotion;
@@ -208,10 +211,47 @@ public sealed class MainWindow : Window, IDisposable
         ImGui.TextWrapped(view.HudPreference is { } saved ? "Saved HUD preference: " + (saved ? "On" : "Off") : "HUD preference unavailable; no settings were imported.");
         ImGui.TextWrapped("Successful timer checks this session: " + view.Cycles);
         ImGui.Separator(); ImGui.Spacing();
-        ImGui.TextWrapped("Later utility migrations remain inactive. Quest Convenience stays in HUD.");
+        DrawQuestConvenience();
+        ImGui.Separator(); ImGui.Spacing();
+        ImGui.TextWrapped("Latency / Weaving remains a future utility.");
         foreach (var p in UtilityRegistry.Planned)
             Card(p.Name, "PLANNED", SentinelModernPillTone.Neutral, [p.Name, p.Status, p.NextGate]);
     }
+    private void DrawQuestConvenience()
+    {
+        var view = questView();
+        ImGui.TextWrapped("Quest Convenience");
+        ImGui.TextWrapped("Default Off. Hub can advance ordinary dialogue, skip cutscenes and select quest rewards. Your dialogue choices remain manual.");
+        var enabled = config.QuestConvenienceEnabled;
+        if (QuestToggle("quest-enable", "Enable Quest Convenience", ref enabled)) { config.QuestConvenienceEnabled = enabled; save(); }
+        ImGui.TextWrapped(view.Description);
+        var dialogue = config.QuestDialogue;
+        if (QuestToggle("quest-dialogue", "Skip ordinary dialogue", ref dialogue)) { config.QuestDialogue = dialogue; save(); }
+        var cutscenes = config.QuestCutscenes;
+        if (QuestToggle("quest-cutscenes", "Skip cutscenes", ref cutscenes)) { config.QuestCutscenes = cutscenes; save(); }
+        ImGui.TextWrapped("Reward selection");
+        var reward = (int)config.QuestRewardMode;
+        ImGui.SetNextItemWidth(-1);
+        if (ImGui.Combo("##quest-reward-mode", ref reward,
+            new[] { "Manual", "First reward", "Current job (otherwise first)", "Allagan piece (otherwise first)" }, 4))
+        { config.QuestRewardMode = (QuestRewardSelectionMode)reward; save(); }
+        ImGui.TextWrapped("Automatic reward modes select a choose-one reward and press Complete when ready. Guaranteed rewards are left unchanged.");
+        ImGui.BeginDisabled(view.HudPreferences is null);
+        if (Button("Import HUD quest preferences") && view.HudPreferences is { } packed)
+        {
+            config.ImportQuestPreferences(packed);
+            save();
+            Notice = "Copied HUD's dialogue, cutscene and reward preferences. The original HUD settings are retained.";
+        }
+        ImGui.EndDisabled();
+        ImGui.TextWrapped("While enabled, Hub owns all three features, including those set Off or Manual. Disable this module or Hub to restore HUD's saved preferences.");
+        ImGui.TextWrapped("Dialogue: " + view.Dialogue);
+        ImGui.TextWrapped("Cutscenes: " + view.Cutscene);
+        ImGui.TextWrapped("Rewards: " + view.Reward);
+    }
+    private bool QuestToggle(string id, string label, ref bool value) => modern
+        ? SentinelModernSwitch.Draw(id, label, ref value, shell.Motion, ImGuiHelpers.GlobalScale)
+        : ImGui.Checkbox(label, ref value);
     private void DrawDiagnostics()
     {
         ImGui.TextWrapped("Exports contain only known component IDs, numeric versions, installation/load observations, dependency responses and bounded Hub fault codes.");

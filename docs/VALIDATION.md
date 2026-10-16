@@ -16,3 +16,9 @@ The user reported the **0.1.0.0 dashboard looks good**, authorized retiring Sent
 **FFXIV Anti-AFK acceptance pending.** Native rendering/policy tests do not establish real timer behavior or IPC/plugin lifecycle. Follow [the supervised procedure](ANTI_AFK_MIGRATION.md). HUD cleanup remains gated; disabling Hub returns to HUD's retained preference. Public release and catalog verification must pass before the new versions are advertised as available.
 
 Historical MVP validation/publication: [0.1.0.0 release run](https://github.com/MarshalTitan/SentinelHub/actions/runs/38846452080), 21 policy groups and 480 native UI cases; public ZIP SHA256 `7ee080adf3cec91e92f4b106aa0720ddf925a023ddb1a258da74a177ed0c0690`.
+
+## Quest Convenience candidate — 0.3.0.0
+
+Anti-AFK received the user's scoped four-step PASS on 2026-10-16 America/Toronto; its source/settings are unchanged here. Quest acceptance remains pending.
+
+Required cloud validation adds complete accepted native/policy source equality, default-OFF upgrade/import/normalization, actual pinned HUD preference/lease interoperability, independent utility ownership, revocation of pending work, bounded faults, contextual prompt identity/timeout and reward rule tests. Native rendering adds 288 Quest state/import/mode/theme/scale cases to the existing 480 page cases and 42 Anti-AFK cases. Exact Core/UI 0.4.1 pins, scripts, build and package checks remain mandatory. Results and publication evidence are recorded after the runs complete; no current candidate count is claimed passed before then.

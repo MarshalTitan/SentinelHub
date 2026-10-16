@@ -102,6 +102,22 @@ internal static class Program
                     Check(content.ContentSize.X <= content.Size.X + 1 && !content.ScrollbarX, "Anti-AFK state overflow");
                     Check(content.ScrollMax.Y > 0, "Narrow utility page cannot scroll");
                 }
+                foreach(var scale in new[]{1f,1.5f,2f})
+                foreach(var theme in new[]{0,1})
+                foreach(var state in Enum.GetValues<QuestConvenienceState>())
+                foreach(var preference in new int?[]{null,15})
+                foreach(var mode in Enum.GetValues<SentinelHub.Utilities.Quest.QuestRewardSelectionMode>())
+                {
+                    io.FontGlobalScale=scale;
+                    var config=new HubSettings { Theme=theme,Page=HubPage.Utilities,QuestConvenienceEnabled=true,QuestRewardMode=mode };
+                    using var utility=new MainWindow(config,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>false,()=>{},()=>true,
+                        ()=>font,questView:()=>new(state,preference,"Paused for a player choice","Skip requested; waiting for the dedicated confirmation addon","Selected reward; waiting for Complete"));
+                    for(var i=0;i<12;i++)Frame(utility,new(480,500),scale);
+                    var content=theme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
+                    Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Quest state overflow");
+                    Check(content.ScrollMax.Y>0,"Quest page cannot scroll to all controls");
+                }
+                Console.WriteLine("PASS 288 native Quest state/import/mode/theme/scale cases.");
                 Console.WriteLine("PASS 42 native Anti-AFK state/theme/scale cases.");
                 Console.WriteLine($"PASS {pages} native rendered page/state/width/theme/scale cases; collapse/restore and balanced stacks.");
                 // Exercise actual Hub appearance switch via native keyboard/gamepad activation.
