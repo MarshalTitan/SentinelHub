@@ -12,7 +12,7 @@ The optional v1 IPC uses primitive booleans/ints and a private in-memory token. 
 2. With HUD's existing preference On, enable/import in Hub. Hub must show Active and HUD must show Managed by Sentinel Hub. Check Hub's successful-check count advances about once per 10 seconds.
 3. Disable Hub Anti-AFK: Hub Off; HUD resumes its retained On preference. Re-enable, then disable/reload Hub itself; verify bounded return to HUD. With HUD preference Off, Hub removal must leave Anti-AFK Off.
 4. Enable Hub, reload HUD while logged in, then reload Hub. Ownership must resume without two active states. Logout/login must show waiting then restore only the saved opt-in.
-5. While Hub owns Anti-AFK, leave the client idle for 90 seconds; no AFK state should accumulate. Then turn both preferences Off; ordinary idle behavior should return. Check camera, HUD and normal controls remain unchanged.
+5. While Hub owns Anti-AFK, leave the client idle longer than your configured automatic-away interval; automatic-away should not engage. Then turn both preferences Off and leave the client idle for that same interval; ordinary automatic-away should return. The successful-check counter alone does not prove timer resets. Check camera, HUD and normal controls remain unchanged.
 6. /shub export: enum/cycle diagnostics only, no token/chat/private config. Missing or legacy HUD must block Hub; no need to install an old build just for this test.
 
 Return PASS/FAIL and the failing step. Native timing/IPC behavior remains pending until this evidence returns. Rollback: turn Hub Anti-AFK Off or disable Hub; HUD retains its original preference. Do not remove HUD's implementation until replacement acceptance passes. Quest Convenience is the following separate migration.
