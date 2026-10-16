@@ -60,7 +60,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: ./.github/scripts/Publish.ps1
       - name: Promote child and verify exact central catalog
-        uses: MarshalTitan/Sentinel/.github/actions/distribute@b072c6931a09f0aec03af35be51bc64fa2862188
+        uses: MarshalTitan/Sentinel/.github/actions/distribute@311b9d3446cca61c50213a320445f3e1d57a96f6
         with:
           internal-name: SentinelHub
           version: '0.1.0.0'

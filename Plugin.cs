@@ -25,7 +25,7 @@ public sealed class Plugin : IDalamudPlugin
         settings = Pi.GetPluginConfig() as Configuration.Configuration ?? new();
         settings.Normalize();
         discovery = new(Pi, faults);
-        quickOpen = new(discovery, Commands, faults);
+        quickOpen = new(discovery.Capture, Commands.ProcessCommand, faults);
         window = new(settings, () => discovery.Snapshot, faults, Save, () => discovery.Refresh(true),
             (id, diagnostics) => quickOpen.Open(id, diagnostics), Export,
             () => Pi.UiBuilder.ShouldUseReducedMotion);

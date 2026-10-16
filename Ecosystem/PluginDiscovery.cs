@@ -5,7 +5,7 @@ public sealed class PluginDiscovery : IDisposable
 {
     private readonly IDalamudPluginInterface pi;
     private readonly FaultJournal faults;
-    private bool dirty = true;
+    private volatile bool dirty = true;
     private DateTime next = DateTime.MinValue;
     public HubSnapshot Snapshot { get; private set; } = HubSnapshot.Unknown;
     public PluginDiscovery(IDalamudPluginInterface pi, FaultJournal faults)

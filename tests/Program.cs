@@ -103,4 +103,27 @@ Test("utility enable boundaries: no engines or active configuration", () => {
  Check(UtilityRegistry.Planned.All(u => u.Status == "Planned / inactive"));
  Check(typeof(HubSettings).GetProperties().All(p => !p.Name.Contains("Anti") && !p.Name.Contains("Quest") && !p.Name.Contains("Compensation")));
 });
+
+Test("quick-open dispatch is fixed, denied actions do not execute", () => {
+ var sent = new List<string>(); var loaded = true; var faults = new FaultJournal();
+ var router = new QuickOpen(() => [new("PvPSentinel", loaded, "1.0")], cmd => { sent.Add(cmd); return true; }, faults);
+ Check(router.Open("PvPSentinel") && sent.Single() == "/pvpsentinel config");
+ Check(router.Open("PvPSentinel", true) && sent.Last() == "/pvpsentinel");
+ loaded = false; Check(!router.Open("PvPSentinel") && sent.Count == 2);
+ Check(!router.Open("/arbitrary enable") && sent.Count == 2);
+});
+Test("quick-open command and capture exceptions are isolated", () => {
+ var faults = new FaultJournal();
+ Check(!new QuickOpen(() => [Loaded("SentinelHUD")], _ => throw new Exception("PRIVATE"), faults).Open("SentinelHUD"));
+ Check(!new QuickOpen(() => throw new Exception("PRIVATE"), _ => true, faults).Open("SentinelHUD"));
+ Check(faults.Snapshot().All(f => f.Code == FaultCode.OpenSettingsUnavailable));
+ Check(!DiagnosticExport.Serialize(HubSnapshot.Unknown, faults.Snapshot()).Contains("PRIVATE"));
+});
+Test("unsupported diagnostics and refused commands fail without guessing", () => {
+ var calls = 0; var faults = new FaultJournal();
+ var router = new QuickOpen(() => [Loaded("SentinelHUD")], _ => { calls++; return false; }, faults);
+ Check(!router.Open("SentinelHUD", true) && calls == 0);
+ Check(!router.Open("SentinelHUD") && calls == 1 && faults.Snapshot().Length == 1);
+});
+
 Console.WriteLine(passed + " policy test groups passed.");

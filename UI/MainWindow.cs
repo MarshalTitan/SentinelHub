@@ -105,8 +105,8 @@ public sealed class MainWindow : Window, IDisposable
         if (config.Collapsed)
         {
             config.Collapsed = false;
-            pendingSize = new(Math.Max(Minimum.X, frameSize.X / scale), config.ExpandedHeight);
-            pendingSize *= scale;
+            var width = frameSize.X > 0 ? frameSize.X / scale : config.ExpandedWidth;
+            pendingSize = new Vector2(Math.Max(Minimum.X, width), config.ExpandedHeight) * scale;
         }
         else
         {

@@ -1,18 +1,19 @@
-using Dalamud.Plugin.Services;
 using SentinelHub.Diagnostics;
 namespace SentinelHub.Ecosystem;
-public sealed class QuickOpen(PluginDiscovery discovery, ICommandManager commands, FaultJournal faults)
+public sealed class QuickOpen(Func<IEnumerable<InstalledPlugin>> capture, Func<string, bool> process, FaultJournal faults)
 {
     public bool Open(string id, bool diagnostics = false)
     {
         var c = Catalog.Find(id);
         try
         {
-            // Fresh loaded-state check closes the unload-between-refresh-and-click race.
-            if (!StatusPolicy.CanOpen(c, discovery.Capture(), true)) return false;
+            // Fresh observation; never replay a stale UI snapshot after consumer unload.
+            if (!StatusPolicy.CanOpen(c, capture(), true)) return false;
             var command = diagnostics ? c!.DiagnosticsCommand : c!.SettingsCommand;
-            if (command is null || !commands.ProcessCommand(command)) return false;
-            return true;
+            if (command is null) return false;
+            if (process(command)) return true;
+            faults.Record(FaultCode.OpenSettingsUnavailable);
+            return false;
         }
         catch { faults.Record(FaultCode.OpenSettingsUnavailable); return false; }
     }
