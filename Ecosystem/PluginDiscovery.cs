@@ -30,8 +30,8 @@ public sealed class PluginDiscovery : IDisposable
         }
     }
     public InstalledPlugin[] Capture() => pi.InstalledPlugins.Select(p =>
-        new InstalledPlugin(p.InternalName, p.IsLoaded, p.Manifest.AssemblyVersion.ToString(),
-            p.IsOutdated || p.IsBanned || p.IsOrphaned || p.IsDecommissioned)).ToArray();
+        new InstalledPlugin(p.InternalName, p.IsLoaded, p.Version.ToString(),
+            p.IsOutdated || p.IsBanned || p.IsOrphaned || p.IsDecommissioned, p.IsDev)).ToArray();
     private Response Probe(Dependency d)
     {
         try

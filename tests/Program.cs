@@ -296,4 +296,38 @@ Test("cleaned HUD remains compatible without bypassing fresh acknowledgment", ()
   Check(QuestConvenienceOwnershipPolicy.Resolve(false,true,true,true,version,true)==QuestConvenienceState.Off);
  }
 });
+Test("live inventory wins over development in either discovery order", () => {
+ foreach(var liveLoaded in new[]{false,true})
+ foreach(var devLoaded in new[]{false,true})
+ foreach(var devFirst in new[]{false,true}){
+  var live=new InstalledPlugin("SRankSentinel",liveLoaded,"0.7.56.0");
+  var dev=new InstalledPlugin("sranksentinel",devLoaded,"0.7.61.0",IsDev:true);
+  var all=devFirst?new[]{dev,live}:new[]{live,dev};
+  var result=StatusPolicy.Build(all,true,_=>Response.Unknown).Plugins.Single(p=>p.Component.Id=="SRankSentinel");
+  Check(result.Version=="0.7.56.0"&&!result.IsDev&&result.State==(liveLoaded?Presence.Loaded:Presence.Disabled));
+  Check(StatusPolicy.CanOpen(Catalog.Find("SRankSentinel"),all,true)==liveLoaded);
+ }
+});
+Test("development-only inventory stays explicit and live versions are not hardcoded", () => {
+ var dev=new InstalledPlugin("SRankSentinel",true,"0.7.61.0",IsDev:true);
+ var row=StatusPolicy.Build([dev],true,_=>Response.Unknown).Plugins.Single(p=>p.Component.Id=="SRankSentinel");
+ Check(row.IsDev&&row.Version=="0.7.61.0"&&row.State==Presence.Loaded);
+ Check(StatusPolicy.CanOpen(Catalog.Find("SRankSentinel"),[dev],true));
+ foreach(var component in Catalog.Components){
+  var live=new InstalledPlugin(component.Id,true,"9.10.11.12");
+  var candidate=new InstalledPlugin(component.Id,true,"99.99.99.99",IsDev:true);
+  var selected=StatusPolicy.Build([candidate,live],true,_=>Response.Unknown).Plugins.Single(p=>p.Component.Id==component.Id);
+  Check(!selected.IsDev&&selected.Version=="9.10.11.12");
+ }
+});
+Test("quick-open checks the same live instance and refuses a loaded dev substitute", () => {
+ var dev=new InstalledPlugin("SRankSentinel",true,"0.7.61.0",IsDev:true);
+ var live=new InstalledPlugin("SRankSentinel",false,"0.7.56.0"); var calls=0;
+ var router=new QuickOpen(()=>new[]{dev,live},_=>{calls++;return true;},new FaultJournal());
+ Check(!router.Open("SRankSentinel")&&calls==0);
+ live=live with{Loaded=true};Check(router.Open("SRankSentinel")&&calls==1);
+ live=live with{Restricted=true};Check(!router.Open("SRankSentinel")&&calls==1);
+ live=live with{Restricted=false,Loaded=false};Check(!router.Open("SRankSentinel")&&calls==1);
+});
+
 Console.WriteLine(passed + " policy test groups passed.");

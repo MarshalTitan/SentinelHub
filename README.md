@@ -18,6 +18,12 @@ Profiles selected/last-applied/drift status, Relay connectivity, consumer faults
 
 **0.3.1.0** clarifies compatibility with HUD **0.8.5.0**: disabling Hub turns these utility actions off. Update Hub first, then HUD. Existing Hub opt-ins and native algorithms are unchanged. See [cleanup acceptance and rollback](docs/UTILITY_CLEANUP.md). Latency/Weaving remains inactive.
 
+## Live and development installations — 0.3.1.1
+
+Dashboard and Plugins prefer the non-development installation when Dalamud exposes both copies of the same plugin, even if the live copy is disabled. Version and loaded/restricted state come from that same copy; version uses Dalamud's effective installed version. Open settings checks that chosen copy again. A development-only installation is labeled explicitly. Versions are not pinned to catalog values.
+
+The user reported PASS for the Hub 0.3.1.0 / HUD 0.8.5.1 cleanup checklist, with this separate SRank inventory correction requested. Utility runtime/settings, HUD and SRank gameplay are unchanged. [Focused check](docs/LIVE_DEV_DISCOVERY.md).
+
 ## Dependencies and build
 
 Dalamud API 15; bundled Core/UI NuGet **0.4.1**, tag **v0.4.1.0**, source **e6527400680cddc39803321792b7c3b02fb0501d**. The approved Modern API is unchanged from 0.3.1. Exact NuGet lock and SHA256 bootstrap verification are committed; ZIP validation compares bundled DLL bytes with those packages.
