@@ -1,0 +1,136 @@
+using System.Numerics;
+using System.Runtime.Loader;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using Dalamud.Bindings.ImGui;
+using SentinelCore.UI;
+using SentinelHub.UI;
+using SentinelHub.Configuration;
+using SentinelHub.Diagnostics;
+using SentinelHub.Ecosystem;
+internal static class Program
+{
+    static void Check(bool value, string why) { if (!value) throw new Exception(why); }
+    static string DirectoryPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "XIVLauncher", "addon", "Hooks", "dev");
+    static int Main()
+    {
+        AssemblyLoadContext.Default.Resolving += (_, n) => {
+            var p = Path.Combine(DirectoryPath, n.Name + ".dll");
+            return File.Exists(p) ? AssemblyLoadContext.Default.LoadFromAssemblyPath(p) : null;
+        };
+        try { Run(); return 0; } catch (Exception e) { Console.Error.WriteLine(e); return 1; }
+    }
+    static unsafe void Run()
+    {
+        var context = ImGui.CreateContext();
+        try
+        {
+            var io = ImGui.GetIO(); io.IniFilename = null; io.LogFilename = null;
+            io.DisplaySize = new(3200, 2600); io.DeltaTime = 1f / 60;
+            io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard | ImGuiConfigFlags.NavEnableGamepad;
+            io.BackendFlags |= ImGuiBackendFlags.HasGamepad;
+            io.Fonts.AddFontDefault();
+            ushort[] ranges = [0xF000, 0xF8FF, 0];
+            fixed (ushort* range = ranges)
+            {
+                var font = io.Fonts.AddFontFromFileTTF(Environment.GetEnvironmentVariable("DALAMUD_ICON_FONT")!, 16, null, range);
+                Check(io.Fonts.Build(), "Font atlas");
+                var fixtures = new[]
+                {
+                    StatusPolicy.Build([], true, _ => Response.Unknown),
+                    StatusPolicy.Build(Catalog.Components.Select(c => new InstalledPlugin(c.Id, true, "0.1.0.0"))
+                        .Concat(Catalog.Dependencies.Select(d => new InstalledPlugin(d.Id, true, "99.99.99.99"))), true, _ => Response.Ready),
+                    HubSnapshot.Unknown,
+                    StatusPolicy.Build(Catalog.Components.Select(c => new InstalledPlugin(c.Id, false, "0.1.0.0"))
+                        .Concat(Catalog.Dependencies.Select(d => new InstalledPlugin(d.Id, true, "1.0.0.0"))), true, _ => Response.Unavailable),
+                    StatusPolicy.Build(Catalog.Components.Select(c => new InstalledPlugin(c.Id, false, "0.1.0.0", true))
+                        .Concat(Catalog.Dependencies.Select(d => new InstalledPlugin(d.Id, true, "1.0.0.0"))), true, _ => Response.NotReady),
+                };
+                int pages = 0;
+                foreach (var scale in new[] { 1f, 1.5f, 2f })
+                foreach (var theme in new[] { 0, 1 })
+                foreach (var width in new[] { 480f, 860f })
+                foreach (var data in fixtures)
+                {
+                    io.FontGlobalScale = scale;
+                    var settings = new HubSettings { Theme = theme };
+                    using var w = new MainWindow(settings, () => data, new FaultJournal(), () => {}, () => {},
+                        (_, _) => true, () => {}, () => true, () => font);
+                    foreach (var page in Enum.GetValues<HubPage>())
+                    {
+                        settings.Page = page;
+                        var saved = JsonSerializer.Serialize(settings);
+                        for (var i = 0; i < 12; i++) Frame(w, new(width, 500), scale);
+                        var root = Find(MainWindow.WindowId);
+                        var content = theme == 1 ? Find(MainWindow.WindowId, "##Modern2Page") : root;
+                        Check(ImGui.GetDrawData().TotalVtxCount > 0, "No render geometry");
+                        Check(content.ContentSize.X <= content.Size.X + 1, $"Horizontal overflow {theme}/{page}/{scale}/{width}: {content.ContentSize} vs {content.Size}");
+                        Check(content.ScrollMax.Y >= 0 && !content.ScrollbarX, "Invalid scroll region");
+                        Check(root.Pos == new Vector2(120, 80), "Window moved");
+                        if (theme == 1)
+                        {
+                            var rail = Find(MainWindow.WindowId, "##Modern2Rail");
+                            Check(rail.ContentSize.Y <= rail.Size.Y + 1, "Navigation icons clipped");
+                            Check((root.Flags & ImGuiWindowFlags.NoTitleBar) != 0, "Duplicate title bar");
+                        }
+                        Check(JsonSerializer.Serialize(settings) == saved, "Drawing changed settings");
+                        pages++;
+                    }
+                    if (theme == 1)
+                    {
+                        settings.Page = HubPage.Dashboard;
+                        for (var i = 0; i < 3; i++) Frame(w, new(width, 800), scale);
+                        w.ToggleCollapse();
+                        for (var i = 0; i < 3; i++) Frame(w, new(width, 56), scale);
+                        Check(settings.Collapsed && Math.Abs(Find(MainWindow.WindowId).Size.Y - 56 * scale) < 1, "Minimize wrong height");
+                        w.OpenAndExpand();
+                        for (var i = 0; i < 3; i++) Frame(w, new(width, settings.ExpandedHeight), scale);
+                        Check(!settings.Collapsed && Find(MainWindow.WindowId).Size.Y >= 800 * scale - 1, "Restore lost expanded size");
+                    }
+                }
+                Console.WriteLine($"PASS {pages} native rendered page/state/width/theme/scale cases; collapse/restore and balanced stacks.");
+                // Exercise actual Hub appearance switch via native keyboard/gamepad activation.
+                foreach (var key in new[] { ImGuiKey.Space, ImGuiKey.GamepadFaceDown })
+                {
+                    var value = false; using var motion = new SentinelModernMotion();
+                    void SwitchFrame(bool focus = false)
+                    {
+                        ImGui.NewFrame(); motion.BeginFrame(io.DeltaTime, true);
+                        ImGui.Begin("HubSwitch"); SentinelModernSwitch.Draw("reduced", "Reduced motion", ref value, motion);
+                        if (focus) ImGui.SetKeyboardFocusHere(-1);
+                        ImGui.End(); ImGui.Render();
+                    }
+                    SwitchFrame(true); SwitchFrame();
+                    io.AddKeyEvent(key, true); SwitchFrame();
+                    io.AddKeyEvent(key, false); SwitchFrame();
+                    Check(value, key + " did not activate shared switch");
+                }
+                Console.WriteLine("PASS keyboard/controller shared appearance activation.");
+            }
+        }
+        finally { ImGui.DestroyContext(context); }
+    }
+    static unsafe ImGuiWindowPtr Find(string parent, string? child = null)
+    {
+        var all = ImGui.GetCurrentContext().Windows;
+        for (int i = 0; i < all.Size; i++)
+        {
+            var name = Marshal.PtrToStringUTF8((nint)all[i].Name)!;
+            if (child is null ? name == parent : name.StartsWith(parent + "/") && name.Contains(child)) return all[i];
+        }
+        throw new Exception("Window missing " + parent + "/" + child);
+    }
+    static void Frame(MainWindow w, Vector2 logicalSize, float scale)
+    {
+        ImGui.NewFrame();
+        var context = ImGui.GetCurrentContext();
+        var colours = context.ColorStack.Size; var styles = context.StyleVarStack.Size; var fonts = context.FontStack.Size;
+        w.PreDraw();
+        ImGui.SetNextWindowPos(new(120, 80), ImGuiCond.Always);
+        ImGui.SetNextWindowSize(logicalSize * scale, ImGuiCond.Always);
+        ImGui.Begin(MainWindow.WindowId, w.Flags);
+        w.Draw(); ImGui.End(); w.PostDraw();
+        Check(context.ColorStack.Size == colours && context.StyleVarStack.Size == styles && context.FontStack.Size == fonts, "Unbalanced styles");
+        ImGui.Render();
+    }
+}

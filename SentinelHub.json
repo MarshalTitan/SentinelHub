@@ -1,0 +1,12 @@
+{
+  "Author": "MTitan",
+  "Name": "Sentinel Hub",
+  "InternalName": "SentinelHub",
+  "Punchline": "Optional Sentinel ecosystem control center.",
+  "Description": "Inspect Sentinel plugins and dependencies, open settings and export sanitized Hub diagnostics. No consumer requires Hub.",
+  "ApplicableVersion": "any",
+  "DalamudApiLevel": 15,
+  "LoadRequiredState": 0,
+  "LoadSync": true,
+  "CanUnloadAsync": false
+}

@@ -1,0 +1,13 @@
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <Version>0.1.0.0</Version><Author>MTitan</Author><Name>Sentinel Hub</Name>
+    <Punchline>Optional Sentinel ecosystem control center.</Punchline>
+    <Description>Inspect Sentinel plugins, dependencies and sanitized diagnostics, and open their settings. Other Sentinel plugins work independently of Hub.</Description>
+    <RepoUrl>https://github.com/MarshalTitan/SentinelHub</RepoUrl>
+    <IconUrl>https://raw.githubusercontent.com/MarshalTitan/SentinelHub/main/assets/icon.png</IconUrl>
+    <Tags>sentinel;utility;diagnostics</Tags><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <ItemGroup><Compile Remove="tests/**/*.cs" /><None Include="assets/icon.png" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup><PackageReference Include="MarshalTitan.SentinelCore" Version="[0.4.1]" /><PackageReference Include="MarshalTitan.SentinelCore.UI" Version="[0.4.1]" /></ItemGroup>
+</Project>

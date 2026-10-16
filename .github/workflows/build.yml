@@ -1,0 +1,76 @@
+name: Build and publish Hub
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: hub-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Parse release scripts
+        shell: pwsh
+        run: |
+          foreach ($file in Get-ChildItem .github/scripts/*.ps1) {
+            $tokens = $null; $errors = $null
+            [Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) { throw ($errors | Out-String) }
+          }
+      - name: Prepare verified Core packages and Dalamud fixtures
+        shell: pwsh
+        run: ./.github/scripts/Prepare.ps1
+      - name: Restore exact dependencies
+        run: dotnet restore SentinelHub.csproj --locked-mode
+      - name: Policy tests
+        run: dotnet run --project tests/SentinelHub.Tests.csproj -c Release
+      - name: Build plugin
+        run: dotnet build SentinelHub.csproj -c Release --no-restore
+      - name: Render native UI regression tests
+        run: dotnet run --project tests/UiTests/SentinelHub.UiTests.csproj -c Release
+      - name: Validate installable artifact
+        shell: pwsh
+        run: ./.github/scripts/Validate-Package.ps1 -PackagePath bin/Release/SentinelHub/latest.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SentinelHub-0.1.0.0
+          path: bin/Release/SentinelHub/latest.zip
+          if-no-files-found: error
+  publish:
+    needs: validate
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-live]')
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Prepare verified packages
+        shell: pwsh
+        run: ./.github/scripts/Prepare.ps1
+      - uses: actions/download-artifact@v4
+        with:
+          name: SentinelHub-0.1.0.0
+          path: release
+      - name: Publish immutable release and bootstrap first child manifest
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./.github/scripts/Publish.ps1
+      - name: Promote child and verify exact central catalog
+        uses: MarshalTitan/Sentinel/.github/actions/distribute@311b9d3446cca61c50213a320445f3e1d57a96f6
+        with:
+          internal-name: SentinelHub
+          version: '0.1.0.0'
+          tag: v0.1.0.0
+          notification-token: ${{ secrets.DALAMUD_CATALOG_TOKEN }}
