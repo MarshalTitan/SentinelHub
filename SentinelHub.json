@@ -8,5 +8,7 @@
   "DalamudApiLevel": 15,
   "LoadRequiredState": 0,
   "LoadSync": true,
-  "CanUnloadAsync": false
+  "CanUnloadAsync": false,
+  "IconUrl": "https://raw.githubusercontent.com/MarshalTitan/SentinelHub/main/assets/icon.png",
+  "RepoUrl": "https://github.com/MarshalTitan/SentinelHub"
 }

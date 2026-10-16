@@ -1,10 +1,10 @@
-Sentinel Hub 0.1.0.0 is the optional Sentinel ecosystem control center.
+Sentinel Hub 0.2.0.0 begins the staged Anti-AFK migration.
 
-- Core Modern shell with Classic fallback, eight pages, narrow layouts, reduced motion and themed minimize/restore.
-- Installed/loaded/version inventory; read-only vnavmesh, Lifestream, RotationSolverReborn and Splatoon status.
-- Safe fixed commands open consumer settings; PvP diagnostics can be opened where installed.
-- Sanitized Hub diagnostics export. No private consumer config, chat or arbitrary fault messages.
-- Profiles selection/drift, Relay connection and consumer runtime readiness remain explicitly Unknown because no public status contract is exposed.
-- Utilities are planned/inactive. Existing HUD ownership and settings are untouched.
+- Removes the retired Sentinel Hunts test component from Hub inventory and dependency uses.
+- Adds IconUrl/RepoUrl to the installed plugin manifest and validates the public PNG.
+- Adds default-OFF Anti-AFK, preserving HUD's 10-second checks and 30-second threshold without input/movement/chat.
+- Requires a fresh ownership acknowledgment from loaded HUD 0.8.4.6+. Legacy/unknown HUD installations block Hub's writer.
+- Keeps HUD's saved preference and implementation. Import only on explicit click. Disable/unload Hub to return to the retained HUD preference.
+- Quest Convenience and latency remain unchanged/inactive in Hub.
 
-This first usable beta requires supervised FFXIV acceptance. Automated tests do not establish game behavior. Disable/uninstall Hub to roll back; consumers remain independent.
+This is a proving release. Supervised native behavior and plugin reload/ownership acceptance are required before HUD cleanup. No cleanup/removal is included.

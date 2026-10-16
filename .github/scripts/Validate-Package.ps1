@@ -1,5 +1,6 @@
-param([string]$PackagePath, [string]$ExpectedVersion = '0.1.0.0')
+param([string]$PackagePath, [string]$ExpectedVersion)
 $ErrorActionPreference = 'Stop'
+if (-not $ExpectedVersion) { [xml]$project = Get-Content SentinelHub.csproj -Raw; $ExpectedVersion = [string]$project.Project.PropertyGroup.Version }
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $archive = [IO.Compression.ZipFile]::OpenRead((Resolve-Path $PackagePath))
 try {
@@ -14,6 +15,8 @@ try {
  $reader = [IO.StreamReader]::new($manifest.Open())
  try { $m = $reader.ReadToEnd() | ConvertFrom-Json } finally { $reader.Dispose() }
  if ($m.InternalName -ne 'SentinelHub' -or $m.AssemblyVersion -ne $ExpectedVersion -or $m.DalamudApiLevel -ne 15) { throw 'Manifest identity/version/API mismatch' }
+ if ($m.IconUrl -ne 'https://raw.githubusercontent.com/MarshalTitan/SentinelHub/main/assets/icon.png') { throw 'Installed manifest is missing its correct IconUrl' }
+ if ($m.RepoUrl -ne 'https://github.com/MarshalTitan/SentinelHub') { throw 'Installed manifest RepoUrl mismatch' }
  foreach ($consumer in @('SRankSentinel','PvPSentinel','SentinelHUD','ClassySentinel','SentinelProfiles','SentinelRelay','SentinelHunts')) {
   if ($names -contains "$consumer.dll") { throw 'Hub must not bundle or require consumer assemblies' }
  }
