@@ -170,7 +170,7 @@ public sealed class MainWindow : Window, IDisposable
         ImGui.TextWrapped("Dependencies are feature-specific. Missing optional companions do not make the whole ecosystem unhealthy.");
         foreach (var d in snapshot().Dependencies)
             Card(d.Dependency.Id, d.Response == Response.Unknown ? d.State.ToString().ToUpperInvariant() : d.Response.ToString().ToUpperInvariant(),
-                d.Response == Response.Ready ? SentinelModernPillTone.Ready : Tone(d.State),
+                d.Response switch { Response.Ready => SentinelModernPillTone.Ready, Response.NotReady or Response.Unavailable => SentinelModernPillTone.Warning, _ => Tone(d.State) },
                 [d.Dependency.Name, StatusPolicy.DependencyText(d), "Installed version: " + d.Version, "Used by: " + d.Dependency.Uses, d.Dependency.Purpose,
                  d.Dependency.Probe is null ? "No safe readiness probe is exposed here." : "Read-only status; no movement or combat calls."]);
     }

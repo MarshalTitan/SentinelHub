@@ -41,6 +41,10 @@ internal static class Program
                     StatusPolicy.Build(Catalog.Components.Select(c => new InstalledPlugin(c.Id, true, "0.1.0.0"))
                         .Concat(Catalog.Dependencies.Select(d => new InstalledPlugin(d.Id, true, "99.99.99.99"))), true, _ => Response.Ready),
                     HubSnapshot.Unknown,
+                    StatusPolicy.Build(Catalog.Components.Select(c => new InstalledPlugin(c.Id, false, "0.1.0.0"))
+                        .Concat(Catalog.Dependencies.Select(d => new InstalledPlugin(d.Id, true, "1.0.0.0"))), true, _ => Response.Unavailable),
+                    StatusPolicy.Build(Catalog.Components.Select(c => new InstalledPlugin(c.Id, false, "0.1.0.0", true))
+                        .Concat(Catalog.Dependencies.Select(d => new InstalledPlugin(d.Id, true, "1.0.0.0"))), true, _ => Response.NotReady),
                 };
                 int pages = 0;
                 foreach (var scale in new[] { 1f, 1.5f, 2f })
