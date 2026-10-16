@@ -78,7 +78,7 @@ Test("appearance, page and expanded size persist without utility flags", () => {
  var json = JsonSerializer.Serialize(c);
  var result = JsonSerializer.Deserialize<HubSettings>(json)!; result.Normalize();
  Check(JsonSerializer.Serialize(result) == json);
- Check(!result.AntiAfkEnabled && !result.AntiAfkPreferenceImported && !json.Contains("Latency"));
+ Check(!result.AntiAfkEnabled && !result.AntiAfkPreferenceImported && result.LatencyMode == LatencyMode.Off);
 });
 Test("faults are bounded and throttled by typed reason", () => {
  var journal = new FaultJournal();
