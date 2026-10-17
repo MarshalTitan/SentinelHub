@@ -87,24 +87,24 @@ public sealed class MountGameDataBuilder(IDataManager data)
         {
             foreach (var offer in shop.Item)
             {
-                for (int r = 0; r < offer.Item.Count; r++)
+                for (int r = 0; r < offer.ReceiveItems.Count; r++)
                 {
-                    if (offer.ReceiveCount[r] == 0 || !itemMounts.TryGetValue(offer.Item[r].RowId, out var mount)) continue;
+                    if (offer.ReceiveItems[r].ReceiveCount == 0 || !itemMounts.TryGetValue(offer.ReceiveItems[r].Item.RowId, out var mount)) continue;
                     sources[mount].Add(new(MountCategory.Exchange,
                         "Exchange entry: " + (string.IsNullOrWhiteSpace(shop.Name.ToString()) ? "Special shop #" + shop.RowId : shop.Name.ToString()),
                         "Game data: SpecialShop #" + shop.RowId + "; conditions/availability not verified"));
                     var nonzeroCosts = 0;
-                    for (int c = 0; c < offer.CurrencyCost.Count; c++) if (offer.CurrencyCost[c] != 0) nonzeroCosts++;
-                    for (int c = 0; c < offer.ItemCost.Count; c++)
+                    for (int c = 0; c < offer.ItemCosts.Count; c++) if (offer.ItemCosts[c].CurrencyCost != 0) nonzeroCosts++;
+                    for (int c = 0; c < offer.ItemCosts.Count; c++)
                     {
-                        var tokenId = offer.ItemCost[c].RowId;
-                        if (tokenId == 0 || !offer.ItemCost[c].IsValid) continue;
-                        var token = offer.ItemCost[c].Value;
+                        var tokenId = offer.ItemCosts[c].ItemCost.RowId;
+                        if (tokenId == 0 || !offer.ItemCosts[c].ItemCost.IsValid) continue;
+                        var token = offer.ItemCosts[c].ItemCost.Value;
                         var english = englishItems.GetRowOrDefault(tokenId)?.Name.ToString() ?? "";
                         if (MountPolicy.SafeTokenOffer(trials.Contains(mount), shop.UseCurrencyType,
-                            offer.ReceiveCount[r], offer.ReceiveHq[r], nonzeroCosts, offer.CostType[c], tokenId,
-                            offer.CurrencyCost[c], token.IsUntradable, english))
-                            exchanges.Add(new(mount, tokenId, token.Name.ToString(), offer.CurrencyCost[c], shop.RowId));
+                            offer.ReceiveItems[r].ReceiveCount, offer.ReceiveItems[r].ReceiveHq, nonzeroCosts, offer.ItemCosts[c].CostType, tokenId,
+                            offer.ItemCosts[c].CurrencyCost, token.IsUntradable, english))
+                            exchanges.Add(new(mount, tokenId, token.Name.ToString(), offer.ItemCosts[c].CurrencyCost, shop.RowId));
                     }
                 }
             }
