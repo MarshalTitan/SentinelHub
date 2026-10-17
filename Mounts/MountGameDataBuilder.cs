@@ -11,7 +11,7 @@ public sealed class MountGameDataBuilder(IDataManager data)
     {
         var englishMounts = data.GetExcelSheet<Mount>(ClientLanguage.English);
         var englishItems = data.GetExcelSheet<Item>(ClientLanguage.English);
-        var expansions = data.GetExcelSheet<ExVersion>().ToDictionary(x => (int)x.RowId, x => x.Name.ToString());
+        var expansions = data.GetExcelSheet<ExVersion>().ToDictionary(x => (int)x.RowId, x => string.IsNullOrWhiteSpace(x.Name.ToString()) ? x.RowId == 0 ? "A Realm Reborn" : "Expansion #" + x.RowId : x.Name.ToString());
         var entries = new Dictionary<uint, MountEntry>();
         var sources = new Dictionary<uint, List<MountSource>>();
         var items = new Dictionary<uint, List<MountUnlockItem>>();
@@ -103,7 +103,7 @@ public sealed class MountGameDataBuilder(IDataManager data)
                         var english = englishItems.GetRowOrDefault(tokenId)?.Name.ToString() ?? "";
                         if (MountPolicy.SafeTokenOffer(trials.Contains(mount), shop.UseCurrencyType,
                             offer.ReceiveItems[r].ReceiveCount, offer.ReceiveItems[r].ReceiveHq, nonzeroCosts, offer.ItemCosts[c].CostType, tokenId,
-                            offer.ItemCosts[c].CurrencyCost, token.IsUntradable, english))
+                            offer.ItemCosts[c].CurrencyCost, token.IsUntradable, english, offer.ItemCosts[c].CollectabilityCost))
                             exchanges.Add(new(mount, tokenId, token.Name.ToString(), offer.ItemCosts[c].CurrencyCost, shop.RowId));
                     }
                 }

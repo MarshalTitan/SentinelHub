@@ -114,9 +114,9 @@ public static class MountPolicy
     }
     // Only a simple, non-HQ, direct-item exchange is countable. This does not establish vendor availability.
     public static bool SafeTokenOffer(bool knownTrial, byte currencyMode, uint receiveCount, bool hq,
-        int nonzeroCosts, uint costType, uint itemId, long required, bool untradable, string englishName) =>
+        int nonzeroCosts, uint costType, uint itemId, long required, bool untradable, string englishName, long collectability = 0) =>
         knownTrial && currencyMode == 0 && receiveCount == 1 && !hq && nonzeroCosts == 1 && costType == 0
-        && itemId != 0 && required is > 0 and <= 9999 && untradable
+        && collectability == 0 && itemId != 0 && required is > 0 and <= 9999 && untradable
         && englishName.Contains("Totem", StringComparison.OrdinalIgnoreCase);
     public static double Progress(long count, long required) =>
         required <= 0 || count < 0 ? 0 : Math.Clamp((double)count / required, 0, 1);

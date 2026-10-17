@@ -31,6 +31,8 @@ public sealed class MainWindow : Window, IDisposable
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
     private readonly SentinelModernNavItem[] navigation;
+    private static readonly HubPage[] PageOrder = [HubPage.Dashboard, HubPage.Plugins, HubPage.Profiles, HubPage.Dependencies,
+        HubPage.Utilities, HubPage.Mounts, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
     private Vector2 frameSize;
     private Vector2? pendingSize;
     private bool modern;
@@ -49,7 +51,7 @@ public sealed class MainWindow : Window, IDisposable
         this.save = save; this.refresh = refresh; this.open = open; this.export = export;
         this.systemReducedMotion = systemReducedMotion;
         this.iconFont = iconFont ?? (() => UiBuilder.IconFont);
-        navigation = Enum.GetValues<HubPage>().Select(p => new SentinelModernNavItem(p.ToString(), null, PageTitle(p))
+        navigation = PageOrder.Select(p => new SentinelModernNavItem(p.ToString(), null, PageTitle(p))
         {
             DrawIcon = context => DrawIcon(Icon(p), context.DrawList, context.Minimum, context.Maximum, context.Colour),
         }).ToArray();
@@ -86,7 +88,7 @@ public sealed class MainWindow : Window, IDisposable
         frameSize = ImGui.GetWindowSize();
         if (modern)
         {
-            SentinelModernAppShell.Draw(new("SentinelHub.Modern", "Sentinel Hub", config.Page.ToString())
+            SentinelModernAppShell.Draw(new("SentinelHub.Modern", "Sentinel Hub", PageTitle(config.Page))
             {
                 Scale = ImGuiHelpers.GlobalScale, DeltaTime = ImGui.GetIO().DeltaTime,
                 ReducedMotion = config.ReducedMotion || systemReducedMotion(),
@@ -100,9 +102,9 @@ public sealed class MainWindow : Window, IDisposable
         else
         {
             ImGui.SetNextItemWidth(-1);
-            var page = (int)config.Page;
-            var names = Enum.GetNames<HubPage>();
-            if (ImGui.Combo("##Page", ref page, names, names.Length)) { config.Page = (HubPage)page; save(); }
+            var page = Array.IndexOf(PageOrder, config.Page);
+            var names = PageOrder.Select(PageTitle).ToArray();
+            if (ImGui.Combo("##Page", ref page, names, names.Length)) { config.Page = PageOrder[page]; save(); }
             DrawPage();
         }
     }
