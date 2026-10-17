@@ -6,7 +6,7 @@ HUD visuals and camera, SRankSentinel, PvPSentinel, ClassySentinel, SentinelProf
 
 ## Control center and utilities
 
-Dashboard, Plugins, Dependencies, Profiles, Utilities, Diagnostics, Appearance and About. Inventory comes from public Dalamud installed-plugin interfaces. Loaded means enabled in Dalamud, not gameplay-ready or automation-enabled. Verified read-only dependency IPC covers vnavmesh, Lifestream, RotationSolverReborn and Splatoon.
+Dashboard, Plugins, Dependencies, Profiles, Utilities, Mount Collection, Diagnostics, Appearance and About. Inventory comes from public Dalamud installed-plugin interfaces. Loaded means enabled in Dalamud, not gameplay-ready or automation-enabled. Verified read-only dependency IPC covers vnavmesh, Lifestream, RotationSolverReborn and Splatoon.
 
 Consumer settings use a fixed source-verified command allowlist; some consumers toggle their windows. Disabled/missing/restricted components have unavailable actions. No reflection, private configuration reads or consumer assembly references.
 
@@ -39,3 +39,9 @@ Dalamud API 15; bundled Core/UI NuGet **0.4.1**, tag **v0.4.1.0**, source **e652
 Cloud CI restores locked packages, runs policy tests and native ImGui rendering tests, builds the installable ZIP and checks its contents. See [architecture](docs/ARCHITECTURE.md) and [validation](docs/VALIDATION.md).
 
 Publication is a main push containing `[publish-live]` after CI passes. Assets are immutable; source/tag/version and public ZIP are verified before shared distribution. Child workflows never write central repo.json.
+
+## Mount Collection — 0.5.0.0
+
+Independent passive local-game database with search/sort, current-character unlocks, names/icons/seats/actions/BGM, known game-sheet acquisition links, market eligibility and six independently authored expansion trial/meta tracks. Expansion totals label mapped-only coverage; unverified acquisition, expansion and current obtainability stay Unknown. Totem progress uses simple verified exchanges and four loaded main bags only. Player context-menu lookup is an explicit default-OFF option; no target-info/tooltip hook or game actions.
+
+[Data audit and provenance](docs/MOUNT_COLLECTION_METADATA.md) · [Acceptance and rollback](docs/MOUNT_COLLECTION.md). WhichMount was a behavioral README reference only; no code/CSV/resource dataset was copied. Existing utilities and Core pins are unchanged.
