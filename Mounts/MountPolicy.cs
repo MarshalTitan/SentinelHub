@@ -113,10 +113,11 @@ public static class MountPolicy
         return known with { Unknown = known.Unknown + track.Members.Count(m => !m.MountId.HasValue) };
     }
     // Only a simple, non-HQ, direct-item exchange is countable. This does not establish vendor availability.
+    // Recognized shop modes only remap compact currency aliases below 8; never count those as item IDs.
     public static bool SafeTokenOffer(bool knownTrial, byte currencyMode, uint receiveCount, bool hq,
         int nonzeroCosts, uint costType, uint itemId, long required, bool untradable, string englishName, long collectability = 0) =>
-        knownTrial && currencyMode == 0 && receiveCount == 1 && !hq && nonzeroCosts == 1 && costType == 0
-        && collectability == 0 && itemId != 0 && required is > 0 and <= 9999 && untradable
+        knownTrial && currencyMode is 0 or 4 or 8 or 16 && receiveCount == 1 && !hq && nonzeroCosts == 1 && costType == 0
+        && collectability == 0 && itemId >= 8 && required is > 0 and <= 9999 && untradable
         && englishName.Contains("Totem", StringComparison.OrdinalIgnoreCase);
     public static double Progress(long count, long required) =>
         required <= 0 || count < 0 ? 0 : Math.Clamp((double)count / required, 0, 1);

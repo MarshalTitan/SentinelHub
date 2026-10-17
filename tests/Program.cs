@@ -557,9 +557,10 @@ Test("Sentinel metadata has six independent complete expansion sets with provena
  Check(SentinelMountMetadata.Find("unverified new mount")==null);
 });
 Test("Mount trial-token exchanges reject complex, HQ, currency and nontrial offers", () => {
- bool Offer(bool trial=true,byte mode=0,uint receive=1,bool hq=false,int costs=1,uint type=0,uint item=1,long required=99,bool untradable=true,string name="King Totem",long collectability=0) =>
+ bool Offer(bool trial=true,byte mode=0,uint receive=1,bool hq=false,int costs=1,uint type=0,uint item=100,long required=99,bool untradable=true,string name="King Totem",long collectability=0) =>
   MountPolicy.SafeTokenOffer(trial,mode,receive,hq,costs,type,item,required,untradable,name,collectability);
- Check(Offer());
+ Check(Offer()&&Offer(mode:4)&&Offer(mode:8)&&Offer(mode:16));
+ foreach(var alias in Enumerable.Range(0,8))Check(!Offer(item:(uint)alias));
  Check(!Offer(collectability:1));
  Check(!Offer(trial:false)&&!Offer(mode:1)&&!Offer(receive:2)&&!Offer(hq:true)&&!Offer(costs:2)&&!Offer(type:3));
  Check(!Offer(item:0)&&!Offer(required:0)&&!Offer(required:10000)&&!Offer(untradable:false)&&!Offer(name:"Irregular Tomestone"));
