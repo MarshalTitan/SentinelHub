@@ -1,0 +1,276 @@
+{
+  "CheckedUtc": "2026-10-17",
+  "Method": "Sentinel-authored mount ID/name to official product-page facts. Product-title aliases were reviewed individually. No store price, description or asset data is bundled. Bennu uses the official mount category because its individual product URL was not verified.",
+  "Mounts": [
+    {
+      "Id": 42,
+      "EnglishName": "Sleipnir",
+      "ProductName": "Sleipnir (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/30"
+    },
+    {
+      "Id": 62,
+      "EnglishName": "Witch's Broom",
+      "ProductName": "Witch's Broom (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/245"
+    },
+    {
+      "Id": 68,
+      "EnglishName": "White Devil",
+      "ProductName": "White Devil (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/140"
+    },
+    {
+      "Id": 69,
+      "EnglishName": "Red Baron",
+      "ProductName": "Red Baron (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/141"
+    },
+    {
+      "Id": 71,
+      "EnglishName": "SDS Fenrir",
+      "ProductName": "SDS Fenrir (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/483"
+    },
+    {
+      "Id": 84,
+      "EnglishName": "Fat Moogle",
+      "ProductName": "Fat Moogle (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/227"
+    },
+    {
+      "Id": 97,
+      "EnglishName": "Mystic Panda",
+      "ProductName": "Mystic Panda (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/410"
+    },
+    {
+      "Id": 99,
+      "EnglishName": "Starlight Bear",
+      "ProductName": "Starlight Bear (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/491"
+    },
+    {
+      "Id": 106,
+      "EnglishName": "Eggshilaration System",
+      "ProductName": "Eggshilaration System (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/425"
+    },
+    {
+      "Id": 135,
+      "EnglishName": "Nezha Chariot",
+      "ProductName": "Nezha Chariot (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/432"
+    },
+    {
+      "Id": 138,
+      "EnglishName": "Aquamarine Carbuncle",
+      "ProductName": "Aquamarine Carbuncle (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/403"
+    },
+    {
+      "Id": 139,
+      "EnglishName": "Citrine Carbuncle",
+      "ProductName": "Citrine Carbuncle (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/404"
+    },
+    {
+      "Id": 143,
+      "EnglishName": "Red Hare",
+      "ProductName": "Red Hare (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/468"
+    },
+    {
+      "Id": 152,
+      "EnglishName": "Broken Heart (right)",
+      "ProductName": "Broken Heart (Right) (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/507"
+    },
+    {
+      "Id": 153,
+      "EnglishName": "Broken Heart (left)",
+      "ProductName": "Broken Heart (Left) (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/508"
+    },
+    {
+      "Id": 160,
+      "EnglishName": "Indigo Whale",
+      "ProductName": "Indigo Whale (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/480"
+    },
+    {
+      "Id": 171,
+      "EnglishName": "Fatter Cat",
+      "ProductName": "Fatter Cat (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/512"
+    },
+    {
+      "Id": 175,
+      "EnglishName": "Magicked Carpet",
+      "ProductName": "Magicked Carpet (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/529"
+    },
+    {
+      "Id": 194,
+      "EnglishName": "Circus Ahriman",
+      "ProductName": "Circus Ahriman (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/674"
+    },
+    {
+      "Id": 195,
+      "EnglishName": "Sunspun Cumulus",
+      "ProductName": "Sunspun Cumulus (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/523"
+    },
+    {
+      "Id": 206,
+      "EnglishName": "Spriggan Stonecarrier",
+      "ProductName": "Spriggan Stonecarrier (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/635"
+    },
+    {
+      "Id": 214,
+      "EnglishName": "Kingly Peacock",
+      "ProductName": "Kingly Peacock (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/647"
+    },
+    {
+      "Id": 220,
+      "EnglishName": "Rubellite Carbuncle",
+      "ProductName": "Rubellite Carbuncle (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/643"
+    },
+    {
+      "Id": 222,
+      "EnglishName": "Chocobo Carriage",
+      "ProductName": "Chocobo Carriage (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/662"
+    },
+    {
+      "Id": 232,
+      "EnglishName": "Snowman",
+      "ProductName": "Snowman (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/848"
+    },
+    {
+      "Id": 233,
+      "EnglishName": "Lunar Whale",
+      "ProductName": "Lunar Whale (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/779"
+    },
+    {
+      "Id": 247,
+      "EnglishName": "Cruise Chaser",
+      "ProductName": "Cruise Chaser (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/789"
+    },
+    {
+      "Id": 250,
+      "EnglishName": "Polar Bear",
+      "ProductName": "Polar Bear (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/877"
+    },
+    {
+      "Id": 269,
+      "EnglishName": "Papa Paissa",
+      "ProductName": "Papa Paissa (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/869"
+    },
+    {
+      "Id": 279,
+      "EnglishName": "Mechanical Lotus",
+      "ProductName": "Mechanical Lotus (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/885"
+    },
+    {
+      "Id": 294,
+      "EnglishName": "Megashiba",
+      "ProductName": "Megashiba (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/874"
+    },
+    {
+      "Id": 300,
+      "EnglishName": "Magicked Umbrella",
+      "ProductName": "Magicked Umbrella (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/925"
+    },
+    {
+      "Id": 301,
+      "EnglishName": "Magicked Parasol",
+      "ProductName": "Magicked Parasol (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/926"
+    },
+    {
+      "Id": 302,
+      "EnglishName": "Starlight Steed",
+      "ProductName": "Starlight Steed (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/965"
+    },
+    {
+      "Id": 310,
+      "EnglishName": "Set of Ceruleum Balloons",
+      "ProductName": "Ceruleum Balloons (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/910"
+    },
+    {
+      "Id": 318,
+      "EnglishName": "Garlond GL-IS",
+      "ProductName": "Garlond GL-IS (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/938"
+    },
+    {
+      "Id": 320,
+      "EnglishName": "Rising Phoenix",
+      "ProductName": "Reborn Phoenix (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/1046"
+    },
+    {
+      "Id": 323,
+      "EnglishName": "Shadow Wolf",
+      "ProductName": "Shadow Wolf (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/933"
+    },
+    {
+      "Id": 329,
+      "EnglishName": "Crescent Moon",
+      "ProductName": "Crescent Moon (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/976"
+    },
+    {
+      "Id": 336,
+      "EnglishName": "Peatie",
+      "ProductName": "Peatie (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/1086"
+    },
+    {
+      "Id": 362,
+      "EnglishName": "Hovering Hot Pot",
+      "ProductName": "Hovering Hot Pot (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/1098"
+    },
+    {
+      "Id": 388,
+      "EnglishName": "His Royal Headness on Parade",
+      "ProductName": "His Royal Headness on Parade (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/1089"
+    },
+    {
+      "Id": 396,
+      "EnglishName": "Ambulario",
+      "ProductName": "Ambulario (Single Character)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/1190"
+    },
+    {
+      "Id": 397,
+      "EnglishName": "Shagcoat Cat",
+      "ProductName": "Shagcat (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/1100"
+    },
+    {
+      "Id": 421,
+      "EnglishName": "Hardy-Daytona",
+      "ProductName": "Hardy-Daytona (Account-wide)",
+      "Url": "https://store.finalfantasyxiv.com/ffxivstore/en-us/product/1139"
+    }
+  ]
+}

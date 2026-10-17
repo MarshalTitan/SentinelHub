@@ -40,8 +40,8 @@ Cloud CI restores locked packages, runs policy tests and native ImGui rendering 
 
 Publication is a main push containing `[publish-live]` after CI passes. Assets are immutable; source/tag/version and public ZIP are verified before shared distribution. Child workflows never write central repo.json.
 
-## Mount Collection — 0.5.0.0
+## Mount Collection — 0.5.1.0
 
-Independent passive local-game database with search/sort, current-character unlocks, names/icons/seats/actions/BGM, known game-sheet acquisition links, market eligibility and six independently authored expansion trial/meta tracks. Expansion totals label mapped-only coverage; unverified acquisition, expansion and current obtainability stay Unknown. Totem progress uses simple verified exchanges and four loaded main bags only. Player context-menu lookup is an explicit default-OFF option; no target-info/tooltip hook or game actions.
+Independent passive local-game database with search/sort, current-character unlocks, names/icons/seats/actions/BGM, an attributed 356-mount acquisition snapshot, gil-shop prices/requirements, detailed exchange costs, official source/store links, market eligibility and six independently authored expansion trial/meta tracks. Release expansions use matched community introduction patches, with coverage/mismatched identities shown. Category filters distinguish Online Store, other paid/promotional sources and in-game methods. Current availability stays separately unverified; historical event text is retained. Totem progress uses simple verified exchanges and four loaded main bags only. Player context-menu lookup is an explicit default-OFF option; no target-info/tooltip hook or game actions.
 
 [Data audit and provenance](docs/MOUNT_COLLECTION_METADATA.md) · [Acceptance and rollback](docs/MOUNT_COLLECTION.md). WhichMount was a behavioral README reference only; no code/CSV/resource dataset was copied. Existing utilities and Core pins are unchanged.
