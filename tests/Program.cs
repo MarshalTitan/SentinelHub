@@ -603,6 +603,79 @@ Test("Mount context menu tickets reject stale identity, logout, zone changes, Of
  Check(!MountLookupPolicy.CanOpen(new(0,20,30),0,20,30,true,true,true,1,false));
 });
 
+
+Test("Mount acquisition snapshot is bounded, attributed, uniquely keyed and covers every recorded source", () => {
+ var data=MountAcquisitionMetadata.Snapshot;
+ Check(data.Provider=="FFXIV Collect"&&data.Mounts.Length==356&&data.ResponseSha256.Length==64);
+ Check(data.Mounts.Select(m=>m.Id).Distinct().Count()==data.Mounts.Length);
+ Check(DateTimeOffset.TryParse(data.RetrievedUtc,out _));
+ foreach(var m in data.Mounts){
+  Check(m.Id>0&&!string.IsNullOrWhiteSpace(m.EnglishName)&&m.Sources.Length>0);
+  Check(MountAcquisitionMetadata.Expansion(m.Patch) is >=0 and <=5);
+  foreach(var source in MountAcquisitionMetadata.Sources(m))
+   Check(source.Community&&!string.IsNullOrWhiteSpace(source.Description)&&source.Evidence.Contains("2026-10-17")&&MountAcquisitionMetadata.SafeSourceUrl(source.Url));
+ }
+});
+Test("Mount acquisition identity rejects ID/name drift instead of fuzzy matching", () => {
+ Check(MountAcquisitionMetadata.Find(317,"chrysomallos")?.Id==317);
+ Check(MountAcquisitionMetadata.Find(317,"Wrong mount")==null&&MountAcquisitionMetadata.Find(99999,"Chrysomallos")==null);
+ Check(!MountAcquisitionMetadata.IdentityMatches(0,"a",0,"a")&&!MountAcquisitionMetadata.IdentityMatches(317,"Chrysomallos",316,"Chrysomallos"));
+ Check(MountAcquisitionMetadata.OfficialVendor(317,"Other")==null&&MountAcquisitionMetadata.FindStore(42,"Other")==null);
+});
+Test("Mount release patches map major versions only and preserve unknown future/malformed values", () => {
+ foreach(var (patch,expansion) in new[]{("2.0",0),("3.55",1),("3.55a",1),("3.55b",1),("4.0",2),("5.58",3),("6.3",4),("7.56",5)})
+  Check(MountAcquisitionMetadata.Expansion(patch)==expansion);
+ foreach(var patch in new[]{"","1.23","8.0","7","7.","7.a","7.5.1"," 7.5","7.5x"})
+  Check(MountAcquisitionMetadata.Expansion(patch)==null);
+});
+Test("Online Store, collector editions and historical event sources remain distinct", () => {
+ MountSource[] Sources(uint id)=>MountAcquisitionMetadata.Sources(MountAcquisitionMetadata.Snapshot.Mounts.Single(m=>m.Id==id));
+ Check(Sources(42).Single().Category==MountCategory.OnlineStore);
+ Check(Sources(8).Single().Category==MountCategory.Premium&&!Sources(8).Any(s=>s.Category==MountCategory.OnlineStore));
+ Check(Sources(99).Any(s=>s.Category==MountCategory.Event&&s.Description.Contains("2017"))&&Sources(99).Any(s=>s.Category==MountCategory.OnlineStore));
+ Check(MountAcquisitionMetadata.Snapshot.Mounts.Count(m=>m.Sources.Any(s=>MountAcquisitionMetadata.Category(s)==MountCategory.OnlineStore))==46);
+ Check(MountAcquisitionMetadata.Category(new("New category","Unverified"))==MountCategory.Other);
+});
+Test("Chrysomallos regression records Edelina, Mor Dhona, coordinates and fifty million gil", () => {
+ var row=MountAcquisitionMetadata.Find(317,"Chrysomallos")!;
+ Check(row.Sources.Any(s=>s.Text.Contains("Edelina")&&s.Text.Contains("50,000,000")));
+ var official=MountAcquisitionMetadata.OfficialVendor(317,"Chrysomallos")!;
+ Check(official.Category==MountCategory.GilVendor&&official.Description.Contains("Mor Dhona")&&official.Description.Contains("22.1")&&official.Description.Contains("4.8")&&official.Description.Contains("50,000,000"));
+ var gil=MountAcquisitionMetadata.GilSource(1,0,"Luxury","Horn",50000000,false,["Quest test"]);
+ Check(gil.Description.Contains("50,000,000 gil")&&gil.Description.Contains("Quest test")&&gil.Evidence.Contains("GilShopItem"));
+ Check(MountAcquisitionMetadata.GilSource(1,0,"","Horn",0,false,[]).Description.Contains("price unknown"));
+ Check(MountAcquisitionMetadata.GilSource(1,0,"","Horn",100,true,[]).Description.Contains("price not resolved"));
+});
+Test("Mount shop cost labels reject unknown currency modes, compact aliases and conditional costs", () => {
+ foreach(byte mode in new byte[]{0,4,8,16})Check(MountAcquisitionMetadata.DirectCost(mode,100,0,0));
+ foreach(uint id in Enumerable.Range(0,8).Select(n=>(uint)n))Check(!MountAcquisitionMetadata.DirectCost(0,id,0,0));
+ Check(!MountAcquisitionMetadata.DirectCost(1,100,0,0)&&!MountAcquisitionMetadata.DirectCost(0,100,1,0)&&!MountAcquisitionMetadata.DirectCost(0,100,0,1));
+});
+Test("Official store links have unique reviewed mount identities and safe primary-source URLs", () => {
+ var store=MountAcquisitionMetadata.Store;
+ Check(store.Mounts.Length==45&&store.Mounts.Select(m=>m.Id).Distinct().Count()==45&&store.Mounts.Select(m=>m.Url).Distinct().Count()==45);
+ foreach(var m in store.Mounts){
+  var fact=MountAcquisitionMetadata.Find(m.Id,m.EnglishName);
+  Check(fact is not null&&fact.Sources.Any(s=>MountAcquisitionMetadata.Category(s)==MountCategory.OnlineStore));
+  Check(MountAcquisitionMetadata.SafeSourceUrl(m.Url)&&m.Url.Contains("/product/"));
+ }
+ Check(MountAcquisitionMetadata.FindStore(320,"Rising Phoenix")!.ProductName.Contains("Reborn Phoenix"));
+ Check(MountAcquisitionMetadata.FindStore(397,"Shagcoat Cat")!.ProductName.Contains("Shagcat"));
+ Check(!MountAcquisitionMetadata.SafeSourceUrl("http://ffxivcollect.com/mounts/317"));
+ Check(!MountAcquisitionMetadata.SafeSourceUrl("https://ffxivcollect.com.evil.test/mounts/317"));
+ Check(!MountAcquisitionMetadata.SafeSourceUrl("https://name:pass@ffxivcollect.com/mounts/317"));
+ Check(!MountAcquisitionMetadata.SafeSourceUrl("javascript:alert(1)")&&!MountAcquisitionMetadata.SafeSourceUrl(null));
+});
+Test("Mount enriched sources are searchable and independently filterable without asserting availability", () => {
+ MountEntry Enriched(uint id){var fact=MountAcquisitionMetadata.Snapshot.Mounts.Single(m=>m.Id==id);return M(id,fact.EnglishName,sources:MountAcquisitionMetadata.Sources(fact));}
+ var cat=C(Enriched(317),Enriched(42),Enriched(8),Enriched(99));
+ Check(MountPolicy.Filter(cat,O(),new MountFilter{Search="Edelina"}).Single().Id==317);
+ Check(MountPolicy.Filter(cat,O(),new MountFilter{Category=MountCategory.OnlineStore}).Length==2);
+ Check(MountPolicy.Filter(cat,O(),new MountFilter{Category=MountCategory.GilVendor}).Single().Id==317);
+ Check(MountPolicy.Filter(cat,O(),new MountFilter{Category=MountCategory.Premium}).Single().Id==8);
+ Check(MountPolicy.Filter(cat,O(),new MountFilter{Obtainable=1}).Length==0);
+});
+
 Console.WriteLine(passed + " policy test groups passed.");
 
 sealed class FakeLatencyRuntime : ILatencyRuntime

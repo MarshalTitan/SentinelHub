@@ -3,7 +3,7 @@ using Dalamud.Plugin.Services;
 using Lumina.Excel.Sheets;
 namespace SentinelHub.Mounts;
 
-// Bounded, framework-thread sheet traversal. No files, remote requests or game actions.
+// Bounded framework-thread sheet traversal plus frozen embedded acquisition facts. No remote requests or game actions.
 public sealed class MountGameDataBuilder(IDataManager data)
 {
     public MountCatalog? Result { get; private set; }
@@ -17,6 +17,7 @@ public sealed class MountGameDataBuilder(IDataManager data)
         var items = new Dictionary<uint, List<MountUnlockItem>>();
         var itemMounts = new Dictionary<uint, uint>();
         var trials = new HashSet<uint>();
+        var metadataMatched = 0;
         int work = 0;
         foreach (var row in data.GetExcelSheet<Mount>())
         {
@@ -25,16 +26,24 @@ public sealed class MountGameDataBuilder(IDataManager data)
             {
                 var english = englishMounts.GetRowOrDefault(row.RowId)?.Singular.ToString() ?? "";
                 var seed = SentinelMountMetadata.Find(english);
+                var acquisition = MountAcquisitionMetadata.Find(row.RowId, english);
                 var actions = new List<string>();
                 if (row.MountAction.RowId != 0 && row.MountAction.IsValid)
                     foreach (var action in row.MountAction.Value.Action)
                         if (action.RowId != 0 && action.IsValid && !string.IsNullOrWhiteSpace(action.Value.Name.ToString()))
                             actions.Add(action.Value.Name.ToString());
                 entries.Add(row.RowId, new(row.RowId, name, english, row.Icon, row.ExtraSeats + 1,
-                    actions.Distinct().ToArray(), row.RideBGM.RowId, 0, seed?.Expansion,
-                    MountKnowledge.Unknown, MountKnowledge.Unknown, [], []));
+                    actions.Distinct().ToArray(), row.RideBGM.RowId, 0, acquisition is not null ? MountAcquisitionMetadata.Expansion(acquisition.Patch) ?? seed?.Expansion : seed?.Expansion,
+                    MountKnowledge.Unknown, MountKnowledge.Unknown, [], []) { ReleasePatch = acquisition?.Patch });
                 sources[row.RowId] = [];
                 items[row.RowId] = [];
+                if (acquisition is not null)
+                {
+                    metadataMatched++;
+                    sources[row.RowId].AddRange(MountAcquisitionMetadata.Sources(acquisition));
+                }
+                if (MountAcquisitionMetadata.OfficialVendor(row.RowId, english) is { } vendor)
+                    sources[row.RowId].Add(vendor);
                 if (seed is not null)
                 {
                     var reward = seed.Reward.Equals(english, StringComparison.OrdinalIgnoreCase);
@@ -82,6 +91,28 @@ public sealed class MountGameDataBuilder(IDataManager data)
                         "Game data: Quest #" + quest.RowId));
             if (++work % 128 == 0) yield return 4;
         }
+        var gilShops = data.GetExcelSheet<GilShop>();
+        foreach (var listing in data.GetSubrowExcelSheet<GilShopItem>().Flatten())
+        {
+            if (itemMounts.TryGetValue(listing.Item.RowId, out var mount) && listing.Item.IsValid)
+            {
+                var shop = gilShops.GetRowOrDefault(listing.RowId);
+                var requirements = new List<string>();
+                foreach (var quest in listing.QuestRequired)
+                    if (quest.RowId != 0) requirements.Add(quest.IsValid ? "quest " + quest.Value.Name.ToString() : "quest #" + quest.RowId);
+                if (listing.AchievementRequired.RowId != 0)
+                    requirements.Add(listing.AchievementRequired.IsValid ? "achievement " + listing.AchievementRequired.Value.Name.ToString() : "achievement #" + listing.AchievementRequired.RowId);
+                if (listing.StateRequired != 0) requirements.Add("additional game state #" + listing.StateRequired);
+                if (shop is { } gilShop)
+                {
+                    if (gilShop.Quest.RowId != 0) requirements.Add(gilShop.Quest.IsValid ? "quest " + gilShop.Quest.Value.Name.ToString() : "quest #" + gilShop.Quest.RowId);
+                    if (gilShop.FestivalId != 0) requirements.Add("festival #" + gilShop.FestivalId + " phase " + gilShop.FestivalPhase);
+                }
+                sources[mount].Add(MountAcquisitionMetadata.GilSource(listing.RowId, listing.SubrowId,
+                    shop?.Name.ToString() ?? "", listing.Item.Value.Name.ToString(), listing.Item.Value.PriceMid, listing.IsHQ, requirements.Distinct().ToArray()));
+            }
+            if (++work % 192 == 0) yield return 5;
+        }
         var exchanges = new List<MountExchange>();
         foreach (var shop in data.GetExcelSheet<SpecialShop>())
         {
@@ -90,9 +121,20 @@ public sealed class MountGameDataBuilder(IDataManager data)
                 for (int r = 0; r < offer.ReceiveItems.Count; r++)
                 {
                     if (offer.ReceiveItems[r].ReceiveCount == 0 || !itemMounts.TryGetValue(offer.ReceiveItems[r].Item.RowId, out var mount)) continue;
+                    var costs = new List<string>();
+                    foreach (var cost in offer.ItemCosts)
+                    {
+                        if (cost.CurrencyCost == 0) continue;
+                        var direct = MountAcquisitionMetadata.DirectCost(shop.UseCurrencyType, cost.ItemCost.RowId, cost.CostType, cost.CollectabilityCost)
+                            && cost.ItemCost.IsValid;
+                        costs.Add(cost.CurrencyCost.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " x "
+                            + (direct ? cost.ItemCost.Value.Name.ToString() : "unresolved currency/condition #" + cost.ItemCost.RowId));
+                    }
                     sources[mount].Add(new(MountCategory.Exchange,
-                        "Exchange entry: " + (string.IsNullOrWhiteSpace(shop.Name.ToString()) ? "Special shop #" + shop.RowId : shop.Name.ToString()),
-                        "Game data: SpecialShop #" + shop.RowId + "; conditions/availability not verified"));
+                        "Exchange: " + (string.IsNullOrWhiteSpace(shop.Name.ToString()) ? "Special shop #" + shop.RowId : shop.Name.ToString())
+                        + "; receive " + offer.ReceiveItems[r].ReceiveCount + " x " + offer.ReceiveItems[r].Item.Value.Name.ToString()
+                        + (costs.Count > 0 ? "; cost " + string.Join(" + ", costs) : "; cost not resolved"),
+                        "Game data: SpecialShop #" + shop.RowId + "; unlock/availability conditions are not checked"));
                     var nonzeroCosts = 0;
                     for (int c = 0; c < offer.ItemCosts.Count; c++) if (offer.ItemCosts[c].CurrencyCost != 0) nonzeroCosts++;
                     for (int c = 0; c < offer.ItemCosts.Count; c++)
@@ -114,11 +156,12 @@ public sealed class MountGameDataBuilder(IDataManager data)
         var final = entries.Values.Select(e => e with {
             Items = items[e.Id].OrderBy(i => i.Id).ToArray(),
             Marketable = MountPolicy.MarketStatus(items[e.Id]),
-            Sources = sources[e.Id].Distinct().OrderBy(s => s.Category).ThenBy(s => s.Description).ToArray(),
+            Sources = sources[e.Id].Distinct().OrderBy(s => s.Community ? 1 : s.Url is not null ? 0 : 2).ThenBy(s => s.Category).ThenBy(s => s.Description).ToArray(),
             BgmMountCount = bgmCounts.GetValueOrDefault(e.BgmId),
         }).OrderBy(e => e.Id).ToArray();
         var tracks = SentinelMountMetadata.Tracks.Select(t => MountPolicy.ResolveTrack(t, final)).ToArray();
         var unresolved = tracks.Sum(t => t.Members.Count(m => m.MountId is null) + (t.RewardId is null ? 1 : 0));
-        Result = new(final, tracks, exchanges.Distinct().OrderBy(e => e.MountId).ThenBy(e => e.ItemId).ToArray(), expansions, unresolved);
+        Result = new(final, tracks, exchanges.Distinct().OrderBy(e => e.MountId).ThenBy(e => e.ItemId).ToArray(), expansions, unresolved) { MetadataDate = MountAcquisitionMetadata.Snapshot.RetrievedUtc[..10], MetadataMatched = metadataMatched,
+            MetadataRejected = MountAcquisitionMetadata.Snapshot.Mounts.Length - metadataMatched };
     }
 }

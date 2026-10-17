@@ -1,0 +1,4189 @@
+{
+  "Provider": "FFXIV Collect",
+  "Endpoint": "https://ffxivcollect.com/api/mounts?language=en",
+  "RetrievedUtc": "2026-10-17T05:29:56.813025+00:00",
+  "ResponseSha256": "1f4d42317d9666fc30a2be2af56a1cd140c67f6937c2c16b36b56b026250f72f",
+  "Permission": "https://ffxivcollect.com/ ; https://www.reddit.com/r/ffxiv/comments/i75cb0/ffxiv_collect_whats_new/",
+  "Mounts": [
+    {
+      "Id": 1,
+      "EnglishName": "Company Chocobo",
+      "Patch": "2.0",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "My Little Chocobo (Immortal Flames)"
+        },
+        {
+          "Type": "Quest",
+          "Text": "My Little Chocobo (Maelstrom)"
+        },
+        {
+          "Type": "Quest",
+          "Text": "My Little Chocobo (Twin Adder)"
+        }
+      ]
+    },
+    {
+      "Id": 4,
+      "EnglishName": "Goobbue",
+      "Patch": "2.0",
+      "Sources": [
+        {
+          "Type": "Other",
+          "Text": "At level 30 or above, speak with the Wandering Minstrel in Eastern La Noscea (Final Fantasy XIV 1.0)"
+        }
+      ]
+    },
+    {
+      "Id": 5,
+      "EnglishName": "Legacy Chocobo",
+      "Patch": "2.0",
+      "Sources": [
+        {
+          "Type": "Other",
+          "Text": "Legacy Campaign"
+        }
+      ]
+    },
+    {
+      "Id": 6,
+      "EnglishName": "Magitek Armor",
+      "Patch": "2.0",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "The Ultimate Weapon"
+        }
+      ]
+    },
+    {
+      "Id": 8,
+      "EnglishName": "Coeurl",
+      "Patch": "2.0",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "A Realm Reborn Collector's Edition"
+        }
+      ]
+    },
+    {
+      "Id": 9,
+      "EnglishName": "Ahriman",
+      "Patch": "2.0",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Jonathas - Old Gridania - 6 Achievement Certificates"
+        }
+      ]
+    },
+    {
+      "Id": 15,
+      "EnglishName": "Unicorn",
+      "Patch": "2.0",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "Unicorn Power"
+        }
+      ]
+    },
+    {
+      "Id": 18,
+      "EnglishName": "Behemoth",
+      "Patch": "2.1",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Jonathas - Old Gridania - 6 Achievement Certificates"
+        }
+      ]
+    },
+    {
+      "Id": 19,
+      "EnglishName": "Cavalry Drake",
+      "Patch": "2.1",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Amalj'aa Vendor - Ring of Ash (Southern Thanalan) - 120,000 Gil (Rank 4)"
+        }
+      ]
+    },
+    {
+      "Id": 20,
+      "EnglishName": "Laurel Goobbue",
+      "Patch": "2.1",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Sylphic Vendor - Little Solace (East Shroud) - 120,000 Gil (Rank 4)"
+        }
+      ]
+    },
+    {
+      "Id": 21,
+      "EnglishName": "Gilded Magitek Armor",
+      "Patch": "2.1",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Everybody's Darling"
+        }
+      ]
+    },
+    {
+      "Id": 22,
+      "EnglishName": "Nightmare",
+      "Patch": "2.1",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Bowl of Embers (Extreme)"
+        },
+        {
+          "Type": "Trial",
+          "Text": "The Howling Eye (Extreme)"
+        },
+        {
+          "Type": "Trial",
+          "Text": "The Navel (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 25,
+      "EnglishName": "Fat Chocobo",
+      "Patch": "2.2",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "A Realm Reborn Collector's Edition"
+        }
+      ]
+    },
+    {
+      "Id": 26,
+      "EnglishName": "Cavalry Elbst",
+      "Patch": "2.2",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Sahagin Vendor - Novv's Nursery (Western La Noscea) - 120,000 Gil (Rank 4)"
+        }
+      ]
+    },
+    {
+      "Id": 27,
+      "EnglishName": "Bomb Palanquin",
+      "Patch": "2.2",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Kobold Vendor - 789th Order Dig (Outer La Noscea) - 120,000 Gil (Rank 4)"
+        }
+      ]
+    },
+    {
+      "Id": 28,
+      "EnglishName": "Aithon",
+      "Patch": "2.2",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Bowl of Embers (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 29,
+      "EnglishName": "Xanthos",
+      "Patch": "2.2",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Howling Eye (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 30,
+      "EnglishName": "Gullfaxi",
+      "Patch": "2.2",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Navel (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 31,
+      "EnglishName": "Enbarr",
+      "Patch": "2.2",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The *Whorleater* (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 32,
+      "EnglishName": "Warlion",
+      "Patch": "2.2",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "But Somebody's Gotta Do It (Paladin)"
+        }
+      ]
+    },
+    {
+      "Id": 33,
+      "EnglishName": "Warbear",
+      "Patch": "2.2",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "But Somebody's Gotta Do It (Warrior)"
+        }
+      ]
+    },
+    {
+      "Id": 34,
+      "EnglishName": "Draught Chocobo",
+      "Patch": "2.3",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Recruit a Friend Campaign reward"
+        }
+      ]
+    },
+    {
+      "Id": 35,
+      "EnglishName": "Direwolf",
+      "Patch": "2.35",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Ixali Vendor - Ehcatl (North Shroud) - 120,000 Gil (Rank 7)"
+        }
+      ]
+    },
+    {
+      "Id": 36,
+      "EnglishName": "Storm Warsteed",
+      "Patch": "2.3",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "A Line in the Storm IV"
+        }
+      ]
+    },
+    {
+      "Id": 37,
+      "EnglishName": "Serpent Warsteed",
+      "Patch": "2.3",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "A Line in the Glade IV"
+        }
+      ]
+    },
+    {
+      "Id": 38,
+      "EnglishName": "Flame Warsteed",
+      "Patch": "2.3",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "A Line in the Sand IV"
+        }
+      ]
+    },
+    {
+      "Id": 40,
+      "EnglishName": "Markab",
+      "Patch": "2.3",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Striking Tree (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 41,
+      "EnglishName": "Ceremony Chocobo",
+      "Patch": "2.45",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Ceremony of Eternal Bonding (Gold/Platinum)"
+        }
+      ]
+    },
+    {
+      "Id": 42,
+      "EnglishName": "Sleipnir",
+      "Patch": "2.38",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 43,
+      "EnglishName": "Boreas",
+      "Patch": "2.4",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Akh Afah Amphitheatre (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 44,
+      "EnglishName": "Parade Chocobo",
+      "Patch": "2.4",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Leaving a Better Impression II"
+        }
+      ]
+    },
+    {
+      "Id": 45,
+      "EnglishName": "Black Chocobo",
+      "Patch": "3.0",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "Divine Intervention"
+        }
+      ]
+    },
+    {
+      "Id": 46,
+      "EnglishName": "Adamantoise",
+      "Patch": "2.51",
+      "Sources": [
+        {
+          "Type": "Gold Saucer",
+          "Text": "200,000 MGP"
+        }
+      ]
+    },
+    {
+      "Id": 47,
+      "EnglishName": "Kirin",
+      "Patch": "2.5",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "A Legend for a Legend"
+        }
+      ]
+    },
+    {
+      "Id": 48,
+      "EnglishName": "Logistics System",
+      "Patch": "2.5",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Behind Enemy Lines I"
+        }
+      ]
+    },
+    {
+      "Id": 49,
+      "EnglishName": "Fenrir",
+      "Patch": "2.51",
+      "Sources": [
+        {
+          "Type": "Gold Saucer",
+          "Text": "1,000,000 MGP"
+        }
+      ]
+    },
+    {
+      "Id": 50,
+      "EnglishName": "Midgardsormr",
+      "Patch": "3.0",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "Fetters of Lament"
+        }
+      ]
+    },
+    {
+      "Id": 52,
+      "EnglishName": "Amber Draught Chocobo",
+      "Patch": "3.0",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Calamity Salvager - 8 Gold Chocobo Feathers (Recruit a Friend Campaign)"
+        }
+      ]
+    },
+    {
+      "Id": 53,
+      "EnglishName": "Sanuwa",
+      "Patch": "3.1",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Luna Vanu - Ok' Gundu Nakki (The Sea of Clouds) - 200,000 Gil (Rank 7)"
+        }
+      ]
+    },
+    {
+      "Id": 54,
+      "EnglishName": "Griffin",
+      "Patch": "3.0",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Heavensward Collector's Edition"
+        }
+      ]
+    },
+    {
+      "Id": 55,
+      "EnglishName": "Manacutter",
+      "Patch": "3.0",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "Into the Aery"
+        }
+      ]
+    },
+    {
+      "Id": 56,
+      "EnglishName": "War Panther",
+      "Patch": "3.0",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "But Somebody's Gotta Do It (Dark Knight)"
+        }
+      ]
+    },
+    {
+      "Id": 58,
+      "EnglishName": "Gobwalker",
+      "Patch": "3.05",
+      "Sources": [
+        {
+          "Type": "Raid",
+          "Text": "Alexander - The Burden of the Father (Savage)"
+        }
+      ]
+    },
+    {
+      "Id": 59,
+      "EnglishName": "Twintania",
+      "Patch": "3.0",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Calamity Salvager - 15 Gold Chocobo Feathers (Recruit a Friend Campaign)"
+        }
+      ]
+    },
+    {
+      "Id": 62,
+      "EnglishName": "Witch's Broom",
+      "Patch": "3.07",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "All Saints' Wake (2015)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 67,
+      "EnglishName": "Pegasus",
+      "Patch": "3.1",
+      "Sources": [
+        {
+          "Type": "Skybuilders",
+          "Text": "Enie - The Firmament - 4,200 Skybuilders' Scrips"
+        }
+      ]
+    },
+    {
+      "Id": 68,
+      "EnglishName": "White Devil",
+      "Patch": "3.1",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 69,
+      "EnglishName": "Red Baron",
+      "Patch": "3.1",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 70,
+      "EnglishName": "Wyvern",
+      "Patch": "3.1",
+      "Sources": [
+        {
+          "Type": "Hunts",
+          "Text": "Bertana - Idyllshire - 6 Clan Mark Logs"
+        }
+      ]
+    },
+    {
+      "Id": 71,
+      "EnglishName": "SDS Fenrir",
+      "Patch": "4.4",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Fan Festival 2018-19"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 72,
+      "EnglishName": "Kongamato",
+      "Patch": "3.2",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Vath Stickpeddler - Loth ast Vath (The Dravanian Forelands) - 200,000 Gil (Rank 7)"
+        }
+      ]
+    },
+    {
+      "Id": 73,
+      "EnglishName": "Zu",
+      "Patch": "3.2",
+      "Sources": [
+        {
+          "Type": "Voyages",
+          "Text": "Spoils Collector - 1 Iron Voyage Spoil (Sea of Clouds Sector 24)"
+        }
+      ]
+    },
+    {
+      "Id": 74,
+      "EnglishName": "Bennu",
+      "Patch": "3.25",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 75,
+      "EnglishName": "White Lanner",
+      "Patch": "3.2",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Limitless Blue (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 76,
+      "EnglishName": "Rose Lanner",
+      "Patch": "3.2",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Thok ast Thok (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 77,
+      "EnglishName": "Round Lanner",
+      "Patch": "3.2",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Minstrel's Ballad: Thordan's Reign"
+        }
+      ]
+    },
+    {
+      "Id": 78,
+      "EnglishName": "Warring Lanner",
+      "Patch": "3.2",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Containment Bay S1T7 (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 80,
+      "EnglishName": "Gloria-class Airship",
+      "Patch": "3.2",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Blood Born IV"
+        }
+      ]
+    },
+    {
+      "Id": 81,
+      "EnglishName": "Flying Cumulus",
+      "Patch": "3.5",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "In-Game Item Campaign"
+        }
+      ]
+    },
+    {
+      "Id": 82,
+      "EnglishName": "Original Fat Chocobo",
+      "Patch": "3.2",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "In-Game Item Campaign"
+        }
+      ]
+    },
+    {
+      "Id": 83,
+      "EnglishName": "Astrope",
+      "Patch": "3.3",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "I Hope Mentor Will Notice Me VI"
+        }
+      ]
+    },
+    {
+      "Id": 84,
+      "EnglishName": "Fat Moogle",
+      "Patch": "3.35",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 86,
+      "EnglishName": "Cloud Mallow",
+      "Patch": "3.3",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Mogmul Mogbelly - Bahrr Lehs (The Churning Mists) - 200,000 Gil (Rank 7)"
+        }
+      ]
+    },
+    {
+      "Id": 87,
+      "EnglishName": "Whisper-go",
+      "Patch": "3.35",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "Yo-kai Watch Collaboration - Obtain 13 Yo-kai Minions"
+        }
+      ]
+    },
+    {
+      "Id": 90,
+      "EnglishName": "Dark Lanner",
+      "Patch": "3.3",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Minstrel's Ballad: Nidhogg's Rage"
+        }
+      ]
+    },
+    {
+      "Id": 91,
+      "EnglishName": "Aerodynamics System",
+      "Patch": "3.3",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "In a Blaze of Glory V"
+        }
+      ]
+    },
+    {
+      "Id": 92,
+      "EnglishName": "Disembodied Head",
+      "Patch": "3.35",
+      "Sources": [
+        {
+          "Type": "Deep Dungeon",
+          "Text": "E-Una-Kotor - Quarrymill (South Shroud) - 10 Gelmorran Potsherds"
+        }
+      ]
+    },
+    {
+      "Id": 93,
+      "EnglishName": "Managarm",
+      "Patch": "4.1",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Calamity Salvager - 8 Gold Chocobo Feathers (Recruit a Friend Campaign)"
+        }
+      ]
+    },
+    {
+      "Id": 94,
+      "EnglishName": "Whisper A-go-go",
+      "Patch": "3.35",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "Yo-kai Watch Collaboration - Obtain 13 Yo-kai Weapons"
+        }
+      ]
+    },
+    {
+      "Id": 95,
+      "EnglishName": "Goten",
+      "Patch": "3.5",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Fame Fatale"
+        }
+      ]
+    },
+    {
+      "Id": 96,
+      "EnglishName": "Ginga",
+      "Patch": "3.5",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Frontline Fury"
+        }
+      ]
+    },
+    {
+      "Id": 97,
+      "EnglishName": "Mystic Panda",
+      "Patch": "4.1",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 98,
+      "EnglishName": "Sophic Lanner",
+      "Patch": "3.4",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Containment Bay P1T6 (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 99,
+      "EnglishName": "Starlight Bear",
+      "Patch": "4.1",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "The Starlight Celebration (2017)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 100,
+      "EnglishName": "Black Pegasus",
+      "Patch": "3.4",
+      "Sources": [
+        {
+          "Type": "Deep Dungeon",
+          "Text": "The Palace of the Dead - Gold Sack"
+        }
+      ]
+    },
+    {
+      "Id": 101,
+      "EnglishName": "Arrhidaeus",
+      "Patch": "3.4",
+      "Sources": [
+        {
+          "Type": "Raid",
+          "Text": "Alexander - The Soul of the Creator (Savage)"
+        }
+      ]
+    },
+    {
+      "Id": 102,
+      "EnglishName": "Raigo",
+      "Patch": "3.5",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Furious Fatalities"
+        }
+      ]
+    },
+    {
+      "Id": 104,
+      "EnglishName": "Demonic Lanner",
+      "Patch": "3.5",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Containment Bay Z1T9 (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 105,
+      "EnglishName": "Firebird",
+      "Patch": "3.5",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "Fiery Wings, Fiery Hearts"
+        }
+      ]
+    },
+    {
+      "Id": 106,
+      "EnglishName": "Eggshilaration System",
+      "Patch": "3.5",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "Hatching-tide (2017)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 108,
+      "EnglishName": "Lone Hellhound",
+      "Patch": "3.55a",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "The Feast: Season 3"
+        }
+      ]
+    },
+    {
+      "Id": 109,
+      "EnglishName": "Pack Hellhound",
+      "Patch": "3.55a",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "The Feast: Season 3"
+        }
+      ]
+    },
+    {
+      "Id": 110,
+      "EnglishName": "Archon Throne",
+      "Patch": "3.5",
+      "Sources": [
+        {
+          "Type": "Gold Saucer",
+          "Text": "750,000 MGP"
+        }
+      ]
+    },
+    {
+      "Id": 111,
+      "EnglishName": "Syldra",
+      "Patch": "4.0",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Stormblood Collector's Edition"
+        }
+      ]
+    },
+    {
+      "Id": 112,
+      "EnglishName": "Falcon",
+      "Patch": "4.05",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Fly the Falcon Mount Campaign"
+        },
+        {
+          "Type": "Event",
+          "Text": "Moogle Treasure Trove Event"
+        }
+      ]
+    },
+    {
+      "Id": 113,
+      "EnglishName": "Lone Faehound",
+      "Patch": "4.0",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "The Feast: Season 4"
+        }
+      ]
+    },
+    {
+      "Id": 114,
+      "EnglishName": "Pack Faehound",
+      "Patch": "4.0",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "The Feast: Season 4"
+        }
+      ]
+    },
+    {
+      "Id": 115,
+      "EnglishName": "Blissful Kamuy",
+      "Patch": "4.0",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Emanation (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 116,
+      "EnglishName": "Reveling Kamuy",
+      "Patch": "4.0",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Pool of Tribute (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 121,
+      "EnglishName": "Magitek Predator",
+      "Patch": "4.0",
+      "Sources": [
+        {
+          "Type": "Dungeon",
+          "Text": "Ala Mhigo"
+        }
+      ]
+    },
+    {
+      "Id": 122,
+      "EnglishName": "Battle Lion",
+      "Patch": "4.0",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Tank You, Paladin III"
+        }
+      ]
+    },
+    {
+      "Id": 123,
+      "EnglishName": "Battle Bear",
+      "Patch": "4.0",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Tank You, Warrior III"
+        }
+      ]
+    },
+    {
+      "Id": 124,
+      "EnglishName": "Battle Panther",
+      "Patch": "4.0",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Tank You, Dark Knight III"
+        }
+      ]
+    },
+    {
+      "Id": 125,
+      "EnglishName": "Yol",
+      "Patch": "4.0",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "In the Footsteps of Bardam the Brave"
+        }
+      ]
+    },
+    {
+      "Id": 126,
+      "EnglishName": "Alte Roite",
+      "Patch": "4.05",
+      "Sources": [
+        {
+          "Type": "Raid",
+          "Text": "Deltascape V4.0 (Savage)"
+        }
+      ]
+    },
+    {
+      "Id": 127,
+      "EnglishName": "Centurio Tiger",
+      "Patch": "4.0",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "You Got Game"
+        }
+      ]
+    },
+    {
+      "Id": 130,
+      "EnglishName": "Ixion",
+      "Patch": "4.0",
+      "Sources": [
+        {
+          "Type": "FATE",
+          "Text": "Eschina - Rhalgr's Reach - 12 Ixion Horns (FATE \"A Horse Outside\" - The Lochs)"
+        },
+        {
+          "Type": "Wondrous Tails",
+          "Text": "300 Faux Leaves"
+        },
+        {
+          "Type": "Wondrous Tails",
+          "Text": "1 Khloe's Silver Certificate of Commendation"
+        }
+      ]
+    },
+    {
+      "Id": 133,
+      "EnglishName": "Legendary Kamuy",
+      "Patch": "4.1",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Minstrel's Ballad: Shinryu's Domain"
+        }
+      ]
+    },
+    {
+      "Id": 135,
+      "EnglishName": "Nezha Chariot",
+      "Patch": "4.2",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 136,
+      "EnglishName": "Striped Ray",
+      "Patch": "4.1",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Shikitahe - Tamamizu (The Ruby Sea) - 12 Kojin Sango (Rank 8)"
+        }
+      ]
+    },
+    {
+      "Id": 138,
+      "EnglishName": "Aquamarine Carbuncle",
+      "Patch": "4.15",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 139,
+      "EnglishName": "Citrine Carbuncle",
+      "Patch": "4.15",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 140,
+      "EnglishName": "Flying Chair",
+      "Patch": "4.1",
+      "Sources": [
+        {
+          "Type": "Crafting",
+          "Text": "Crafted by Alchemist"
+        }
+      ]
+    },
+    {
+      "Id": 141,
+      "EnglishName": "Magitek Avenger",
+      "Patch": "4.1",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Die Another Day III"
+        }
+      ]
+    },
+    {
+      "Id": 142,
+      "EnglishName": "Korpokkur Kolossus",
+      "Patch": "4.1",
+      "Sources": [
+        {
+          "Type": "Gold Saucer",
+          "Text": "750,000 MGP"
+        }
+      ]
+    },
+    {
+      "Id": 143,
+      "EnglishName": "Red Hare",
+      "Patch": "4.3",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 144,
+      "EnglishName": "Auspicious Kamuy",
+      "Patch": "4.2",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Jade Stoa (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 145,
+      "EnglishName": "Magitek Death Claw",
+      "Patch": "4.2",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Jonathas - Old Gridania - 6 Achievement Certificates"
+        }
+      ]
+    },
+    {
+      "Id": 146,
+      "EnglishName": "Marid",
+      "Patch": "4.2",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Madhura - Castellum Velodyna (The Fringes) - 18 Ananta Dreamstaves (Rank 7)"
+        }
+      ]
+    },
+    {
+      "Id": 148,
+      "EnglishName": "True Griffin",
+      "Patch": "4.2",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Madhura - Castellum Velodyna (The Fringes) - 18 Ananta Dreamstaves (Rank 8)"
+        }
+      ]
+    },
+    {
+      "Id": 150,
+      "EnglishName": "Tyrannosaur",
+      "Patch": "4.25",
+      "Sources": [
+        {
+          "Type": "Eureka",
+          "Text": "Anemos Lockbox"
+        }
+      ]
+    },
+    {
+      "Id": 151,
+      "EnglishName": "Regalia Type-G",
+      "Patch": "4.5",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "Final Fantasy XV Collaboration"
+        }
+      ]
+    },
+    {
+      "Id": 152,
+      "EnglishName": "Broken Heart (right)",
+      "Patch": "4.2",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "Valentione's Day (2018)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 153,
+      "EnglishName": "Broken Heart (left)",
+      "Patch": "4.2",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "Valentione's Day (2018)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 154,
+      "EnglishName": "Typhon",
+      "Patch": "4.4",
+      "Sources": [
+        {
+          "Type": "Gold Saucer",
+          "Text": "750,000 MGP"
+        }
+      ]
+    },
+    {
+      "Id": 156,
+      "EnglishName": "Air Force",
+      "Patch": "4.2",
+      "Sources": [
+        {
+          "Type": "Raid",
+          "Text": "Sigmascape V4.0 (Savage)"
+        }
+      ]
+    },
+    {
+      "Id": 158,
+      "EnglishName": "Lunar Kamuy",
+      "Patch": "4.3",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Minstrel's Ballad: Tsukuyomi's Pain"
+        }
+      ]
+    },
+    {
+      "Id": 159,
+      "EnglishName": "Dodo",
+      "Patch": "4.35",
+      "Sources": [
+        {
+          "Type": "Deep Dungeon",
+          "Text": "Heaven-on-High - Platinum Sack"
+        }
+      ]
+    },
+    {
+      "Id": 160,
+      "EnglishName": "Indigo Whale",
+      "Patch": "4.4",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 161,
+      "EnglishName": "Rathalos",
+      "Patch": "4.36",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Great Hunt (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 162,
+      "EnglishName": "Magitek Conveyor",
+      "Patch": "4.3",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "The Feast: Season 7"
+        }
+      ]
+    },
+    {
+      "Id": 163,
+      "EnglishName": "Prototype Conveyor",
+      "Patch": "4.31",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "The Feast: Season 8"
+        }
+      ]
+    },
+    {
+      "Id": 164,
+      "EnglishName": "Mikoshi",
+      "Patch": "4.3",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Gyosho - Dhoro Iloh (The Azim Steppe) - 20 Namazu Koban (Rank 8)"
+        }
+      ]
+    },
+    {
+      "Id": 166,
+      "EnglishName": "Juedi",
+      "Patch": "4.35",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Dressed for Heaven"
+        }
+      ]
+    },
+    {
+      "Id": 167,
+      "EnglishName": "Logistics Node",
+      "Patch": "6.3",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "PvP Series 3 - Level 15"
+        },
+        {
+          "Type": "PvP",
+          "Text": "5,000 Trophy Crystals"
+        }
+      ]
+    },
+    {
+      "Id": 168,
+      "EnglishName": "Safeguard System",
+      "Patch": "4.3",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Front and Center V"
+        }
+      ]
+    },
+    {
+      "Id": 170,
+      "EnglishName": "Grani",
+      "Patch": "5.0",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Shadowbringers Collector's Edition"
+        }
+      ]
+    },
+    {
+      "Id": 171,
+      "EnglishName": "Fatter Cat",
+      "Patch": "4.45",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 172,
+      "EnglishName": "Euphonious Kamuy",
+      "Patch": "4.4",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Hells' Kier (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 173,
+      "EnglishName": "Model O",
+      "Patch": "4.4",
+      "Sources": [
+        {
+          "Type": "Raid",
+          "Text": "Alphascape V4.0 (Savage)"
+        }
+      ]
+    },
+    {
+      "Id": 174,
+      "EnglishName": "Magitek Sky Armor",
+      "Patch": "4.4",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "20,000 Wolf Marks"
+        }
+      ]
+    },
+    {
+      "Id": 175,
+      "EnglishName": "Magicked Carpet",
+      "Patch": "4.45",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 176,
+      "EnglishName": "Magna Roader",
+      "Patch": "4.45",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "The Feast: Season 11"
+        }
+      ]
+    },
+    {
+      "Id": 177,
+      "EnglishName": "Fat Black Chocobo",
+      "Patch": "4.45",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "In-Game Item Campaign"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Twitch Campaign (2021)"
+        }
+      ]
+    },
+    {
+      "Id": 178,
+      "EnglishName": "Eldthurs",
+      "Patch": "4.45",
+      "Sources": [
+        {
+          "Type": "Eureka",
+          "Text": "Happy Bunny Lockbox - Eureka Pyros"
+        },
+        {
+          "Type": "Occult Crescent",
+          "Text": "South Horn - Silver Coffer"
+        }
+      ]
+    },
+    {
+      "Id": 179,
+      "EnglishName": "Maxima Roader",
+      "Patch": "4.45",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "The Feast: Season 12"
+        }
+      ]
+    },
+    {
+      "Id": 180,
+      "EnglishName": "Sabotender Emperador",
+      "Patch": "4.45",
+      "Sources": [
+        {
+          "Type": "Gold Saucer",
+          "Text": "2,000,000 MGP"
+        }
+      ]
+    },
+    {
+      "Id": 181,
+      "EnglishName": "Kamuy of the Nine Tails",
+      "Patch": "4.45",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "A Lone Wolf No More"
+        }
+      ]
+    },
+    {
+      "Id": 182,
+      "EnglishName": "Hallowed Kamuy",
+      "Patch": "4.45",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Wreath of Snakes (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 183,
+      "EnglishName": "War Tiger",
+      "Patch": "5.0",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Tank You, Gunbreaker II"
+        }
+      ]
+    },
+    {
+      "Id": 184,
+      "EnglishName": "Eurekan Petrel",
+      "Patch": "4.5",
+      "Sources": [
+        {
+          "Type": "Eureka",
+          "Text": "Happy Bunny Lockbox - Eureka Hydatos"
+        },
+        {
+          "Type": "Occult Crescent",
+          "Text": "South Horn - Bronze/Silver Coffer"
+        }
+      ]
+    },
+    {
+      "Id": 185,
+      "EnglishName": "Magitek Avenger A1",
+      "Patch": "4.5",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Out of Hiding"
+        }
+      ]
+    },
+    {
+      "Id": 186,
+      "EnglishName": "Demi-Ozma",
+      "Patch": "4.5",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "We're on Your Side I"
+        }
+      ]
+    },
+    {
+      "Id": 187,
+      "EnglishName": "Amaro",
+      "Patch": "5.0",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "A Life of Adventure IV"
+        }
+      ]
+    },
+    {
+      "Id": 188,
+      "EnglishName": "Skyslipper",
+      "Patch": "5.05",
+      "Sources": [
+        {
+          "Type": "Raid",
+          "Text": "Eden's Gate: Sepulture (Savage)"
+        }
+      ]
+    },
+    {
+      "Id": 189,
+      "EnglishName": "Fae Gwiber",
+      "Patch": "5.0",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Dancing Plague (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 190,
+      "EnglishName": "Triceratops",
+      "Patch": "5.0",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Nuts for Nutsy"
+        }
+      ]
+    },
+    {
+      "Id": 191,
+      "EnglishName": "Ironfrog Mover",
+      "Patch": "5.0",
+      "Sources": [
+        {
+          "Type": "FATE",
+          "Text": "Fathard - Eulmore - 12 Formidable Cog (FATE \"A Finale Most Formidable\" - Kholusia)"
+        }
+      ]
+    },
+    {
+      "Id": 192,
+      "EnglishName": "Innocent Gwiber",
+      "Patch": "5.0",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Crown of the Immaculate (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 193,
+      "EnglishName": "Magicked Bed",
+      "Patch": "5.05",
+      "Sources": [
+        {
+          "Type": "Crafting",
+          "Text": "Crafted by Carpenter - The Dungeons of Lyhe Ghiah"
+        }
+      ]
+    },
+    {
+      "Id": 194,
+      "EnglishName": "Circus Ahriman",
+      "Patch": "5.0",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "All Saints' Wake (2019)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 195,
+      "EnglishName": "Sunspun Cumulus",
+      "Patch": "5.0",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 197,
+      "EnglishName": "Battle Tiger",
+      "Patch": "5.0",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Tank You, Gunbreaker III"
+        }
+      ]
+    },
+    {
+      "Id": 200,
+      "EnglishName": "Morbol",
+      "Patch": "5.15",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "True Blue"
+        }
+      ]
+    },
+    {
+      "Id": 201,
+      "EnglishName": "Portly Porxie",
+      "Patch": "5.1",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Jul Oul - Lydha Lran (Il Mheg) - 18 Fae Fancies (Rank 7)"
+        }
+      ]
+    },
+    {
+      "Id": 202,
+      "EnglishName": "Epimetheus",
+      "Patch": "5.2",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "The Feast: Season 14"
+        }
+      ]
+    },
+    {
+      "Id": 203,
+      "EnglishName": "Menoetius",
+      "Patch": "5.2",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "The Feast: Season 15"
+        }
+      ]
+    },
+    {
+      "Id": 204,
+      "EnglishName": "Construct VII",
+      "Patch": "5.15",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "One Steppe at a Time V"
+        }
+      ]
+    },
+    {
+      "Id": 205,
+      "EnglishName": "Shadow Gwiber",
+      "Patch": "5.1",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Minstrel's Ballad: Hades's Elegy"
+        }
+      ]
+    },
+    {
+      "Id": 206,
+      "EnglishName": "Spriggan Stonecarrier",
+      "Patch": "5.2",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 207,
+      "EnglishName": "Forgiven Reticence",
+      "Patch": "5.1",
+      "Sources": [
+        {
+          "Type": "Hunts",
+          "Text": "Xylle (The Crystarium) / Ilfroy (Eulmore) - 3,200 Sacks of Nuts"
+        }
+      ]
+    },
+    {
+      "Id": 208,
+      "EnglishName": "Dhalmel",
+      "Patch": "5.21",
+      "Sources": [
+        {
+          "Type": "Skybuilders",
+          "Text": "Kupo of Fortune"
+        }
+      ]
+    },
+    {
+      "Id": 209,
+      "EnglishName": "Albino Karakul",
+      "Patch": "5.21",
+      "Sources": [
+        {
+          "Type": "Skybuilders",
+          "Text": "Enie - The Firmament - 8,400 Skybuilders' Scrips"
+        },
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Gold Ancient Record - Auxesia"
+        }
+      ]
+    },
+    {
+      "Id": 211,
+      "EnglishName": "Ufiti",
+      "Patch": "5.11",
+      "Sources": [
+        {
+          "Type": "Skybuilders",
+          "Text": "Enie - The Firmament - 8,400 Skybuilders' Scrips"
+        },
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Gold Ancient Record - Oizys"
+        }
+      ]
+    },
+    {
+      "Id": 212,
+      "EnglishName": "Deinonychus",
+      "Patch": "5.55",
+      "Sources": [
+        {
+          "Type": "Bozja",
+          "Text": "Dalriada - Final Boss Chest"
+        },
+        {
+          "Type": "Occult Crescent",
+          "Text": "South Horn - Bronze/Silver Coffer"
+        }
+      ]
+    },
+    {
+      "Id": 213,
+      "EnglishName": "Construct 14",
+      "Patch": "5.35",
+      "Sources": [
+        {
+          "Type": "Bozja",
+          "Text": "180 Bozjan Clusters"
+        },
+        {
+          "Type": "Occult Crescent",
+          "Text": "South Horn - Bronze Coffer"
+        }
+      ]
+    },
+    {
+      "Id": 214,
+      "EnglishName": "Kingly Peacock",
+      "Patch": "5.2",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 215,
+      "EnglishName": "Great Vessel of Ronka",
+      "Patch": "5.2",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Yuqurl Manl - Hopl's Stopple (The Rak'tika Greatwood) - 18 Qitari Compliments (Rank 7)"
+        }
+      ]
+    },
+    {
+      "Id": 216,
+      "EnglishName": "Pteranodon",
+      "Patch": "5.21",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Castle in the Sky"
+        }
+      ]
+    },
+    {
+      "Id": 217,
+      "EnglishName": "Ruby Gwiber",
+      "Patch": "5.2",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Cinder Drift (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 218,
+      "EnglishName": "Hybodus",
+      "Patch": "5.2",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "No More Fish in the Sea II"
+        }
+      ]
+    },
+    {
+      "Id": 219,
+      "EnglishName": "Ramuh",
+      "Patch": "5.2",
+      "Sources": [
+        {
+          "Type": "Raid",
+          "Text": "Eden's Verse: Refulgence (Savage)"
+        }
+      ]
+    },
+    {
+      "Id": 220,
+      "EnglishName": "Rubellite Carbuncle",
+      "Patch": "5.2",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 222,
+      "EnglishName": "Chocobo Carriage",
+      "Patch": "5.3",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 223,
+      "EnglishName": "Rolling Tankard",
+      "Patch": "5.3",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Mizutt - Watts's Anvil (Lakeland) - 18 Hammered Frogments (Rank 7)"
+        }
+      ]
+    },
+    {
+      "Id": 224,
+      "EnglishName": "Gabriel α",
+      "Patch": "5.35",
+      "Sources": [
+        {
+          "Type": "Bozja",
+          "Text": "Southern Front Lockbox"
+        }
+      ]
+    },
+    {
+      "Id": 225,
+      "EnglishName": "Megalotragus",
+      "Patch": "5.31",
+      "Sources": [
+        {
+          "Type": "Skybuilders",
+          "Text": "Enie - The Firmament - 8,400 Skybuilders' Scrips"
+        },
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Gold Ancient Record - Oizys"
+        }
+      ]
+    },
+    {
+      "Id": 226,
+      "EnglishName": "Gwiber of Light",
+      "Patch": "5.3",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Seat of Sacrifice (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 228,
+      "EnglishName": "Jibanyan Couch",
+      "Patch": "5.3",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "Yo-kai Watch Collaboration - Obtain 17 Yo-kai Weapons"
+        }
+      ]
+    },
+    {
+      "Id": 229,
+      "EnglishName": "Magitek Hyperconveyor",
+      "Patch": "5.3",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "The Feast: Season 16"
+        }
+      ]
+    },
+    {
+      "Id": 230,
+      "EnglishName": "Ehll Tou",
+      "Patch": "5.3",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "On Ehll Tou's Wings"
+        }
+      ]
+    },
+    {
+      "Id": 231,
+      "EnglishName": "Incitatus",
+      "Patch": "5.3",
+      "Sources": [
+        {
+          "Type": "Wondrous Tails",
+          "Text": "2 Khloe's Silver Certificate of Commendation"
+        },
+        {
+          "Type": "Wondrous Tails",
+          "Text": "250 Faux Leaves"
+        }
+      ]
+    },
+    {
+      "Id": 232,
+      "EnglishName": "Snowman",
+      "Patch": "5.4",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "The Starlight Celebration (2020)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 233,
+      "EnglishName": "Lunar Whale",
+      "Patch": "5.5",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Digital Fan Festival (2021)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 234,
+      "EnglishName": "Eden",
+      "Patch": "5.4",
+      "Sources": [
+        {
+          "Type": "Raid",
+          "Text": "Eden's Promise: Eternity (Savage)"
+        }
+      ]
+    },
+    {
+      "Id": 235,
+      "EnglishName": "Cerberus",
+      "Patch": "5.45",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Savage Queen of Swords I"
+        }
+      ]
+    },
+    {
+      "Id": 236,
+      "EnglishName": "Big Shell",
+      "Patch": "5.41",
+      "Sources": [
+        {
+          "Type": "Skybuilders",
+          "Text": "Enie - The Firmament - 8,400 Skybuilders' Scrips"
+        },
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Gold Ancient Record - Auxesia"
+        }
+      ]
+    },
+    {
+      "Id": 237,
+      "EnglishName": "Arion",
+      "Patch": "6.0",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Endwalker Collector's Edition"
+        }
+      ]
+    },
+    {
+      "Id": 238,
+      "EnglishName": "Emerald Gwiber",
+      "Patch": "5.4",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Castrum Marinum (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 239,
+      "EnglishName": "Prototype Roader",
+      "Patch": "5.4",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "The Feast: Season 17"
+        }
+      ]
+    },
+    {
+      "Id": 240,
+      "EnglishName": "Chocorpokkur",
+      "Patch": "5.4",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Butterfinger Promotion (NA Only)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Lawson Promotion (Japan Only)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Twitch Campaign (July 2024)"
+        }
+      ]
+    },
+    {
+      "Id": 241,
+      "EnglishName": "Gabriel Mark III",
+      "Patch": "5.45",
+      "Sources": [
+        {
+          "Type": "Bozja",
+          "Text": "Delubrum Reginae - Final Boss Chests"
+        },
+        {
+          "Type": "Occult Crescent",
+          "Text": "South Horn - Silver Coffer"
+        }
+      ]
+    },
+    {
+      "Id": 242,
+      "EnglishName": "Antelope Doe",
+      "Patch": "5.5",
+      "Sources": [
+        {
+          "Type": "Skybuilders",
+          "Text": "Enie - The Firmament - 8,400 Skybuilders' Scrips"
+        },
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Gold Ancient Record - Auxesia"
+        }
+      ]
+    },
+    {
+      "Id": 243,
+      "EnglishName": "Antelope Stag",
+      "Patch": "5.5",
+      "Sources": [
+        {
+          "Type": "Skybuilders",
+          "Text": "Fête Present"
+        },
+        {
+          "Type": "Skybuilders",
+          "Text": "Enie - The Firmament - 30 Fête Tokens"
+        }
+      ]
+    },
+    {
+      "Id": 245,
+      "EnglishName": "Landerwaffe",
+      "Patch": "5.5",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "The Dragon Made"
+        }
+      ]
+    },
+    {
+      "Id": 246,
+      "EnglishName": "Al-iklil",
+      "Patch": "5.55",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "A Complete History"
+        }
+      ]
+    },
+    {
+      "Id": 247,
+      "EnglishName": "Cruise Chaser",
+      "Patch": "5.5",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 248,
+      "EnglishName": "Construct VI-S",
+      "Patch": "5.4",
+      "Sources": [
+        {
+          "Type": "Wondrous Tails",
+          "Text": "2 Khloe's Silver Certificate of Commendation"
+        },
+        {
+          "Type": "Wondrous Tails",
+          "Text": "250 Faux Leaves"
+        }
+      ]
+    },
+    {
+      "Id": 249,
+      "EnglishName": "Diamond Gwiber",
+      "Patch": "5.5",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Cloud Deck (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 250,
+      "EnglishName": "Polar Bear",
+      "Patch": "5.5",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "Moonfire Faire (2021)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 252,
+      "EnglishName": "Gilded Mikoshi",
+      "Patch": "5.5",
+      "Sources": [
+        {
+          "Type": "Purchase",
+          "Text": "Edelina - Mor Dhona - 50,000,000 Gil"
+        }
+      ]
+    },
+    {
+      "Id": 253,
+      "EnglishName": "Resplendent Vessel of Ronka",
+      "Patch": "5.5",
+      "Sources": [
+        {
+          "Type": "Purchase",
+          "Text": "Tabeth - Eulmore - 25,000,000 Gil"
+        }
+      ]
+    },
+    {
+      "Id": 254,
+      "EnglishName": "Magicked Card",
+      "Patch": "5.55",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "The Adventurer with All the Cards"
+        }
+      ]
+    },
+    {
+      "Id": 255,
+      "EnglishName": "Island Mandragora",
+      "Patch": "6.2",
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "12,000 Seafarer's Cowries"
+        }
+      ]
+    },
+    {
+      "Id": 256,
+      "EnglishName": "Island Onion Prince",
+      "Patch": "6.2",
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "12,000 Seafarer's Cowries"
+        }
+      ]
+    },
+    {
+      "Id": 257,
+      "EnglishName": "Island Eggplant Knight",
+      "Patch": "6.2",
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "12,000 Seafarer's Cowries"
+        }
+      ]
+    },
+    {
+      "Id": 258,
+      "EnglishName": "Island Garlic Jester",
+      "Patch": "6.4",
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "18,000 Seafarer's Cowries"
+        }
+      ]
+    },
+    {
+      "Id": 259,
+      "EnglishName": "Island Tomato King",
+      "Patch": "6.4",
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "18,000 Seafarer's Cowries"
+        }
+      ]
+    },
+    {
+      "Id": 260,
+      "EnglishName": "Island Mandragora Queen",
+      "Patch": "6.4",
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "18,000 Seafarer's Cowries"
+        }
+      ]
+    },
+    {
+      "Id": 261,
+      "EnglishName": "Lynx of Eternal Darkness",
+      "Patch": "6.0",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Minstrel's Ballad: Zodiark's Fall"
+        }
+      ]
+    },
+    {
+      "Id": 262,
+      "EnglishName": "Lynx of Divine Light",
+      "Patch": "6.0",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Minstrel's Ballad: Hydaelyn's Call"
+        }
+      ]
+    },
+    {
+      "Id": 263,
+      "EnglishName": "Argos",
+      "Patch": "6.0",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "Endwalker"
+        }
+      ]
+    },
+    {
+      "Id": 264,
+      "EnglishName": "Dreadnaught",
+      "Patch": "6.0",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "The Feast: Season 20"
+        }
+      ]
+    },
+    {
+      "Id": 265,
+      "EnglishName": "Demi-Phoinix",
+      "Patch": "6.05",
+      "Sources": [
+        {
+          "Type": "Raid",
+          "Text": "Asphodelos: The Fourth Circle (Savage)"
+        }
+      ]
+    },
+    {
+      "Id": 266,
+      "EnglishName": "Calydontis",
+      "Patch": "6.0",
+      "Sources": [
+        {
+          "Type": "Wondrous Tails",
+          "Text": "1 Khloe's Gold Certificate of Commendation"
+        },
+        {
+          "Type": "Wondrous Tails",
+          "Text": "600 Faux Leaves"
+        }
+      ]
+    },
+    {
+      "Id": 267,
+      "EnglishName": "Victor",
+      "Patch": "6.0",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Endgame Hunter"
+        }
+      ]
+    },
+    {
+      "Id": 268,
+      "EnglishName": "Level Checker",
+      "Patch": "6.0",
+      "Sources": [
+        {
+          "Type": "FATE",
+          "Text": "Nesvaaz - Radz-at-Han - 12 Chi Bolts (FATE \"Omicron Recall: Killing Order\" - Ultima Thule)"
+        }
+      ]
+    },
+    {
+      "Id": 269,
+      "EnglishName": "Papa Paissa",
+      "Patch": "6.0",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 273,
+      "EnglishName": "Wivre",
+      "Patch": "6.0",
+      "Sources": [
+        {
+          "Type": "FATE",
+          "Text": "Edelina - Mor Dhona - 500 Bicolor Gemstone Vouchers"
+        }
+      ]
+    },
+    {
+      "Id": 274,
+      "EnglishName": "Porxie King",
+      "Patch": "6.0",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Lawson Promotion (Japan Only)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Gong Cha Promotion"
+        }
+      ]
+    },
+    {
+      "Id": 277,
+      "EnglishName": "Garlond GL-II",
+      "Patch": "6.2",
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "24,000 Seafarer's Cowries (Sanctuary Rank 10)"
+        }
+      ]
+    },
+    {
+      "Id": 279,
+      "EnglishName": "Mechanical Lotus",
+      "Patch": "6.2",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 280,
+      "EnglishName": "Fylgja",
+      "Patch": "6.2",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "PvP Series 2 - Level 25"
+        },
+        {
+          "Type": "PvP",
+          "Text": "5,000 Trophy Crystals"
+        }
+      ]
+    },
+    {
+      "Id": 281,
+      "EnglishName": "Alkonost",
+      "Patch": "6.1",
+      "Sources": [
+        {
+          "Type": "Treasure Hunt",
+          "Text": "Nesvaaz - Radz-at-Han - 3 Resplendent Feathers (The Excitatron 6000 or The Shifting Gymnasion Agonon)"
+        }
+      ]
+    },
+    {
+      "Id": 282,
+      "EnglishName": "Island Buffalo",
+      "Patch": "6.4",
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "50,000 Seafarer's Cowries (Sanctuary Rank 16)"
+        }
+      ]
+    },
+    {
+      "Id": 283,
+      "EnglishName": "Brachiosaur",
+      "Patch": "7.1",
+      "Sources": [
+        {
+          "Type": "Hunts",
+          "Text": "Ryubool Ja - Tuliyollal - 3,200 Sacks of Nuts"
+        }
+      ]
+    },
+    {
+      "Id": 284,
+      "EnglishName": "Pod 602",
+      "Patch": "6.1",
+      "Sources": [
+        {
+          "Type": "Gold Saucer",
+          "Text": "300,000 MGP"
+        }
+      ]
+    },
+    {
+      "Id": 285,
+      "EnglishName": "Moon-hopper",
+      "Patch": "6.35",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Coiningway - Hoper's Hold (Mare Lamentorum) - 18 Loporrit Carats (Rank 7)"
+        }
+      ]
+    },
+    {
+      "Id": 286,
+      "EnglishName": "Island Alligator",
+      "Patch": "6.3",
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "35,000 Seafarer's Cowries (Sanctuary Rank 12)"
+        }
+      ]
+    },
+    {
+      "Id": 287,
+      "EnglishName": "Hippo Cart",
+      "Patch": "6.15",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Ghanta - Svarna (Thavnair) - 18 Arkasodara Pana (Rank 7)"
+        }
+      ]
+    },
+    {
+      "Id": 288,
+      "EnglishName": "Troll",
+      "Patch": "6.1",
+      "Sources": [
+        {
+          "Type": "Wondrous Tails",
+          "Text": "1 Khloe's Gold Certificate of Commendation"
+        },
+        {
+          "Type": "Wondrous Tails",
+          "Text": "600 Faux Leaves"
+        }
+      ]
+    },
+    {
+      "Id": 290,
+      "EnglishName": "UFO",
+      "Patch": "6.55",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "Gentlemen at Heart"
+        }
+      ]
+    },
+    {
+      "Id": 291,
+      "EnglishName": "Vinegaroon",
+      "Patch": "6.1",
+      "Sources": [
+        {
+          "Type": "Hunts",
+          "Text": "J'lakshai (Old Sharlayan) / Wilmetta (Radz-at-Han) - 3,200 Sacks Of Nuts"
+        }
+      ]
+    },
+    {
+      "Id": 292,
+      "EnglishName": "Orthos Craklaw",
+      "Patch": "6.35",
+      "Sources": [
+        {
+          "Type": "Deep Dungeon",
+          "Text": "Eureka Orthos - Gold Sack"
+        }
+      ]
+    },
+    {
+      "Id": 293,
+      "EnglishName": "Bluefeather Lynx",
+      "Patch": "6.1",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Minstrel's Ballad: Endsinger's Aria"
+        }
+      ]
+    },
+    {
+      "Id": 294,
+      "EnglishName": "Megashiba",
+      "Patch": "6.1",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 297,
+      "EnglishName": "Traveling Supporter",
+      "Patch": "6.4",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "PvP Series 4 - Level 25"
+        },
+        {
+          "Type": "PvP",
+          "Text": "5,000 Trophy Crystals"
+        }
+      ]
+    },
+    {
+      "Id": 298,
+      "EnglishName": "Miw Miisv",
+      "Patch": "6.25",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "N-0598 - A-4 Research (Ultima Thule) - 18 Omicron Omnitokens (Rank 7)"
+        }
+      ]
+    },
+    {
+      "Id": 299,
+      "EnglishName": "Wondrous Lanner",
+      "Patch": "6.2",
+      "Sources": [
+        {
+          "Type": "Wondrous Tails",
+          "Text": "1 Khloe's Gold Certificate of Commendation"
+        },
+        {
+          "Type": "Wondrous Tails",
+          "Text": "600 Faux Leaves"
+        }
+      ]
+    },
+    {
+      "Id": 300,
+      "EnglishName": "Magicked Umbrella",
+      "Patch": "6.3",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 301,
+      "EnglishName": "Magicked Parasol",
+      "Patch": "6.3",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 302,
+      "EnglishName": "Starlight Steed",
+      "Patch": "6.2",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "The Starlight Celebration (2022)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 303,
+      "EnglishName": "Sil'dihn Throne",
+      "Patch": "6.25",
+      "Sources": [
+        {
+          "Type": "V&C Dungeon",
+          "Text": "Another Sil'dihn Subterrane"
+        },
+        {
+          "Type": "V&C Dungeon",
+          "Text": "Trisassant - Old Sharlayan - 100 Sil'dihn Silvers"
+        }
+      ]
+    },
+    {
+      "Id": 304,
+      "EnglishName": "Silkie",
+      "Patch": "6.25",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Dig Deep: The Sil'dihn Subterrane"
+        }
+      ]
+    },
+    {
+      "Id": 305,
+      "EnglishName": "Sunforged",
+      "Patch": "6.2",
+      "Sources": [
+        {
+          "Type": "Raid",
+          "Text": "Abyssos: The Eighth Circle (Savage)"
+        }
+      ]
+    },
+    {
+      "Id": 306,
+      "EnglishName": "Lynx of Imperious Wind",
+      "Patch": "6.2",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Storm's Crown (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 308,
+      "EnglishName": "Aeturna",
+      "Patch": "6.35",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Vintage Vogue"
+        }
+      ]
+    },
+    {
+      "Id": 310,
+      "EnglishName": "Set of Ceruleum Balloons",
+      "Patch": "6.3",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 311,
+      "EnglishName": "Anden III",
+      "Patch": "6.3",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "A Labor of Leaf"
+        }
+      ]
+    },
+    {
+      "Id": 312,
+      "EnglishName": "Blackjack",
+      "Patch": "6.3",
+      "Sources": [
+        {
+          "Type": "Gold Saucer",
+          "Text": "4,000,000 MGP"
+        }
+      ]
+    },
+    {
+      "Id": 313,
+      "EnglishName": "Phaethon",
+      "Patch": "6.3",
+      "Sources": [
+        {
+          "Type": "Treasure Hunt",
+          "Text": "Nesvaaz - Radz-at-Han - 3 Burning Horns (The Shifting Gymnasion Agonon - Gold Chests)"
+        }
+      ]
+    },
+    {
+      "Id": 314,
+      "EnglishName": "Pinky",
+      "Patch": "6.3",
+      "Sources": [
+        {
+          "Type": "Treasure Hunt",
+          "Text": "Nesvaaz - Radz-at-Han - 3 Bottles Of Exciting Tonic (The Excitatron 6000 - Gold Chests)"
+        }
+      ]
+    },
+    {
+      "Id": 315,
+      "EnglishName": "Lynx of Righteous Fire",
+      "Patch": "6.3",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Mount Ordeals (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 316,
+      "EnglishName": "Magitek Avenger G1",
+      "Patch": "6.3",
+      "Sources": [
+        {
+          "Type": "Purchase",
+          "Text": "Edelina - Mor Dhona - 50,000,000 Gil"
+        }
+      ]
+    },
+    {
+      "Id": 317,
+      "EnglishName": "Chrysomallos",
+      "Patch": "6.3",
+      "Sources": [
+        {
+          "Type": "Purchase",
+          "Text": "Edelina - Mor Dhona - 50,000,000 Gil"
+        }
+      ]
+    },
+    {
+      "Id": 318,
+      "EnglishName": "Garlond GL-IS",
+      "Patch": "6.4",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 319,
+      "EnglishName": "Megaloambystoma",
+      "Patch": "6.4",
+      "Sources": [
+        {
+          "Type": "Raid",
+          "Text": "Anabaseios: The Twelfth Circle (Savage)"
+        }
+      ]
+    },
+    {
+      "Id": 320,
+      "EnglishName": "Rising Phoenix",
+      "Patch": "6.48",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "The Rising (2023)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 321,
+      "EnglishName": "Burabura Chochin",
+      "Patch": "6.45",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Mononopeke"
+        }
+      ]
+    },
+    {
+      "Id": 322,
+      "EnglishName": "Shishioji",
+      "Patch": "6.45",
+      "Sources": [
+        {
+          "Type": "V&C Dungeon",
+          "Text": "Another Mount Rokkon"
+        },
+        {
+          "Type": "V&C Dungeon",
+          "Text": "Trisassant - Old Sharlayan - 100 Shishu Coins"
+        }
+      ]
+    },
+    {
+      "Id": 323,
+      "EnglishName": "Shadow Wolf",
+      "Patch": "6.4",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 324,
+      "EnglishName": "Magicked Children's Bed",
+      "Patch": "6.4",
+      "Sources": [
+        {
+          "Type": "Wondrous Tails",
+          "Text": "1 Khloe's Gold Certificate of Commendation"
+        },
+        {
+          "Type": "Wondrous Tails",
+          "Text": "600 Faux Leaves"
+        }
+      ]
+    },
+    {
+      "Id": 325,
+      "EnglishName": "Lynx of Fallen Shadow",
+      "Patch": "6.4",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Voidcast Dais (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 326,
+      "EnglishName": "Torgal",
+      "Patch": "6.58",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "Final Fantasy XVI Collaboration"
+        }
+      ]
+    },
+    {
+      "Id": 327,
+      "EnglishName": "Ark",
+      "Patch": "7.0",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Dawntrail Collector's Edition"
+        }
+      ]
+    },
+    {
+      "Id": 328,
+      "EnglishName": "Apocryphal Bahamut",
+      "Patch": "6.5",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "Wings of Hope"
+        }
+      ]
+    },
+    {
+      "Id": 329,
+      "EnglishName": "Crescent Moon",
+      "Patch": "6.5",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 330,
+      "EnglishName": "Rhiyes",
+      "Patch": "6.51",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "410 MGF (Fall Guys Collaboration)"
+        }
+      ]
+    },
+    {
+      "Id": 331,
+      "EnglishName": "Oppressor",
+      "Patch": "7.0",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "PvP Series 6 - Level 25"
+        }
+      ]
+    },
+    {
+      "Id": 332,
+      "EnglishName": "Lynx of Abyssal Grief",
+      "Patch": "6.5",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Abyssal Fracture (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 333,
+      "EnglishName": "Sabotender de la Luna",
+      "Patch": "6.5",
+      "Sources": [
+        {
+          "Type": "Wondrous Tails",
+          "Text": "1 Khloe's Gold Certificate of Commendation"
+        },
+        {
+          "Type": "Wondrous Tails",
+          "Text": "600 Faux Leaves"
+        }
+      ]
+    },
+    {
+      "Id": 334,
+      "EnglishName": "Spectral Statice",
+      "Patch": "6.51",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Good-willed Hunting"
+        }
+      ]
+    },
+    {
+      "Id": 335,
+      "EnglishName": "Garlond GL-IIT",
+      "Patch": "6.5",
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "100,000 Seafarer's Cowries (Sanctuary Rank 20)"
+        }
+      ]
+    },
+    {
+      "Id": 336,
+      "EnglishName": "Peatie",
+      "Patch": "6.5",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "Little Ladies' Day & Hatching-tide (2024)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 337,
+      "EnglishName": "Alsvid",
+      "Patch": "7.55",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Twitch Campaign (August 2026)"
+        }
+      ]
+    },
+    {
+      "Id": 338,
+      "EnglishName": "Quaqua",
+      "Patch": "6.51",
+      "Sources": [
+        {
+          "Type": "V&C Dungeon",
+          "Text": "Another Aloalo Island"
+        },
+        {
+          "Type": "V&C Dungeon",
+          "Text": "Trisassant - Old Sharlayan - 100 Aloalo Coins"
+        }
+      ]
+    },
+    {
+      "Id": 339,
+      "EnglishName": "Island Peerifool",
+      "Patch": "6.5",
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "Sanctuary Materiel Container"
+        }
+      ]
+    },
+    {
+      "Id": 340,
+      "EnglishName": "Island Adenium",
+      "Patch": "6.5",
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "200 Vegetal Vouchers"
+        },
+        {
+          "Type": "Island Sanctuary",
+          "Text": "Sanctuary Materiel Container"
+        }
+      ]
+    },
+    {
+      "Id": 342,
+      "EnglishName": "Ty'aitya",
+      "Patch": "7.0",
+      "Sources": [
+        {
+          "Type": "FATE",
+          "Text": "Edelina - Mor Dhona - 500 Turali Bicolor Gemstone Vouchers"
+        }
+      ]
+    },
+    {
+      "Id": 343,
+      "EnglishName": "Air-wheeler A9",
+      "Patch": "7.0",
+      "Sources": [
+        {
+          "Type": "Purchase",
+          "Text": "Neon - Solution Nine - 7,500,000 Gil"
+        }
+      ]
+    },
+    {
+      "Id": 344,
+      "EnglishName": "Alpaca",
+      "Patch": "7.0",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "Dawntrail"
+        }
+      ]
+    },
+    {
+      "Id": 345,
+      "EnglishName": "Wings of Ruin",
+      "Patch": "7.0",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Worqor Lar Dor (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 346,
+      "EnglishName": "Wings of Resolve",
+      "Patch": "7.0",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Everkeep (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 347,
+      "EnglishName": "Outrunner",
+      "Patch": "7.0",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "A Life of Adventure VI"
+        }
+      ]
+    },
+    {
+      "Id": 348,
+      "EnglishName": "Mehwapyarra",
+      "Patch": "7.0",
+      "Sources": [
+        {
+          "Type": "FATE",
+          "Text": "Uah'shepya - Solution Nine - 12 Ttokrrone Scales (FATE \"The Serpentlord Seethes\" - Shaaloani)"
+        }
+      ]
+    },
+    {
+      "Id": 349,
+      "EnglishName": "Monowheel S1",
+      "Patch": "7.05",
+      "Sources": [
+        {
+          "Type": "Raid",
+          "Text": "AAC Light-heavyweight M4 (Savage)"
+        }
+      ]
+    },
+    {
+      "Id": 350,
+      "EnglishName": "Rroneek",
+      "Patch": "7.0",
+      "Sources": [
+        {
+          "Type": "Gathering",
+          "Text": "Splendors Vendor - Solution Nine - 100 Mount Tokens (100,000 Orange Gatherer's Scrips)"
+        }
+      ]
+    },
+    {
+      "Id": 351,
+      "EnglishName": "Ullr",
+      "Patch": "7.0",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Dawnbright Hunter"
+        }
+      ]
+    },
+    {
+      "Id": 352,
+      "EnglishName": "Qeziigural",
+      "Patch": "7.05",
+      "Sources": [
+        {
+          "Type": "Treasure Hunt",
+          "Text": "Uah'shepya - Solution Nine - 3 Twilight Gemstones (Cenote Ja Ja Gural or Vault Oneiron)"
+        }
+      ]
+    },
+    {
+      "Id": 353,
+      "EnglishName": "Automatoise",
+      "Patch": "7.0",
+      "Sources": [
+        {
+          "Type": "Hunts",
+          "Text": "Ryubool Ja - Tuliyollal - 3,200 Sacks of Nuts"
+        }
+      ]
+    },
+    {
+      "Id": 354,
+      "EnglishName": "Mountain Zu",
+      "Patch": "7.0",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Mountain Dew Promotion (NA Only)"
+        }
+      ]
+    },
+    {
+      "Id": 356,
+      "EnglishName": "Barreltender",
+      "Patch": "7.1",
+      "Sources": [
+        {
+          "Type": "Gathering",
+          "Text": "Splendors Vendor - Solution Nine - 100 Mount Tokens (100,000 Orange Gatherer's Scrips)"
+        }
+      ]
+    },
+    {
+      "Id": 357,
+      "EnglishName": "Eggeater",
+      "Patch": "7.2",
+      "Sources": [
+        {
+          "Type": "Wondrous Tails",
+          "Text": "600 Faux Leaves"
+        }
+      ]
+    },
+    {
+      "Id": 358,
+      "EnglishName": "Punutiy",
+      "Patch": "7.1",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Pavli - Dock Poga (Kozama'uka) - 18 Pelu Pelplumes (Rank 5)"
+        }
+      ]
+    },
+    {
+      "Id": 359,
+      "EnglishName": "Alexandrian Axe Beak",
+      "Patch": "7.5",
+      "Sources": [
+        {
+          "Type": "Wondrous Tails",
+          "Text": "600 Faux Leaves"
+        }
+      ]
+    },
+    {
+      "Id": 360,
+      "EnglishName": "Shroud of Darkness",
+      "Patch": "7.15",
+      "Sources": [
+        {
+          "Type": "Chaotic Raid",
+          "Text": "Uah'shepya - Solution Nine - 99 Clouddark Demimateria I"
+        },
+        {
+          "Type": "Chaotic Raid",
+          "Text": "The Cloud of Darkness (Chaotic)"
+        }
+      ]
+    },
+    {
+      "Id": 361,
+      "EnglishName": "Dais of Darkness",
+      "Patch": "7.15",
+      "Sources": [
+        {
+          "Type": "Chaotic Raid",
+          "Text": "Uah'shepya - Solution Nine - 75 Clouddark Demimateria II"
+        },
+        {
+          "Type": "Chaotic Raid",
+          "Text": "The Cloud of Darkness (Chaotic)"
+        }
+      ]
+    },
+    {
+      "Id": 362,
+      "EnglishName": "Hovering Hot Pot",
+      "Patch": "7.25",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 363,
+      "EnglishName": "Wings of Eternity",
+      "Patch": "7.1",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Minstrel's Ballad: Sphene's Burden"
+        }
+      ]
+    },
+    {
+      "Id": 364,
+      "EnglishName": "Vacuum Suit",
+      "Patch": "7.21",
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Cosmic Fortune - Sinus Ardonum"
+        },
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Mech Pilot Reward - Sinus Ardonum"
+        }
+      ]
+    },
+    {
+      "Id": 365,
+      "EnglishName": "Venturous Kamuy",
+      "Patch": "7.1",
+      "Sources": [
+        {
+          "Type": "Wondrous Tails",
+          "Text": "1 Khloe's Gold Certificate of Commendation"
+        },
+        {
+          "Type": "Wondrous Tails",
+          "Text": "600 Faux Leaves"
+        }
+      ]
+    },
+    {
+      "Id": 367,
+      "EnglishName": "Tourmaline Golem",
+      "Patch": "7.56",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Crucible Contender"
+        }
+      ]
+    },
+    {
+      "Id": 371,
+      "EnglishName": "Cosmic Countenance",
+      "Patch": "7.41",
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Gold Ancient Record - Oizys"
+        }
+      ]
+    },
+    {
+      "Id": 372,
+      "EnglishName": "Demon Haul",
+      "Patch": "7.25",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "A Fork to Be Reckoned With I"
+        }
+      ]
+    },
+    {
+      "Id": 373,
+      "EnglishName": "Petalodus",
+      "Patch": "7.25",
+      "Sources": [
+        {
+          "Type": "Occult Crescent",
+          "Text": "99 Chunks of Sanguinite"
+        },
+        {
+          "Type": "Occult Crescent",
+          "Text": "South Horn - Bronze/Silver Coffer"
+        }
+      ]
+    },
+    {
+      "Id": 374,
+      "EnglishName": "Snowstreamer",
+      "Patch": "7.11",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Twitch Campaign (December 2024)"
+        }
+      ]
+    },
+    {
+      "Id": 379,
+      "EnglishName": "Pilgrim's Protector",
+      "Patch": "7.35",
+      "Sources": [
+        {
+          "Type": "Deep Dungeon",
+          "Text": "99 First Light Relics"
+        },
+        {
+          "Type": "Deep Dungeon",
+          "Text": "Pilgrim's Traverse - Sack of First Light"
+        }
+      ]
+    },
+    {
+      "Id": 381,
+      "EnglishName": "Branchbearer",
+      "Patch": "7.25",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Veerul Ja - Gok Golma (Yak T'el) - 18 Mamool Ja Nanook (Rank 4)"
+        }
+      ]
+    },
+    {
+      "Id": 382,
+      "EnglishName": "Air-wheeler C9",
+      "Patch": "7.2",
+      "Sources": [
+        {
+          "Type": "Raid",
+          "Text": "AAC Cruiserweight M4 (Savage)"
+        }
+      ]
+    },
+    {
+      "Id": 383,
+      "EnglishName": "Ancient Airship",
+      "Patch": "7.25",
+      "Sources": [
+        {
+          "Type": "Occult Crescent",
+          "Text": "5,000 Enlightenment Silver Pieces"
+        }
+      ]
+    },
+    {
+      "Id": 385,
+      "EnglishName": "High Mobility Vacuum Suit",
+      "Patch": "7.21",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Out of This World"
+        }
+      ]
+    },
+    {
+      "Id": 386,
+      "EnglishName": "Warp Loader",
+      "Patch": "7.31",
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Cosmic Fortune - Phaenna"
+        },
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Mech Pilot Reward - Phaenna"
+        }
+      ]
+    },
+    {
+      "Id": 388,
+      "EnglishName": "His Royal Headness on Parade",
+      "Patch": "7.2",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 389,
+      "EnglishName": "Wings of the Knighthood",
+      "Patch": "7.2",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Recollection (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 390,
+      "EnglishName": "Magitek Slasher",
+      "Patch": "7.2",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "PvP Series 8 - Level 25"
+        }
+      ]
+    },
+    {
+      "Id": 393,
+      "EnglishName": "Vurgar the Loyal",
+      "Patch": "7.35",
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Rarkorgor - Shelter (Urqopacha) - 18 Yok Huy Wards (Rank 7)"
+        }
+      ]
+    },
+    {
+      "Id": 394,
+      "EnglishName": "Wanyudo",
+      "Patch": "7.4",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "PvP Series 10 - Level 25"
+        }
+      ]
+    },
+    {
+      "Id": 395,
+      "EnglishName": "Forgiven Mimicry",
+      "Patch": "7.35",
+      "Sources": [
+        {
+          "Type": "Deep Dungeon",
+          "Text": "99 First Light Relics"
+        },
+        {
+          "Type": "Deep Dungeon",
+          "Text": "Pilgrim's Traverse - Sack of First Light"
+        }
+      ]
+    },
+    {
+      "Id": 396,
+      "EnglishName": "Ambulario",
+      "Patch": "7.35",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "All Saints' Wake (2025)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 397,
+      "EnglishName": "Shagcoat Cat",
+      "Patch": "7.3",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 398,
+      "EnglishName": "Seikret",
+      "Patch": "7.35",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "The White Wanderer"
+        }
+      ]
+    },
+    {
+      "Id": 399,
+      "EnglishName": "Felyne Support Team Cart",
+      "Patch": "7.35",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Smithy - Tuliyollal - 99 Guardian Arkveld Certificates"
+        },
+        {
+          "Type": "Trial",
+          "Text": "The Windward Wilds"
+        },
+        {
+          "Type": "Trial",
+          "Text": "The Windward Wilds (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 400,
+      "EnglishName": "Yan",
+      "Patch": "7.3",
+      "Sources": [
+        {
+          "Type": "Treasure Hunt",
+          "Text": "Vault Oneiron"
+        }
+      ]
+    },
+    {
+      "Id": 401,
+      "EnglishName": "Interstellar Dhalmel",
+      "Patch": "7.31",
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Mesouaidonque - 29,000 Cosmocredits"
+        }
+      ]
+    },
+    {
+      "Id": 402,
+      "EnglishName": "Cosmoboard",
+      "Patch": "7.31",
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Mesouaidonque - 60 Phaenna Token Booklets"
+        }
+      ]
+    },
+    {
+      "Id": 403,
+      "EnglishName": "Chandelier of First Light",
+      "Patch": "7.35",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Faerie Favors"
+        }
+      ]
+    },
+    {
+      "Id": 407,
+      "EnglishName": "Wings of Death",
+      "Patch": "7.3",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Minstrel's Ballad: Necron's Embrace"
+        }
+      ]
+    },
+    {
+      "Id": 408,
+      "EnglishName": "Ornamental Shrublet",
+      "Patch": "7.35",
+      "Sources": [
+        {
+          "Type": "Deep Dungeon",
+          "Text": "Pilgrim's Traverse - Silver Sack"
+        }
+      ]
+    },
+    {
+      "Id": 409,
+      "EnglishName": "Interstellar Leafkin",
+      "Patch": "7.51",
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Gold Ancient Record - Auxesia"
+        }
+      ]
+    },
+    {
+      "Id": 411,
+      "EnglishName": "Dynamite",
+      "Patch": "7.4",
+      "Sources": [
+        {
+          "Type": "Wondrous Tails",
+          "Text": "600 Faux Leaves"
+        }
+      ]
+    },
+    {
+      "Id": 412,
+      "EnglishName": "Genie of the Lamp",
+      "Patch": "7.45",
+      "Sources": [
+        {
+          "Type": "V&C Dungeon",
+          "Text": "Another Merchant's Tale"
+        },
+        {
+          "Type": "V&C Dungeon",
+          "Text": "Trisassant - Old Sharlayan - 100 Corvosi Manuscripts"
+        }
+      ]
+    },
+    {
+      "Id": 413,
+      "EnglishName": "Lowrider T1RANT",
+      "Patch": "7.4",
+      "Sources": [
+        {
+          "Type": "Raid",
+          "Text": "AAC Heavyweight M4 (Savage)"
+        }
+      ]
+    },
+    {
+      "Id": 414,
+      "EnglishName": "Uolon",
+      "Patch": "7.56",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "Moogle Treasure Trove Event"
+        }
+      ]
+    },
+    {
+      "Id": 415,
+      "EnglishName": "Volatile Gravity Vacuum Suit",
+      "Patch": "7.41",
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Cosmic Fortune - Oizys"
+        },
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Mech Pilot Reward - Oizys"
+        }
+      ]
+    },
+    {
+      "Id": 416,
+      "EnglishName": "Cosmic Armored Weapon",
+      "Patch": "7.41",
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Mesouaidonque - 60 Oizys Token Booklets"
+        }
+      ]
+    },
+    {
+      "Id": 417,
+      "EnglishName": "Inflatable Mograft",
+      "Patch": "7.55",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "Moonfire Faire (2026)"
+        }
+      ]
+    },
+    {
+      "Id": 419,
+      "EnglishName": "Starlight Sleigh",
+      "Patch": "7.5",
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "The Starlight Celebration (2026)"
+        }
+      ]
+    },
+    {
+      "Id": 420,
+      "EnglishName": "Wings of Legacy",
+      "Patch": "7.5",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "The Wing Spirit Cometh"
+        }
+      ]
+    },
+    {
+      "Id": 421,
+      "EnglishName": "Hardy-Daytona",
+      "Patch": "7.45",
+      "Sources": [
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 422,
+      "EnglishName": "Wings of Mist",
+      "Patch": "7.4",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Hell on Rails (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 425,
+      "EnglishName": "Rapid-fab Vacuum Suit",
+      "Patch": "7.41",
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Mesouaidonque - 20,000 Cosmocredits"
+        }
+      ]
+    },
+    {
+      "Id": 426,
+      "EnglishName": "Alert Red Warp Loader",
+      "Patch": "7.41",
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Mesouaidonque - 20,000 Cosmocredits"
+        }
+      ]
+    },
+    {
+      "Id": 427,
+      "EnglishName": "Royal Magicked Carpet",
+      "Patch": "7.45",
+      "Sources": [
+        {
+          "Type": "V&C Dungeon",
+          "Text": "Trisassant - Old Sharlayan - 100 Pieces of Corvosi Brass"
+        }
+      ]
+    },
+    {
+      "Id": 428,
+      "EnglishName": "Turali Snowman",
+      "Patch": "7.4",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Worqor and Peace V"
+        }
+      ]
+    },
+    {
+      "Id": 429,
+      "EnglishName": "Night Stallion",
+      "Patch": "7.55",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "Clotted Crime"
+        }
+      ]
+    },
+    {
+      "Id": 430,
+      "EnglishName": "Magitek Scorpion",
+      "Patch": "7.55",
+      "Sources": [
+        {
+          "Type": "Gold Saucer",
+          "Text": "430 MGC"
+        }
+      ]
+    },
+    {
+      "Id": 432,
+      "EnglishName": "Rocket Punch",
+      "Patch": "7.56",
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "PvP Series 12 - Level 25"
+        }
+      ]
+    },
+    {
+      "Id": 434,
+      "EnglishName": "Cu Sith",
+      "Patch": "7.56",
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "Bonds Unbroken"
+        }
+      ]
+    },
+    {
+      "Id": 435,
+      "EnglishName": "Colibri Callado",
+      "Patch": "7.55",
+      "Sources": [
+        {
+          "Type": "Occult Crescent",
+          "Text": "North Horn - Pot/Bunny Coffer"
+        },
+        {
+          "Type": "Occult Crescent",
+          "Text": "North Horn - Bronze/Silver Coffer"
+        }
+      ]
+    },
+    {
+      "Id": 436,
+      "EnglishName": "Hydra",
+      "Patch": "7.56",
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Kornago Merchant - Bentbranch Meadows (Requires Achievement \"A Beast in the Hand V\")"
+        }
+      ]
+    },
+    {
+      "Id": 437,
+      "EnglishName": "Duck-billed Porter",
+      "Patch": "7.55",
+      "Sources": [
+        {
+          "Type": "Occult Crescent",
+          "Text": "Expedition Antiquarian - North Horn - 500 Arcane Amulets"
+        },
+        {
+          "Type": "Occult Crescent",
+          "Text": "The Forked Tower: Magic"
+        },
+        {
+          "Type": "Occult Crescent",
+          "Text": "The Forked Tower: Magic (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 438,
+      "EnglishName": "Cosmic Armored Weapon Beta",
+      "Patch": "7.51",
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Cosmic Fortune - Auxesia"
+        },
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Mech Pilot Reward - Auxesia"
+        }
+      ]
+    },
+    {
+      "Id": 440,
+      "EnglishName": "Cosmic Predator",
+      "Patch": "7.51",
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Mesouaidonque - 60 Auxesia Token Booklets"
+        }
+      ]
+    },
+    {
+      "Id": 444,
+      "EnglishName": "Wings of Nihility",
+      "Patch": "7.5",
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "The Unmaking (Extreme)"
+        }
+      ]
+    },
+    {
+      "Id": 445,
+      "EnglishName": "Excavating Vacuum Suit",
+      "Patch": "7.51",
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Mesouaidonque - 20,000 Cosmocredits"
+        }
+      ]
+    },
+    {
+      "Id": 446,
+      "EnglishName": "Carbide Grey Warp Loader",
+      "Patch": "7.51",
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Mesouaidonque - 20,000 Cosmocredits"
+        }
+      ]
+    }
+  ]
+}

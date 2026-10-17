@@ -2,21 +2,27 @@ namespace SentinelHub.Mounts;
 
 public enum MountKnowledge { Unknown, Yes, No }
 public enum MountOwnership { Unknown, Unlocked, Locked }
-public enum MountCategory { Unknown, TrialCollection, Quest, Achievement, Exchange }
+public enum MountCategory { Unknown, TrialCollection, Quest, Achievement, Exchange, GilVendor, OnlineStore, Premium, Trial, Raid, Dungeon, DeepDungeon, VariantCriterion, Tribal, GoldSaucer, Pvp, Event, Hunts, Skybuilders, Voyages, Fate, WondrousTails, Crafting, Gathering, Eureka, Bozja, OccultCrescent, CosmicExploration, IslandSanctuary, TreasureHunt, ChaoticRaid, Other }
 public enum MountLoadState { NotLoaded, Loading, Ready, Unavailable }
 public enum MountSort { Name, NameDescending, Id, SeatsDescending }
-public sealed record MountSource(MountCategory Category, string Description, string Evidence);
+public sealed record MountSource(MountCategory Category, string Description, string Evidence, string? Url = null, bool Community = false);
 public sealed record MountUnlockItem(uint Id, string Name, bool Marketable);
 public sealed record MountExchange(uint MountId, uint ItemId, string ItemName, long Required, uint ShopId);
 public sealed record MountEntry(uint Id, string Name, string EnglishName, uint Icon, int Seats,
     string[] Actions, uint BgmId, int BgmMountCount, int? Expansion,
-    MountKnowledge Marketable, MountKnowledge Obtainable, MountSource[] Sources, MountUnlockItem[] Items);
+    MountKnowledge Marketable, MountKnowledge Obtainable, MountSource[] Sources, MountUnlockItem[] Items)
+{
+    public string? ReleasePatch { get; init; }
+}
 public sealed record MountTrackSeed(string Id, int Expansion, string Reward, string Quest, string Evidence, string[] Members);
 public sealed record MountTrackMember(string EnglishName, uint? MountId);
 public sealed record MountTrack(MountTrackSeed Seed, uint? RewardId, MountTrackMember[] Members);
 public sealed record MountCatalog(MountEntry[] Entries, MountTrack[] Tracks, MountExchange[] Exchanges,
     IReadOnlyDictionary<int, string> ExpansionNames, int UnresolvedMetadata)
 {
+    public string? MetadataDate { get; init; }
+    public int MetadataMatched { get; init; }
+    public int MetadataRejected { get; init; }
     public static readonly MountCatalog Empty = new([], [], [], new Dictionary<int, string>(), 0);
 }
 public sealed record MountCharacterSnapshot(bool Available, bool InventoryAvailable,

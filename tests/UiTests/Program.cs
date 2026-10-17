@@ -141,12 +141,14 @@ internal static class Program
                 var mountRows = new[] {
                     new MountEntry(1,"A very long localized mount name that must wrap at the smallest supported width","Firebird",0,8,
                         ["A lengthy mount action label"],123,2,1,MountKnowledge.No,MountKnowledge.Unknown,
-                        [new(MountCategory.Quest,"An independently authored long acquisition source with conditions and explicit unknown availability","Game data: Quest #123")],
+                        [new(MountCategory.Quest,"An independently authored long acquisition source with conditions and explicit unknown availability","Game data: Quest #123"),
+                         new(MountCategory.OnlineStore,"Online Store purchase with a long localized product title and regional availability requirements","Community source: FFXIV Collect; 2026-10-17","https://store.finalfantasyxiv.com/ffxivstore/en-us/product/30",true),
+                         new(MountCategory.GilVendor,"Edelina, Mor Dhona (X:22.1, Y:4.8), 50,000,000 gil","Official Eorzea Database","https://eu.finalfantasyxiv.com/lodestone/playguide/db/shop/7fa3c777312/")],
                         [new(99,"A very long localized whistle item name",false)]),
                     new MountEntry(2,"Missing mount","White Lanner",0,1,[],0,0,null,MountKnowledge.Unknown,MountKnowledge.Unknown,[],[]),
                 };
                 var mountTrack=MountPolicy.ResolveTrack(new("test",1,"Firebird","Fiery Wings, Fiery Hearts","Official",["White Lanner","Unresolved mount"]),mountRows);
-                var mountCatalog=new MountCatalog(mountRows,[mountTrack],[new(1,99,"Expanse Totem",99,1)],new Dictionary<int,string>{{0,"A Realm Reborn"},{1,"Heavensward"}},1);
+                var mountCatalog=new MountCatalog(mountRows,[mountTrack],[new(1,99,"Expanse Totem",99,1)],new Dictionary<int,string>{{0,"A Realm Reborn"},{1,"Heavensward"}},1) { MetadataDate="2026-10-17", MetadataMatched=356, MetadataRejected=1 };
                 var mountCharacters=new[]{
                     MountCharacterSnapshot.Unknown,
                     new MountCharacterSnapshot(true,false,new Dictionary<uint,bool>{{1,true},{2,false}},new Dictionary<uint,long>()),

@@ -1,9 +1,7 @@
-# Sentinel Hub 0.5.0.0
+# Sentinel Hub 0.5.1.0
 
-Add independent passive Mount Collection: local game-data database, search/sort, current-character unlock counts, explicit limited expansion coverage, six trial/meta tracks, seats/actions/BGM, known quest/achievement/exchange sources, market eligibility, safe main-bag trial-token progress and opt-in player context lookup.
+Improve Mount Collection's Where to obtain information: attributed acquisition source/release-patch metadata for 356 mounts, including 46 Online Store entries; 45 reviewed official store product links; missing local gil-shop detection with NQ base prices and explicit requirements; richer direct-item exchange costs. Add separately authored Edelina vendor/location/50,000,000-gil records for Chrysomallos, Gilded Mikoshi and Magitek Avenger G1.
 
-No WhichMount implementation or resource/dataset copied. Sentinel-authored metadata has official provenance; missing acquisition/expansion/current obtainability remains Unknown. No target-info hook, tooltip modification, mount summon, item use, exchange or collection export.
+Category filters distinguish in-game sources, Online Store, other premium/promotional rewards and historical events. Source links open only on a click. Snapshot date, local source coverage and unmatched identities are displayed. No in-game API requests; no inference that an event, vendor or store purchase is currently accessible. FFXIV Collect reuse permission/provenance and attribution are documented.
 
-Existing utility algorithms/options, saved layout and Core/UI 0.4.1 remain unchanged. About now uses the actual Hub assembly version.
-
-See docs/MOUNT_COLLECTION.md for the short in-game checklist, coverage limits and rollback. Automated checks do not replace supervised game validation.
+Eight additional policy groups and expanded existing native mount fixtures cover the enrichment. Supervised in-game acceptance is pending under docs/MOUNT_COLLECTION.md. Existing utilities, native behavior, saved opt-ins/layout and Core/UI 0.4.1 are unchanged. No WhichMount code/CSV/data or target hook is included.
