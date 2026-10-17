@@ -201,18 +201,7 @@ public sealed class MainWindow : Window, IDisposable
             : ImGui.Checkbox("Enable Anti-AFK", ref enabled);
         if (changed) { config.AntiAfkEnabled = enabled; save(); }
         ImGui.TextWrapped(view.Description);
-        ImGui.TextWrapped("Default Off. Preserves the existing HUD behavior: check every 10 seconds and reset inactivity timers above 30 seconds. No keys, movement or chat.");
-        ImGui.TextWrapped("HUD 0.8.4.6 or later supports ownership acknowledgment. HUD 0.8.5.0 and later stores preferences for import and runs no utility actions. With those builds, disabling Hub turns Anti-AFK off. Older compatible HUD builds resume their saved preference.");
-        ImGui.BeginDisabled(view.HudPreference is null);
-        if (Button("Import saved HUD preference") && view.HudPreference is { } preference)
-        {
-            config.AntiAfkEnabled = preference;
-            config.AntiAfkPreferenceImported = true;
-            save();
-            Notice = "Copied only the saved Anti-AFK preference. HUD's original setting is retained.";
-        }
-        ImGui.EndDisabled();
-        ImGui.TextWrapped(view.HudPreference is { } saved ? "Saved HUD preference: " + (saved ? "On" : "Off") : "HUD preference unavailable; no settings were imported.");
+        ImGui.TextWrapped("Checks every 10 seconds and resets inactivity timers above 30 seconds. No keys, movement or chat.");
         ImGui.TextWrapped("Successful timer checks this session: " + view.Cycles);
         ImGui.Separator(); ImGui.Spacing();
         DrawQuestConvenience();
@@ -257,15 +246,7 @@ public sealed class MainWindow : Window, IDisposable
             new[] { "Manual", "First reward", "Current job (otherwise first)", "Allagan piece (otherwise first)" }, 4))
         { config.QuestRewardMode = (QuestRewardSelectionMode)reward; save(); }
         ImGui.TextWrapped("Automatic reward modes select a choose-one reward and press Complete when ready. Guaranteed rewards are left unchanged.");
-        ImGui.BeginDisabled(view.HudPreferences is null);
-        if (Button("Import HUD quest preferences") && view.HudPreferences is { } packed)
-        {
-            config.ImportQuestPreferences(packed);
-            save();
-            Notice = "Copied HUD's dialogue, cutscene and reward preferences. The original HUD settings are retained.";
-        }
-        ImGui.EndDisabled();
-        ImGui.TextWrapped("While enabled, Hub owns all three features, including those set Off or Manual. HUD 0.8.5.0 and later runs no quest actions, so disabling this module or Hub turns them off. HUD 0.8.4.7 resumes its saved preferences.");
+        ImGui.TextWrapped("Turning Quest Convenience off stops its dialogue, cutscene and reward actions.");
         ImGui.TextWrapped("Dialogue: " + view.Dialogue);
         ImGui.TextWrapped("Cutscenes: " + view.Cutscene);
         ImGui.TextWrapped("Rewards: " + view.Reward);

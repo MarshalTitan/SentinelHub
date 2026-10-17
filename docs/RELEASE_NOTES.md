@@ -1,11 +1,13 @@
-Sentinel Hub 0.4.0.0 adds default-OFF Latency / Weaving proving.
+# Sentinel Hub 0.4.0.1
 
-- Off / Measure only / Compensate modes, with bounded own instant-action response correction.
-- Fixed 40 ms response buffer, 250 ms maximum correction and 500 ms correlation timeout.
-- Public loaded NoClippy and native XivAlexander module/export conflict checks; no override.
-- Typed action-request/effect hooks only while eligible, exact-once original forwarding and scoped cleanup.
-- Cast-time/long/special locks, packets, cooldowns and action selection remain untouched.
-- In-memory response/count diagnostics; export contains only allowlisted state and bounded numbers.
-- Preserves Anti-AFK/Quest engines/settings, live/dev inventory fix, HUD and Core/UI pins.
+Both users have completed the HUD preference transfer. Remove the Anti-AFK and Quest
+import buttons, saved-HUD preference summaries and migration/version-transfer guidance
+from Utilities in Modern and Classic. Existing Hub opt-ins and saved values remain unchanged.
 
-Native in-game acceptance remains pending. See [procedure, source audit and rollback](LATENCY_WEAVING.md).
+No native Anti-AFK, quest or latency algorithms, ownership safeguards or Core 0.4.1 pins change.
+Historical configuration fields/import helpers and compatibility protocols remain readable.
+
+Update normally; open /shub → Utilities: no Import buttons or HUD transfer text, and your
+existing settings remain. Use the same functional utility settings as before. Report only
+missing controls, altered settings or regressions. Rollback: turn the affected utility Off;
+retain config. Prior Hub 0.4.0.0 is an immutable binary rollback point.
