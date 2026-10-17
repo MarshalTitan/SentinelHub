@@ -5,7 +5,7 @@
     "InternalName": "SentinelHub",
     "AssemblyVersion": "0.4.0.1",
     "TestingAssemblyVersion": "0.4.0.1",
-    "Description": "Sentinel ecosystem control center with opt-in Anti-AFK, Quest Convenience and bounded instant-action latency compensation. HUD visuals and other Sentinel plugins remain independent.",
+    "Description": "Sentinel ecosystem control center with a passive Mount Collection browser, opt-in Anti-AFK, Quest Convenience and bounded instant-action latency compensation. HUD visuals and other Sentinel plugins remain independent.",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/MarshalTitan/SentinelHub",
     "Tags": [

@@ -9,6 +9,7 @@ using SentinelHub.Configuration;
 using SentinelHub.Diagnostics;
 using SentinelHub.Ecosystem;
 using SentinelHub.Utilities;
+using SentinelHub.Mounts;
 internal static class Program
 {
     static void Check(bool value, string why) { if (!value) throw new Exception(why); }
@@ -135,6 +136,56 @@ internal static class Program
                     Check(content.ScrollMax.Y>0,"Latency controls cannot be reached by scrolling");
                     Check(JsonSerializer.Serialize(settings)==saved,"Latency drawing changed opt-ins");
                 }
+
+                // Exercise populated mount browser and details using the production renderer.
+                var mountRows = new[] {
+                    new MountEntry(1,"A very long localized mount name that must wrap at the smallest supported width","Firebird",0,8,
+                        ["A lengthy mount action label"],123,2,1,MountKnowledge.No,MountKnowledge.Unknown,
+                        [new(MountCategory.Quest,"An independently authored long acquisition source with conditions and explicit unknown availability","Game data: Quest #123")],
+                        [new(99,"A very long localized whistle item name",false)]),
+                    new MountEntry(2,"Missing mount","White Lanner",0,1,[],0,0,null,MountKnowledge.Unknown,MountKnowledge.Unknown,[],[]),
+                };
+                var mountTrack=MountPolicy.ResolveTrack(new("test",1,"Firebird","Fiery Wings, Fiery Hearts","Official",["White Lanner","Unresolved mount"]),mountRows);
+                var mountCatalog=new MountCatalog(mountRows,[mountTrack],[new(1,99,"Expanse Totem",99,1)],new Dictionary<int,string>{{0,"A Realm Reborn"},{1,"Heavensward"}},1);
+                var mountCharacters=new[]{
+                    MountCharacterSnapshot.Unknown,
+                    new MountCharacterSnapshot(true,false,new Dictionary<uint,bool>{{1,true},{2,false}},new Dictionary<uint,long>()),
+                    new MountCharacterSnapshot(true,true,new Dictionary<uint,bool>{{1,false},{2,true}},new Dictionary<uint,long>{{99,200}}),
+                };
+                int mountCases=0;
+                foreach(var theme in new[]{0,1})
+                foreach(var scale in new[]{1f,1.5f,2f})
+                foreach(var width in new[]{480f,860f})
+                foreach(var character in mountCharacters)
+                foreach(var details in new[]{false,true})
+                {
+                    io.FontGlobalScale=scale;
+                    var settings=new HubSettings{Theme=theme,Page=HubPage.Mounts};
+                    using var mounts=new MainWindow(settings,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>false,()=>{},()=>true,
+                        ()=>font,mountView:()=>new(MountLoadState.Ready,mountCatalog,character));
+                    if(details)mounts.OpenMount(1);
+                    var saved=JsonSerializer.Serialize(settings);
+                    for(int i=0;i<12;i++)Frame(mounts,new(width,500),scale);
+                    var content=theme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
+                    Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Mount collection overflow");
+                    Check(content.ContentSize.Y<=content.Size.Y+1||content.ScrollMax.Y>0,"Mount content is clipped without a scroll path");
+                    Check(JsonSerializer.Serialize(settings)==saved,"Mount drawing changed settings");
+                    mountCases++;
+                }
+                foreach(var theme in new[]{0,1})
+                foreach(var state in Enum.GetValues<MountLoadState>())
+                {
+                    io.FontGlobalScale=1;
+                    var settings=new HubSettings{Theme=theme,Page=HubPage.Mounts};
+                    using var mounts=new MainWindow(settings,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>false,()=>{},()=>true,
+                        ()=>font,mountView:()=>new(state,MountCatalog.Empty,MountCharacterSnapshot.Unknown));
+                    for(int i=0;i<12;i++)Frame(mounts,new(480,500),1);
+                    var content=theme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
+                    Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Mount loading/failure state overflow");
+                    mountCases++;
+                }
+                Console.WriteLine($"PASS {mountCases} populated mount browser/details/character/loading/theme/width/scale cases.");
+
                 Console.WriteLine("PASS 198 native Latency mode/state/theme/scale cases.");
                 Console.WriteLine("PASS 288 native Quest state/import/mode/theme/scale cases.");
                 Console.WriteLine("PASS 42 native Anti-AFK state/theme/scale cases.");

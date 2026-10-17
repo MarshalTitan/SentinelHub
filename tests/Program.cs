@@ -1,4 +1,5 @@
 using SentinelHub.Utilities.Quest;
+using SentinelHub.Mounts;
 using System.Text.Json;
 using SentinelHub.Configuration;
 using SentinelHub.Ecosystem;
@@ -459,6 +460,147 @@ Test("Latency export allows bounded numbers/state without native or action ident
  var data=invalidDocument.RootElement.GetProperty("Latency");
  Check(data.GetProperty("State").GetString()=="Unknown"&&data.GetProperty("Samples").GetInt64()==0);
  Check(data.GetProperty("LastResponseMs").GetDouble()==0&&!invalid.Contains("NaN")&&!invalid.Contains("Infinity"));
+});
+
+
+MountEntry M(uint id, string name, int? expansion = null, MountKnowledge market = MountKnowledge.Unknown,
+    MountKnowledge obtainable = MountKnowledge.Unknown, MountSource[]? sources = null, int seats = 1) =>
+    new(id, name, name, 123, seats, [], 0, 0, expansion, market, obtainable, sources ?? [], []);
+MountCatalog C(params MountEntry[] entries) => new(entries, [], [], new Dictionary<int,string>{{0,"ARR"},{1,"HW"}}, 0);
+MountCharacterSnapshot O(params (uint Id, bool Owned)[] entries) => new(true, false, entries.ToDictionary(x=>x.Id,x=>x.Owned), new Dictionary<uint,long>());
+Test("Mount old settings retain enum values, native opt-ins and default-off context lookup", () => {
+ Check((int)HubPage.About==7 && (int)HubPage.Mounts==8);
+ var old=JsonSerializer.Deserialize<HubSettings>("{\"Version\":1,\"Page\":7,\"AntiAfkEnabled\":true,\"LatencyMode\":2}")!;old.Normalize();
+ Check(old.Page==HubPage.About && old.AntiAfkEnabled && old.LatencyMode==LatencyMode.Compensate && !old.MountContextMenuEnabled);
+ var newSettings=new HubSettings{Page=HubPage.Mounts,MountContextMenuEnabled=true};
+ var copy=JsonSerializer.Deserialize<HubSettings>(JsonSerializer.Serialize(newSettings))!;copy.Normalize();
+ Check(copy.Page==HubPage.Mounts&&copy.MountContextMenuEnabled&&!copy.AntiAfkEnabled&&!copy.QuestConvenienceEnabled);
+});
+Test("Mount journal candidates reject blank, model-less, icon-less and negative-order rows", () => {
+ Check(MountPolicy.IsCollectionRow(1,"Chocobo",1,1,0));
+ Check(!MountPolicy.IsCollectionRow(0,"Chocobo",1,1,0)&&!MountPolicy.IsCollectionRow(1," ",1,1,0));
+ Check(!MountPolicy.IsCollectionRow(1,"Chocobo",0,1,0)&&!MountPolicy.IsCollectionRow(1,"Chocobo",1,0,0));
+ Check(!MountPolicy.IsCollectionRow(1,"Chocobo",1,1,-1));
+});
+Test("Mount item correlation only accepts verified unlock action and known mount ID", () => {
+ var ids=new HashSet<uint>{4,9};
+ Check(MountPolicy.UnlockMount(1322,4,ids)==4);
+ Check(MountPolicy.UnlockMount(853,4,ids)==null&&MountPolicy.UnlockMount(1322,5,ids)==null&&MountPolicy.UnlockMount(1322,0,ids)==null);
+});
+Test("Mount marketability preserves unknown and accounts for every known item", () => {
+ Check(MountPolicy.MarketStatus([])==MountKnowledge.Unknown);
+ Check(MountPolicy.MarketStatus([new(1,"a",false)])==MountKnowledge.No);
+ Check(MountPolicy.MarketStatus([new(1,"a",false),new(2,"b",true)])==MountKnowledge.Yes);
+});
+Test("Mount filters never treat unknown ownership as missing", () => {
+ var cat=C(M(1,"a"),M(2,"b"),M(3,"c"));var own=O((1,true),(2,false));var f=new MountFilter();
+ f.Ownership=1;Check(MountPolicy.Filter(cat,own,f).Select(x=>x.Id).SequenceEqual(new uint[]{2}));
+ f.Ownership=2;Check(MountPolicy.Filter(cat,own,f).Single().Id==1);
+ f.Ownership=3;Check(MountPolicy.Filter(cat,own,f).Single().Id==3);
+ f.Ownership=1;Check(MountPolicy.Filter(cat,MountCharacterSnapshot.Unknown,f).Length==0);
+});
+Test("Mount knowledge filters exhaustively distinguish yes, no and unknown", () => {
+ foreach(var value in Enum.GetValues<MountKnowledge>())foreach(var filter in new[]{0,1,2,3}){
+  Check(MountPolicy.KnowledgeMatches(value,filter)==(filter==0||filter==1&&value==MountKnowledge.Yes||filter==2&&value==MountKnowledge.No||filter==3&&value==MountKnowledge.Unknown));
+ }
+ Check(!MountPolicy.KnowledgeMatches(MountKnowledge.Unknown,999));
+ var cat=C(M(1,"a",market:MountKnowledge.Yes),M(2,"b",market:MountKnowledge.No),M(3,"c"));
+ var f=new MountFilter{Marketable=1};Check(MountPolicy.Filter(cat,O(),f).Single().Id==1);
+ f.Marketable=3;Check(MountPolicy.Filter(cat,O(),f).Single().Id==3);
+ f.Marketable=0;f.Obtainable=1;Check(MountPolicy.Filter(cat,O(),f).Length==0);
+ f.Obtainable=3;Check(MountPolicy.Filter(cat,O(),f).Length==3);
+});
+Test("Mount search supports localization, English keys, numeric ID, items and known source", () => {
+ var row=M(17,"Localized") with{EnglishName="Firebird",Items=[new(99,"Whistle",false)],Sources=[new(MountCategory.Quest,"Quest: Fiery Wings","Game data")]};
+ foreach(var term in new[]{"local"," FIREBIRD ","17","whistle","fiery"}){
+  Check(MountPolicy.Filter(C(row),O(),new MountFilter{Search=term}).Length==1);
+ }
+ Check(MountPolicy.Filter(C(row),O(),new MountFilter{Search="absent"}).Length==0);
+});
+Test("Mount expansion and source filters retain unknown without inventing an expansion", () => {
+ var cat=C(M(1,"a",0,sources:[new(MountCategory.Quest,"quest","data")]),M(2,"b",1),M(3,"c"));
+ Check(MountPolicy.Filter(cat,O(),new MountFilter{Expansion=0}).Single().Id==1);
+ Check(MountPolicy.Filter(cat,O(),new MountFilter{Expansion=-1}).Single().Id==3);
+ Check(MountPolicy.Filter(cat,O(),new MountFilter{Category=MountCategory.Quest}).Single().Id==1);
+ Check(MountPolicy.Filter(cat,O(),new MountFilter{Category=MountCategory.Unknown}).Length==2);
+});
+Test("Mount sorting is stable by ID across ties, localization and seats", () => {
+ var cat=C(M(2,"Alpha",seats:2),M(1,"alpha",seats:1),M(3,"Beta",seats:8));
+ Check(MountPolicy.Filter(cat,O(),new MountFilter()).Select(x=>x.Id).SequenceEqual(new uint[]{1,2,3}));
+ Check(MountPolicy.Filter(cat,O(),new MountFilter{Sort=MountSort.NameDescending}).First().Id==3);
+ Check(MountPolicy.Filter(cat,O(),new MountFilter{Sort=MountSort.SeatsDescending}).First().Id==3);
+ Check(MountPolicy.Filter(cat,O(),new MountFilter{Sort=MountSort.Id}).First().Id==1);
+});
+Test("Mount completion ignores duplicate IDs and never converts an unread character into zero-owned", () => {
+ var done=MountPolicy.Completion(new uint[]{1,1,2,3},O((1,true),(2,false)));
+ Check(done==new MountCompletion(1,1,1)&&done.Total==3&&done.Label.Contains("unknown"));
+ var none=MountPolicy.Completion(new uint[]{1,2},MountCharacterSnapshot.Unknown);
+ Check(none==new MountCompletion(0,0,2));
+});
+Test("Mount track exact English resolution preserves missing and ambiguous requirements", () => {
+ var seed=new MountTrackSeed("x",1,"Reward","Quest","Official",["a","b","missing"]);
+ var track=MountPolicy.ResolveTrack(seed,new[]{M(1,"a"),M(2,"b"),M(3,"Reward")});
+ Check(track.RewardId==3&&track.Members[2].MountId==null);
+ Check(MountPolicy.TrackCompletion(track,O((1,true),(2,false)))==new MountCompletion(1,1,1));
+ var ambiguous=MountPolicy.ResolveTrack(seed,new[]{M(1,"a"),M(2,"a")});
+ Check(ambiguous.Members[0].MountId==null&&ambiguous.RewardId==null);
+});
+Test("Sentinel metadata has six independent complete expansion sets with provenance", () => {
+ Check(SentinelMountMetadata.Tracks.Length==6);
+ Check(SentinelMountMetadata.Tracks.Select(t=>t.Expansion).SequenceEqual(Enumerable.Range(0,6)));
+ Check(SentinelMountMetadata.Tracks.Select(t=>t.Members.Length).SequenceEqual(new[]{6,7,7,7,7,7}));
+ foreach(var t in SentinelMountMetadata.Tracks){
+  Check(t.Members.Distinct(StringComparer.OrdinalIgnoreCase).Count()==t.Members.Length);
+  Check(!t.Members.Contains(t.Reward,StringComparer.OrdinalIgnoreCase)&&t.Evidence.StartsWith("https://"));
+  Check(SentinelMountMetadata.Find(t.Reward)==t&&SentinelMountMetadata.Find(t.Members[0].ToUpperInvariant())==t);
+ }
+ Check(SentinelMountMetadata.Find("unverified new mount")==null);
+});
+Test("Mount trial-token exchanges reject complex, HQ, currency and nontrial offers", () => {
+ bool Offer(bool trial=true,byte mode=0,uint receive=1,bool hq=false,int costs=1,uint type=0,uint item=100,long required=99,bool untradable=true,string name="King Totem",long collectability=0) =>
+  MountPolicy.SafeTokenOffer(trial,mode,receive,hq,costs,type,item,required,untradable,name,collectability);
+ Check(Offer()&&Offer(mode:4)&&Offer(mode:8)&&Offer(mode:16));
+ foreach(var alias in Enumerable.Range(0,8))Check(!Offer(item:(uint)alias));
+ Check(!Offer(collectability:1));
+ Check(!Offer(trial:false)&&!Offer(mode:1)&&!Offer(receive:2)&&!Offer(hq:true)&&!Offer(costs:2)&&!Offer(type:3));
+ Check(!Offer(item:0)&&!Offer(required:0)&&!Offer(required:10000)&&!Offer(untradable:false)&&!Offer(name:"Irregular Tomestone"));
+ Check(MountPolicy.Progress(200,99)==1&&MountPolicy.Progress(0,99)==0&&MountPolicy.Progress(-1,99)==0&&MountPolicy.Progress(1,0)==0);
+});
+MountBagSnapshot[] Bags() => Enumerable.Range(0,4).Select(n=>new MountBagSnapshot(n,true,35,new MountBagItem[35])).ToArray();
+Test("Mount token counts sum split stacks in main bags and ignore unrelated items", () => {
+ var bags=Bags();bags[0].Items[0]=new(1,50);bags[3].Items[34]=new(1,49);bags[2].Items[1]=new(2,999);
+ var counts=MountInventoryPolicy.Count(bags,new HashSet<uint>{1,3})!;
+ Check(counts[1]==99&&counts[3]==0&&!counts.ContainsKey(2));
+});
+Test("Mount token inventory uncertainty fails closed for unloaded, missing, duplicated or invalid bags", () => {
+ var wanted=new HashSet<uint>{1};
+ Check(MountInventoryPolicy.Count(Bags()[..3],wanted)==null);
+ var bags=Bags();bags[1]=bags[1] with{Loaded=false};Check(MountInventoryPolicy.Count(bags,wanted)==null);
+ bags=Bags();bags[1]=bags[1] with{Kind=0};Check(MountInventoryPolicy.Count(bags,wanted)==null);
+ bags=Bags();bags[0]=bags[0] with{DeclaredSize=36};Check(MountInventoryPolicy.Count(bags,wanted)==null);
+ bags=Bags();bags[0]=bags[0] with{Items=[]};Check(MountInventoryPolicy.Count(bags,wanted)==null);
+ foreach(var item in new[]{new MountBagItem(1,-1),new MountBagItem(1,1000000),new MountBagItem(1,1,true)}){
+  bags=Bags();bags[0].Items[0]=item;Check(MountInventoryPolicy.Count(bags,wanted)==null);
+ }
+ bags=Bags();bags[3]=bags[3] with{Kind=10000};Check(MountInventoryPolicy.Count(bags,wanted)==null);
+});
+Test("Mount own-character observations clear on logout, character switch, unready state and failure", () => {
+ var session=new MountObservationSession();
+ session.Observe(1,true,()=>O((1,true)));Check(session.Snapshot.Ownership(1)==MountOwnership.Unlocked);
+ session.Observe(2,true,()=>O((1,false)));Check(session.Snapshot.Ownership(1)==MountOwnership.Locked);
+ session.Observe(2,false,()=>throw new Exception());Check(!session.Snapshot.Available);
+ session.Observe(1,true,()=>O((1,true)));session.Observe(1,true,()=>throw new Exception());
+ Check(!session.Snapshot.Available&&session.Snapshot.Ownership(1)==MountOwnership.Unknown);
+ session.Observe(0,true,()=>O((1,true)));Check(!session.Snapshot.Available);
+});
+Test("Mount context menu tickets reject stale identity, logout, zone changes, Off, dismount and disposal", () => {
+ var ticket=new MountLookupTicket(10,20,30);
+ bool Allowed(ulong obj=10,ulong session=20,uint territory=30,bool enabled=true,bool ready=true,bool player=true,uint mount=1,bool disposed=false)=>
+  MountLookupPolicy.CanOpen(ticket,obj,session,territory,enabled,ready,player,mount,disposed);
+ Check(Allowed()&&Allowed(mount:2));
+ Check(!Allowed(obj:11)&&!Allowed(session:21)&&!Allowed(territory:31)&&!Allowed(enabled:false));
+ Check(!Allowed(ready:false)&&!Allowed(player:false)&&!Allowed(mount:0)&&!Allowed(disposed:true));
+ Check(!MountLookupPolicy.CanOpen(new(0,20,30),0,20,30,true,true,true,1,false));
 });
 
 Console.WriteLine(passed + " policy test groups passed.");

@@ -1,13 +1,9 @@
-# Sentinel Hub 0.4.0.1
+# Sentinel Hub 0.5.0.0
 
-Both users have completed the HUD preference transfer. Remove the Anti-AFK and Quest
-import buttons, saved-HUD preference summaries and migration/version-transfer guidance
-from Utilities in Modern and Classic. Existing Hub opt-ins and saved values remain unchanged.
+Add independent passive Mount Collection: local game-data database, search/sort, current-character unlock counts, explicit limited expansion coverage, six trial/meta tracks, seats/actions/BGM, known quest/achievement/exchange sources, market eligibility, safe main-bag trial-token progress and opt-in player context lookup.
 
-No native Anti-AFK, quest or latency algorithms, ownership safeguards or Core 0.4.1 pins change.
-Historical configuration fields/import helpers and compatibility protocols remain readable.
+No WhichMount implementation or resource/dataset copied. Sentinel-authored metadata has official provenance; missing acquisition/expansion/current obtainability remains Unknown. No target-info hook, tooltip modification, mount summon, item use, exchange or collection export.
 
-Update normally; open /shub → Utilities: no Import buttons or HUD transfer text, and your
-existing settings remain. Use the same functional utility settings as before. Report only
-missing controls, altered settings or regressions. Rollback: turn the affected utility Off;
-retain config. Prior Hub 0.4.0.0 is an immutable binary rollback point.
+Existing utility algorithms/options, saved layout and Core/UI 0.4.1 remain unchanged. About now uses the actual Hub assembly version.
+
+See docs/MOUNT_COLLECTION.md for the short in-game checklist, coverage limits and rollback. Automated checks do not replace supervised game validation.

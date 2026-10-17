@@ -9,6 +9,7 @@ using SentinelHub.Diagnostics;
 using SentinelHub.Ecosystem;
 using SentinelHub.Utilities;
 using SentinelHub.Utilities.Quest;
+using SentinelHub.Mounts;
 namespace SentinelHub.UI;
 public sealed class MainWindow : Window, IDisposable
 {
@@ -26,25 +27,31 @@ public sealed class MainWindow : Window, IDisposable
     private readonly Func<AntiAfkView> antiAfkView;
     private readonly Func<QuestConvenienceView> questView;
     private readonly Func<LatencyView> latencyView;
+    private readonly MountCollectionPanel mounts;
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
     private readonly SentinelModernNavItem[] navigation;
+    private static readonly HubPage[] PageOrder = [HubPage.Dashboard, HubPage.Plugins, HubPage.Profiles, HubPage.Dependencies,
+        HubPage.Utilities, HubPage.Mounts, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
     private Vector2 frameSize;
     private Vector2? pendingSize;
     private bool modern;
     public string Notice { get; set; } = "";
     public MainWindow(HubSettings config, Func<HubSnapshot> snapshot, FaultJournal faults,
         Action save, Action refresh, Func<string, bool, bool> open, Action export,
-        Func<bool> systemReducedMotion, Func<ImFontPtr>? iconFont = null, Func<AntiAfkView>? antiAfkView = null, Func<QuestConvenienceView>? questView = null, Func<LatencyView>? latencyView = null) : base(WindowId)
+        Func<bool> systemReducedMotion, Func<ImFontPtr>? iconFont = null, Func<AntiAfkView>? antiAfkView = null, Func<QuestConvenienceView>? questView = null, Func<LatencyView>? latencyView = null, Func<MountCollectionView>? mountView = null,
+        Action? refreshMounts = null, Action? retryMounts = null, Action<uint, Vector2>? mountIcon = null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.questView = questView ?? (() => QuestConvenienceView.Off);
         this.latencyView = latencyView ?? (() => LatencyView.Off);
+        mounts = new(config, mountView ?? (() => MountCollectionView.Empty), save,
+            refreshMounts ?? (() => {}), retryMounts ?? (() => {}), mountIcon);
         this.config = config; this.snapshot = snapshot; this.faults = faults;
         this.save = save; this.refresh = refresh; this.open = open; this.export = export;
         this.systemReducedMotion = systemReducedMotion;
         this.iconFont = iconFont ?? (() => UiBuilder.IconFont);
-        navigation = Enum.GetValues<HubPage>().Select(p => new SentinelModernNavItem(p.ToString(), null, PageTitle(p))
+        navigation = PageOrder.Select(p => new SentinelModernNavItem(p.ToString(), null, PageTitle(p))
         {
             DrawIcon = context => DrawIcon(Icon(p), context.DrawList, context.Minimum, context.Maximum, context.Colour),
         }).ToArray();
@@ -56,9 +63,9 @@ public sealed class MainWindow : Window, IDisposable
         HubPage.Dashboard => FontAwesomeIcon.Home, HubPage.Plugins => FontAwesomeIcon.Cubes,
         HubPage.Profiles => FontAwesomeIcon.Users, HubPage.Dependencies => FontAwesomeIcon.Link,
         HubPage.Utilities => FontAwesomeIcon.Tools, HubPage.Diagnostics => FontAwesomeIcon.Heartbeat,
-        HubPage.Appearance => FontAwesomeIcon.Palette, _ => FontAwesomeIcon.InfoCircle,
+        HubPage.Appearance => FontAwesomeIcon.Palette, HubPage.Mounts => FontAwesomeIcon.Horse, _ => FontAwesomeIcon.InfoCircle,
     };
-    public static string PageTitle(HubPage p) => p.ToString();
+    public static string PageTitle(HubPage p) => p == HubPage.Mounts ? "Mount Collection" : p.ToString();
     public override void PreDraw()
     {
         style.Pop();
@@ -84,6 +91,7 @@ public sealed class MainWindow : Window, IDisposable
             SentinelModernAppShell.Draw(new("SentinelHub.Modern", "Sentinel Hub", config.Page.ToString())
             {
                 Scale = ImGuiHelpers.GlobalScale, DeltaTime = ImGui.GetIO().DeltaTime,
+                Layout = SentinelModernAppLayoutOptions.Default with { RailButtonSize = frameSize.Y / ImGuiHelpers.GlobalScale < 560 ? 36 : SentinelModernAppLayoutOptions.Default.RailButtonSize },
                 ReducedMotion = config.ReducedMotion || systemReducedMotion(),
                 EnableWindowDragging = true,
                 RequestCollapse = ToggleCollapse, CollapseTooltip = config.Collapsed ? "Expand" : "Minimize",
@@ -95,11 +103,15 @@ public sealed class MainWindow : Window, IDisposable
         else
         {
             ImGui.SetNextItemWidth(-1);
-            var page = (int)config.Page;
-            var names = Enum.GetNames<HubPage>();
-            if (ImGui.Combo("##Page", ref page, names, names.Length)) { config.Page = (HubPage)page; save(); }
+            var page = Array.IndexOf(PageOrder, config.Page);
+            var names = PageOrder.Select(PageTitle).ToArray();
+            if (ImGui.Combo("##Page", ref page, names, names.Length)) { config.Page = PageOrder[page]; save(); }
             DrawPage();
         }
+    }
+    public void OpenMount(uint id)
+    {
+        config.Page = HubPage.Mounts; mounts.Select(id); OpenAndExpand(); save();
     }
     public void OpenAndExpand()
     {
@@ -138,6 +150,7 @@ public sealed class MainWindow : Window, IDisposable
             case HubPage.Diagnostics: DrawDiagnostics(); break;
             case HubPage.Appearance: DrawAppearance(); break;
             case HubPage.About: DrawAbout(); break;
+            case HubPage.Mounts: mounts.Draw(); break;
         }
         if (Notice.Length > 0) { ImGui.Spacing(); ImGui.TextWrapped(Notice); }
     }
@@ -286,7 +299,7 @@ public sealed class MainWindow : Window, IDisposable
     private void DrawAbout()
     {
         Card("about", "MVP", SentinelModernPillTone.Accent,
-            ["Sentinel Hub 0.4.0.0", "Optional Sentinel ecosystem control center.",
+            ["Sentinel Hub " + (typeof(MainWindow).Assembly.GetName().Version?.ToString(4) ?? "Unknown"), "Optional Sentinel ecosystem control center.",
              "Core UI 0.4.1, bundled with Hub. No separately installed Core plugin.",
              "Other Sentinel plugins work normally when Hub is disabled or absent.",
              "Camera, HUD rendering, hunt policy, Frontline strategy, gear switching, Profiles and Relay remain owned by their existing plugins.",
