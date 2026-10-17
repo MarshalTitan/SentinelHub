@@ -175,6 +175,7 @@ internal static class Program
                 foreach(var theme in new[]{0,1})
                 foreach(var state in Enum.GetValues<MountLoadState>())
                 {
+                    io.FontGlobalScale=1;
                     var settings=new HubSettings{Theme=theme,Page=HubPage.Mounts};
                     using var mounts=new MainWindow(settings,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>false,()=>{},()=>true,
                         ()=>font,mountView:()=>new(state,MountCatalog.Empty,MountCharacterSnapshot.Unknown));

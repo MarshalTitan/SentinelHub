@@ -10,7 +10,7 @@ public sealed class MountCharacterReader(IDataManager data, IUnlockState unlocks
         var owned = new Dictionary<uint, bool>();
         foreach (var mount in catalog.Entries)
             owned.Add(mount.Id, unlocks.IsMountUnlocked(sheet.GetRow(mount.Id)));
-        var counts = ReadMainBags(catalog.Exchanges.Select(e => e.ItemId).ToHashSet());
+        var counts = catalog.Exchanges.Length == 0 ? null : ReadMainBags(catalog.Exchanges.Select(e => e.ItemId).ToHashSet());
         return new(true, counts is not null, owned, counts ?? new Dictionary<uint, long>());
     }
     // Synchronous read of four loaded main bags only. No native pointer survives this call.
