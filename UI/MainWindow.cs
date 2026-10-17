@@ -88,9 +88,10 @@ public sealed class MainWindow : Window, IDisposable
         frameSize = ImGui.GetWindowSize();
         if (modern)
         {
-            SentinelModernAppShell.Draw(new("SentinelHub.Modern", "Sentinel Hub", PageTitle(config.Page))
+            SentinelModernAppShell.Draw(new("SentinelHub.Modern", "Sentinel Hub", config.Page.ToString())
             {
                 Scale = ImGuiHelpers.GlobalScale, DeltaTime = ImGui.GetIO().DeltaTime,
+                Layout = SentinelModernAppLayoutOptions.Default with { RailButtonSize = frameSize.Y / ImGuiHelpers.GlobalScale < 560 ? 36 : SentinelModernAppLayoutOptions.Default.RailButtonSize },
                 ReducedMotion = config.ReducedMotion || systemReducedMotion(),
                 EnableWindowDragging = true,
                 RequestCollapse = ToggleCollapse, CollapseTooltip = config.Collapsed ? "Expand" : "Minimize",
