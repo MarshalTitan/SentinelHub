@@ -30,4 +30,22 @@ All original native calls and arguments are forwarded exactly once, including wh
 - Action schema: [83e965d091116f895d5b17573cc5d12909a5f407](https://github.com/xivdev/EXDSchema/blob/83e965d091116f895d5b17573cc5d12909a5f407/Action.yml), Cast100ms and ActionCategory; managed metadata is cached on first enable.
 - XivAlexander identifying exports/names: [2c71d109c7738d5ef47b291f8df879b251265c26](https://github.com/Soreepeong/XivAlexander/tree/2c71d109c7738d5ef47b291f8df879b251265c26), Exports_x64.def, loader Exports64.def and XivAlexander.h.
 
-Automated policy/lifecycle/original-forwarding/render/package checks do not establish native game correctness, actual conflict detection on this PC, response measurement accuracy or a felt improvement. This release is default-off proving availability pending the gate above.
+Automated policy/lifecycle/original-forwarding/render/package checks do not establish native game correctness, actual conflict detection on this PC, response measurement accuracy or a felt improvement. This release remains default-off proving availability; the scoped play-test evidence and remaining checks are recorded below.
+
+## What the display means
+
+The game waits briefly after an action before allowing another. A late server response can add extra waiting. Compensate credits part of that elapsed response time against the local remaining animation lock, keeping the fixed 40 ms buffer and maximum 250 ms correction. Normal cooldowns and action selection are unchanged; smoother weaving may feel ordinary rather than dramatic.
+
+- **Samples:** eligible matched responses observed.
+- **Applied adjustments:** responses whose local remaining lock was actually changed; zero in Measure only.
+- **Action response:** observed action-to-response delay, including server/frame delay. The average is smoothed, not a network-ping measurement.
+- **Last calculated correction:** bounded reduction calculated for the latest sample; Measure only can display this preview without applying it.
+- **Applied total:** sum of applied reductions; not measured fight time saved or damage gained. Counts reset when an active mode restarts.
+
+## Latency / Weaving scoped play-test PASS — 2026-10-17 UTC
+
+The user replied “I'd say PASS. I am not exactly sure how it works, but things seem good?” after the Hub 0.4.0.0 proving instructions. The attached screenshot `image(20261017-021946).png` shows **Compensate / Active**, **28 samples / 28 applied adjustments**, **313 ms last / 233 ms average action response**, **250 ms last calculated correction**, and **5,146 ms applied total**. The screenshot does not show the Hub version or job; 0.4.0.0 is the instructed build, not independently visible version evidence.
+
+This records a **scoped normal-play PASS with active compensation and no problem reported**. It is not an explicit better-versus-Off comparison or an independent timing measurement. Known-conflict blocking, Measure-only zero writes, Off stopping counts, excluded-action behavior, zoning and Hub reload were not separately reported and remain unconfirmed under the [focused procedure](https://github.com/MarshalTitan/SentinelHub/blob/main/docs/LATENCY_WEAVING.md). The separate live/dev inventory display check and existing hunt/PvP/navigation gates are unchanged.
+
+Action-response values include server/frame delay, not raw network ping. The module reduces extra local waiting after eligible instant-action responses, retaining a 40 ms buffer and a 250 ms per-action cap; it does not speed cooldowns or invoke actions. The applied total accumulates individual corrections, not demonstrated encounter time saved or damage gain. This evidence update changes documentation only; Hub remains 0.4.0.0 with default-Off settings and unchanged native code/catalog.
