@@ -168,7 +168,7 @@ internal static class Program
                     for(int i=0;i<12;i++)Frame(mounts,new(width,500),scale);
                     var content=theme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
                     Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Mount collection overflow");
-                    Check(content.ScrollMax.Y>0,"Mount collection cannot scroll to all controls");
+                    Check(content.ContentSize.Y<=content.Size.Y+1||content.ScrollMax.Y>0,"Mount content is clipped without a scroll path");
                     Check(JsonSerializer.Serialize(settings)==saved,"Mount drawing changed settings");
                     mountCases++;
                 }
