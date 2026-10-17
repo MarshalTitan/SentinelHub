@@ -3,8 +3,8 @@
     "Author": "MTitan",
     "Name": "Sentinel Hub",
     "InternalName": "SentinelHub",
-    "AssemblyVersion": "0.4.0.1",
-    "TestingAssemblyVersion": "0.4.0.1",
+    "AssemblyVersion": "0.5.0.0",
+    "TestingAssemblyVersion": "0.5.0.0",
     "Description": "Sentinel ecosystem control center with a passive Mount Collection browser, opt-in Anti-AFK, Quest Convenience and bounded instant-action latency compensation. HUD visuals and other Sentinel plugins remain independent.",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/MarshalTitan/SentinelHub",
@@ -19,9 +19,9 @@
     "LoadSync": true,
     "Punchline": "Optional Sentinel ecosystem control center.",
     "IconUrl": "https://raw.githubusercontent.com/MarshalTitan/SentinelHub/main/assets/icon.png",
-    "DownloadLinkInstall": "https://github.com/MarshalTitan/SentinelHub/releases/download/v0.4.0.1/SentinelHub.zip",
-    "DownloadLinkUpdate": "https://github.com/MarshalTitan/SentinelHub/releases/download/v0.4.0.1/SentinelHub.zip",
-    "DownloadLinkTesting": "https://github.com/MarshalTitan/SentinelHub/releases/download/v0.4.0.1/SentinelHub.zip",
-    "LastUpdate": 1792210968
+    "DownloadLinkInstall": "https://github.com/MarshalTitan/SentinelHub/releases/download/v0.5.0.0/SentinelHub.zip",
+    "DownloadLinkUpdate": "https://github.com/MarshalTitan/SentinelHub/releases/download/v0.5.0.0/SentinelHub.zip",
+    "DownloadLinkTesting": "https://github.com/MarshalTitan/SentinelHub/releases/download/v0.5.0.0/SentinelHub.zip",
+    "LastUpdate": 1792213743
   }
 ]
