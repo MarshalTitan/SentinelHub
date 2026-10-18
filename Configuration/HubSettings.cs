@@ -1,12 +1,10 @@
 using SentinelHub.Utilities.Quest;
 using SentinelHub.Utilities;
 namespace SentinelHub.Configuration;
-public enum HubPage { Dashboard, Plugins, Profiles, Dependencies, Utilities, Diagnostics, Appearance, About, Mounts, Fashion, PlayerInspector, RecentActivity, Backups }
+public enum HubPage { Dashboard, Plugins, Profiles, Dependencies, Utilities, Diagnostics, Appearance, About, Mounts, Fashion, PlayerInspector, RecentActivity }
 public class HubSettings
 {
     public int Version { get; set; } = 1;
-    private volatile bool automationPaused;
-    public bool AutomationPaused {get=>automationPaused;set=>automationPaused=value;} // Persistent, thread-visible latch; never enables a utility.
     public int Theme { get; set; } = 1;
     public HubPage Page { get; set; }
     public LatencyMode LatencyMode { get; set; } // Additive preference; new installs/upgrades stay Off.

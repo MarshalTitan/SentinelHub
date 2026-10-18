@@ -3,12 +3,11 @@ using Dalamud.Game;
 using Lumina.Excel.Sheets;
 namespace SentinelHub.Inspection;
 
-// Local rows only. No external acquisition database and no inferred current availability.
+// Local identity/unlock rows plus identity-gated, attributed source facts; current availability remains unknown.
 public sealed class InspectionGameData(IDataManager data,IUnlockState unlocks,Func<bool> ownReady)
 {
     private readonly Dictionary<(InspectionKind,uint),InspectionEntry> entries=new();
     private readonly Dictionary<uint,uint> modes=new();
-    private readonly List<BardingModel> bardingModels=[];
     private IEnumerator<int>? build;
     private bool attempted;
     public bool Loaded {get;private set;}
@@ -27,19 +26,10 @@ public sealed class InspectionGameData(IDataManager data,IUnlockState unlocks,Fu
         bool? owned=null;
         if(ownReady())try{
             if(kind==InspectionKind.Emote&&data.GetExcelSheet<Emote>().GetRowOrDefault(id) is {} e)owned=unlocks.IsEmoteUnlocked(e);
-            if(kind==InspectionKind.Barding&&data.GetExcelSheet<BuddyEquip>().GetRowOrDefault(id) is {} b)owned=unlocks.IsBuddyEquipUnlocked(b);
         }catch{owned=null;}
         return entry with{Owned=owned};
     }
     public uint? EmoteMode(uint id)=>modes.TryGetValue(id,out var mode)?mode:null;
-    public InspectionEntry? FindBarding(BardingSlot slot,ulong model)
-    {
-        var id=BardingPolicy.Match(bardingModels,slot,model);if(id is null or 0)return null;
-        var entry=Find(InspectionKind.Barding,id.Value);if(entry is null)return null;
-        var row=data.GetExcelSheet<BuddyEquip>().GetRowOrDefault(id.Value);if(row is null)return null;
-        var icon=slot switch{BardingSlot.Head=>row.Value.IconHead,BardingSlot.Body=>row.Value.IconBody,_=>row.Value.IconLegs};
-        return entry with{Icon=icon};
-    }
     private IEnumerator<int> Build()
     {
         var links=new Dictionary<uint,List<(InspectionKind,uint)>>();
@@ -47,7 +37,6 @@ public sealed class InspectionGameData(IDataManager data,IUnlockState unlocks,Fu
         var sources=new Dictionary<(InspectionKind,uint),List<string>>();int work=0;
         void AddLink(uint key,(InspectionKind,uint) value){if(key==0)return;if(!links.TryGetValue(key,out var list))links[key]=list=[];list.Add(value);}
         var englishEmotes=data.GetExcelSheet<Emote>(ClientLanguage.English);
-        var englishBardings=data.GetExcelSheet<BuddyEquip>(ClientLanguage.English);
         foreach(var e in data.GetExcelSheet<Emote>()){
             var name=e.Name.ToString();var command=e.TextCommand.IsValid?e.TextCommand.Value.Command.ToString():"";
             if(e.RowId>0&&e.RowId<=ushort.MaxValue&&!string.IsNullOrWhiteSpace(name)&&e.Icon>0&&command.StartsWith('/')&&command.Length<=80){
@@ -58,22 +47,11 @@ public sealed class InspectionGameData(IDataManager data,IUnlockState unlocks,Fu
             }
             if(++work%128==0)yield return 1;
         }
-        foreach(var b in data.GetExcelSheet<BuddyEquip>()){
-            if(b.RowId>0&&b.RowId<=byte.MaxValue&&!string.IsNullOrWhiteSpace(b.Name.ToString())){
-                var key=(InspectionKind.Barding,b.RowId);entries.Add(key,new(key.Item1,key.RowId,b.Name.ToString(),b.IconHead!=0?b.IconHead:b.IconBody,"",null,[],"Unknown"));sources[key]=[];
-                bardingModels.Add(new(b.RowId,(ulong)b.ModelTop,(ulong)b.ModelBody,(ulong)b.ModelLegs));
-                var fact=InspectionMetadata.Find(InspectionKind.Barding,b.RowId,englishBardings.GetRowOrDefault(b.RowId)?.Name.ToString()??"");
-                entries[key]=entries[key] with{Patch=InspectionMetadata.Patch(fact?.Patch),Expansion=InspectionMetadata.Expansion(fact?.Patch),Category=fact is not null&&fact.Sources.Length>0?string.Join(", ",fact.Sources.Select(InspectionMetadata.Category).Distinct().Take(6)):"Unknown"};
-                if(fact is not null)sources[key].AddRange(InspectionMetadata.Sources(InspectionKind.Barding,fact));
-            }
-            if(++work%128==0)yield return 1;
-        }
         foreach(var item in data.GetExcelSheet<Item>()){
             if(item.ItemAction.IsValid&&item.ItemAction.RowId!=0){
                 var action=item.ItemAction.Value;List<(InspectionKind,uint)> targets=[];
-                // Current game action declarations: 2633 is an unlock-link item, 1013 is BuddyEquip.
+                // Current game action 2633 maps an unlock-link item to its local emote.
                 if(action.Action.RowId==2633&&links.TryGetValue(action.Data[0],out var emotes))targets.AddRange(emotes);
-                if(action.Action.RowId==1013&&entries.ContainsKey((InspectionKind.Barding,action.Data[0])))targets.Add((InspectionKind.Barding,action.Data[0]));
                 if(targets.Count>0)itemLinks[item.RowId]=targets;
             }
             if(++work%256==0)yield return 2;

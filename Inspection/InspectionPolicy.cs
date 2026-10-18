@@ -1,15 +1,14 @@
 using SentinelHub.Identification;
 namespace SentinelHub.Inspection;
-public enum InspectionKind { Mount, Fashion, Emote, Barding }
+public enum InspectionKind { Mount, Fashion, Emote }
 public enum InspectionState { Unavailable, None, Found, UnknownId, Unsupported }
 public sealed record InspectionEntry(InspectionKind Kind,uint Id,string Name,uint Icon,string Command,bool? Owned,
     string[] Sources,string Category,string? Patch=null,string? Expansion=null,bool? Obtainable=null);
 public sealed record InspectionPart(InspectionState State,InspectionEntry? Entry=null,string Detail="");
-public sealed record InspectorView(bool Tracking,DateTimeOffset At,InspectionPart Mount,InspectionPart Fashion,InspectionPart Emote,InspectionPart Barding)
+public sealed record InspectorView(bool Tracking,DateTimeOffset At,InspectionPart Mount,InspectionPart Fashion,InspectionPart Emote)
 {
-    public InspectionPart[] BardingSlots {get;init;}=[];
     public static InspectorView Empty=>new(false,DateTimeOffset.MinValue,new(InspectionState.Unavailable),new(InspectionState.Unavailable),
-        new(InspectionState.Unavailable),new(InspectionState.Unavailable,null,"No current chocobo observation. Inspect a loaded player."));
+        new(InspectionState.Unavailable));
 }
 public readonly record struct EmoteObservation(bool Valid,bool DrawLoaded,bool Transformed,uint EmoteId,byte Mode,byte ModeParam);
 public static class InspectionPolicy

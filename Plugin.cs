@@ -17,7 +17,6 @@ using SentinelHub.Compatibility;
 using SentinelHub.Inspection;
 using SentinelHub.Coordination;
 using SentinelHub.Activity;
-using SentinelHub.Backups;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 namespace SentinelHub;
@@ -53,10 +52,8 @@ public sealed class Plugin : IDalamudPlugin
     private readonly HealthService health;
     private readonly CompatibilityScanner compatibility;
     private readonly PlayerInspector inspector;
-    private readonly PauseCoordinator pause;
     private readonly ActivityService activity;
     private readonly HubOperationsIpc operationsIpc;
-    private readonly BackupService backups;
     private bool disposed;
     private volatile bool exportRequested;
     private volatile bool healthRefreshRequested;
@@ -65,17 +62,15 @@ public sealed class Plugin : IDalamudPlugin
         settings = Pi.GetPluginConfig() as Configuration.Configuration ?? new();
         settings.Normalize();
         activity=new(Pi.GetPluginConfigDirectory());
-        operationsIpc=new(Pi,Framework,settings,activity.Journal,faults);
+        operationsIpc=new(Pi,Framework,activity.Journal,faults);
         discovery = new(Pi, faults);
-        backups=new(Path.Combine(Pi.GetPluginConfigDirectory(),"backups"),Pi.ConfigFile.FullName,settings,discovery.Capture,code=>activity.Add(code));
         health=new(Pi,discovery.Capture,()=>discovery.Snapshot,publicCatalog,OwnCharacterKey);
-        pause=new(Pi,settings,Save);
         compatibility=new(Pi);
         compatibility.Tick(true);
-        antiAfk = new(Pi, Client, settings, faults,()=>settings.AutomationPaused||compatibility.View.Blocks(CompatibilityFeature.AntiAfk));
+        antiAfk = new(Pi, Client, settings, faults);
         quest = new(Pi, Client, GameGui, Condition, Objects, Data, settings, faults,
-            ()=>settings.AutomationPaused,o=>compatibility.View.Effective(o));
-        latency = new(Pi, Interop, Data, Client, Condition, Objects, settings, faults,()=>settings.AutomationPaused||compatibility.View.Blocks(CompatibilityFeature.Latency));
+            o=>compatibility.View.Effective(o));
+        latency = new(Pi, Interop, Data, Client, Condition, Objects, settings, faults,()=>compatibility.View.Blocks(CompatibilityFeature.Latency));
         mounts = new(Data, Unlocks, Client, Player, Objects, Condition, faults);
         fashion = new(Data, Unlocks, Client, Player, Objects, Condition, faults);
         inspector=new(Objects,Player,Client,Framework,settings,()=>mounts.Ready&&fashion.Ready,
@@ -86,9 +81,8 @@ public sealed class Plugin : IDalamudPlugin
             () => Pi.UiBuilder.ShouldUseReducedMotion, antiAfkView: () => antiAfk.View, questView: () => quest.View, latencyView: () => latency.View,
             mountView: () => mounts.View, refreshMounts: mounts.RequestRefresh, retryMounts: mounts.Retry, mountIcon: DrawCollectionIcon, fashionView: () => fashion.View, refreshFashion: fashion.RequestRefresh, retryFashion: fashion.Retry,
             healthView:()=>health.View,refreshHealth:()=>healthRefreshRequested=true,publicVersions:publicCatalog.Request,
-            compatibilityView:()=>compatibility.View,inspectorView:()=>inspector.View,pauseView:()=>pause.View,pauseRequest:pause.Request,
-            activityEntries:()=>activity.Journal.Snapshot(DateTimeOffset.UtcNow),clearActivity:activity.Journal.Clear,
-            backupView:()=>backups.View,createBackup:backups.RequestCreate,refreshBackups:backups.RequestRefresh,restoreBackup:backups.RequestRestore,deleteBackup:backups.RequestDelete);
+            compatibilityView:()=>compatibility.View,inspectorView:()=>inspector.View,
+            activityEntries:()=>activity.Journal.Snapshot(DateTimeOffset.UtcNow),clearActivity:activity.Journal.Clear);
         identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, ()=>{window.ClearIdentification();inspector.Clear();}, faults,
             ticket=>{inspector.Select(ticket);window.OpenPlayerInspector();});
         windows.AddWindow(window);
@@ -104,17 +98,12 @@ public sealed class Plugin : IDalamudPlugin
         if(disposed)return;
         var forceHealth=healthRefreshRequested;healthRefreshRequested=false;
         discovery.Refresh(forceHealth);
-        backups.Tick();
         health.Tick(forceHealth);
         compatibility.Tick();
         antiAfk.Tick();
         quest.Tick();
         latency.Tick();
-        var hubStopped=(antiAfk.View.State is Utilities.AntiAfkState.Paused or Utilities.AntiAfkState.Off)
-            &&(quest.View.State is Utilities.QuestConvenienceState.Paused or Utilities.QuestConvenienceState.Off)
-            &&(latency.View.State is Utilities.LatencyState.Paused or Utilities.LatencyState.Off);
-        pause.Tick(hubStopped);
-        activity.Observe(health.View,compatibility.View,pause.View);
+        activity.Observe(health.View,compatibility.View);
         var expanded=window.IsOpen&&!settings.Collapsed;
         mounts.Tick(expanded&&settings.Page==Configuration.HubPage.Mounts);
         fashion.Tick(expanded&&settings.Page==Configuration.HubPage.Fashion);
@@ -155,7 +144,7 @@ public sealed class Plugin : IDalamudPlugin
             var name = "sentinel-diagnostics-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + ".zip";
             var bundle = DiagnosticsBundle.Create(discovery.Snapshot,health.View,faults.Snapshot(),
                 new ProviderDiagnosticsReader(Pi,OwnCharacterKey).Read(),settings.Version,Client.TerritoryType,Objects.LocalPlayer?.CurrentWorld.RowId??0,
-                antiAfk.View,quest.View,latency.View,compatibility.View,pause.View,activity.Journal.Snapshot(DateTimeOffset.UtcNow));
+                antiAfk.View,quest.View,latency.View,compatibility.View,activity.Journal.Snapshot(DateTimeOffset.UtcNow));
             var path=Path.Combine(directory,name);
             using(var file=new FileStream(path,FileMode.CreateNew,FileAccess.Write,FileShare.None))file.Write(bundle);
             activity.Add(ActivityCode.DiagnosticsSaved);

@@ -7,7 +7,6 @@ public sealed record InspectionSnapshot(string Kind,string Provider,string Endpo
 public static class InspectionMetadata
 {
     public static readonly InspectionSnapshot Emotes=Read("SentinelHub.InspectionEmotes.json","Emote","emotes");
-    public static readonly InspectionSnapshot Bardings=Read("SentinelHub.InspectionBardings.json","Barding","bardings");
     private static InspectionSnapshot Read(string resource,string kind,string endpoint)
     {
         using var stream=typeof(InspectionMetadata).Assembly.GetManifestResourceStream(resource)??throw new InvalidDataException();
@@ -23,13 +22,13 @@ public static class InspectionMetadata
                     ||string.IsNullOrWhiteSpace(s.Text)||s.Text.Length>1000||s.Text.Any(char.IsControl))))throw new InvalidDataException("Invalid inspection source metadata.");
         return value;
     }
-    public static InspectionFact? Find(InspectionKind kind,uint id,string english)=>kind is not (InspectionKind.Emote or InspectionKind.Barding)?null:(kind==InspectionKind.Emote?Emotes:Bardings).Rows.FirstOrDefault(r=>r.Id==id&&r.EnglishName.Equals(english,StringComparison.OrdinalIgnoreCase));
+    public static InspectionFact? Find(InspectionKind kind,uint id,string english)=>kind!=InspectionKind.Emote?null:Emotes.Rows.FirstOrDefault(r=>r.Id==id&&r.EnglishName.Equals(english,StringComparison.OrdinalIgnoreCase));
     public static string? Patch(string? patch)=>patch is not null&&Regex.IsMatch(patch,"^[2-9]\\.[0-9]{1,2}[a-z]?$")?patch:null;
     public static string? Expansion(string? patch)=>Patch(patch) is {} valid?valid[0] switch{'2'=>"A Realm Reborn",'3'=>"Heavensward",'4'=>"Stormblood",'5'=>"Shadowbringers",'6'=>"Endwalker",'7'=>"Dawntrail",_=>null}:null;
     public static string Category(InspectionFactSource source)=>source.Type switch{"Premium"=>source.Text=="Online Store"?"Online Store (recorded source)":"Premium / promotion","Event"=>"Seasonal / event (may be historical)","Purchase"=>"Vendor / purchase",_=>source.Type};
     public static string[] Sources(InspectionKind kind,InspectionFact fact)
     {
-        var snapshot=kind==InspectionKind.Emote?Emotes:Bardings;var date=DateTimeOffset.Parse(snapshot.RetrievedUtc).UtcDateTime.ToString("yyyy-MM-dd");
+        var snapshot=Emotes;var date=DateTimeOffset.Parse(snapshot.RetrievedUtc).UtcDateTime.ToString("yyyy-MM-dd");
         return fact.Sources.Select(s=>Category(s)+": "+s.Text+" [FFXIV Collect snapshot "+date+"; current availability not verified]").ToArray();
     }
 }

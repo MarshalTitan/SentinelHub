@@ -1,15 +1,14 @@
 namespace SentinelHub.Utilities;
-public enum AntiAfkState { Off, WaitingForLogin, LegacyHudInstalled, WaitingForHud, Active, TimerUnavailable, Faulted, Paused }
+public enum AntiAfkState { Off, WaitingForLogin, LegacyHudInstalled, WaitingForHud, Active, TimerUnavailable, Faulted }
 public sealed record AntiAfkView(AntiAfkState State, long Cycles, bool? HudPreference)
 {
     public static AntiAfkView Off => new(AntiAfkState.Off, 0, null);
     public string Description => State switch
     {
         AntiAfkState.Off => "Off",
-        AntiAfkState.Paused => "Paused by Sentinel safety controls; saved preference retained.",
         AntiAfkState.WaitingForLogin => "Waiting for login",
         AntiAfkState.LegacyHudInstalled => "Blocked: update Sentinel HUD to 0.8.4.6 or later before enabling Hub Anti-AFK.",
-        AntiAfkState.WaitingForHud => "Waiting for a compatible HUD ownership acknowledgment. Hub is not resetting timers.",
+        AntiAfkState.WaitingForHud => "An older HUD utility engine has not handed over Anti-AFK. Update HUD or disable its old copy.",
         AntiAfkState.Active => "Active; Hub owns Anti-AFK.",
         AntiAfkState.TimerUnavailable => "Client inactivity timers unavailable; bounded retry pending.",
         _ => "Faulted; no timer resets. Turn off to return ownership.",
@@ -24,7 +23,7 @@ public static class AntiAfkOwnershipPolicy
         // Even a disabled legacy installation can be hot-loaded. Require its compatibility update.
         if (hudInstalled && (!Version.TryParse(hudVersion, out var version) || version < new Version(0, 8, 4, 6)))
             return AntiAfkState.LegacyHudInstalled;
-        return hudLoaded && !acknowledged ? AntiAfkState.WaitingForHud : AntiAfkState.Active;
+        return hudLoaded && HudUtilityOwnership.RequiresLease(hudVersion) && !acknowledged ? AntiAfkState.WaitingForHud : AntiAfkState.Active;
     }
 }
 public sealed class AntiAfkEngine(Func<bool> resetTimers)

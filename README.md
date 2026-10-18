@@ -6,9 +6,9 @@ HUD visuals and camera, SRankSentinel, PvPSentinel, ClassySentinel, SentinelProf
 
 ## Control center and utilities
 
-Dashboard, Plugins, Health, Profiles, Utilities, Mount Collection, Fashion Accessories, Player Inspector, Recent Activity, Backups, Diagnostics, Appearance and About (new operations pages are part of the held 0.7 candidate). Inventory comes from public Dalamud installed-plugin interfaces. Loaded means enabled in Dalamud, not gameplay-ready or automation-enabled. Verified read-only dependency IPC covers vnavmesh, Lifestream, RotationSolverReborn and Splatoon.
+Dashboard, Plugins, Health, Profiles, Utilities, Mount Collection, Fashion Accessories, Player Inspector, Recent Activity, Diagnostics, Appearance and About (new operations pages are part of the held 0.7 candidate). Inventory comes from public Dalamud installed-plugin interfaces. Loaded means enabled in Dalamud, not gameplay-ready or automation-enabled. Verified read-only dependency IPC covers vnavmesh, Lifestream, RotationSolverReborn and Splatoon.
 
-Consumer settings use a fixed source-verified command allowlist; some consumers toggle their windows. Disabled/missing/restricted components have unavailable actions. No consumer assembly dependency or private reflection. The held backup module reads only explicit known config files on user request and projects reviewed fields.
+Consumer settings use a fixed source-verified command allowlist; some consumers toggle their windows. Disabled/missing/restricted components have unavailable actions. No consumer assembly dependency or private reflection.
 
 Profiles selected/last-applied/drift and Relay runtime connectivity remain **unknown unless a compatible optional provider responds**. Public versions are a dated explicit catalog fetch in the held candidate. Consumers remain authoritative.
 
@@ -55,10 +55,8 @@ Independent passive ornament catalog and own unlocks, with source/patch metadata
 
 ## Coordinated operations candidate — 0.7.0.0 (not published)
 
-One held integration train adds Health/Dependency Doctor, sanitized diagnostics ZIPs, compatibility self-protection, Player Inspector with exact supported emote/barding observation, cooperative pause acknowledgements, bounded Recent Activity and selective schema-aware backups. Mount/Fashion page layouts and existing saved utility preferences remain intact. Core/UI stay 0.4.1.
+One held integration train adds Health/Dependency Doctor, sanitized diagnostics ZIPs, compatibility self-protection, Player Inspector with supported explicit loop-emote observation, and bounded Recent Activity. Barding, settings backup/restore and global pause were removed following supervised feedback. Existing Mount/Fashion page layouts/data and saved utility preferences remain intact. Core/UI stay 0.4.1.
 
-The new acquisition snapshot covers 107 bardings and 201 unlockable emotes under the already audited FFXIV Collect API reuse permission, gated by exact game identity. Availability remains Unknown. Barding uses current typed owned-actor model fields and rejects ambiguous matches; emote identification supports explicit matching loop state, never arbitrary animations/poses.
+The attributed identity-gated acquisition snapshot covers 201 unlockable emotes under the audited FFXIV Collect API reuse permission. Current availability stays Unknown. Emote identification requires matching live loop state, never arbitrary animations/poses. Plugins actions move right at roomy widths and stack below when narrow; the window remains resizable. Current HUD no longer needs utility handoff acknowledgments because it contains no native utility engines. Anti-AFK keeps lightweight 10-second timer checks, with ownership polling reduced to once per second.
 
-Pause stops Hub's own writers. Current public SRank/PvP builds lack the optional pause contract and are explicitly **Unsupported / may still automate**, so use their own controls. Backups are reviewed settings subsets: Profiles/Classy/Relay are presentation-only; credentials, names/IDs, histories and unreviewed fields are excluded. Restore handles one owner atomically with a pre-restore backup, keeps Hub paused and rejects loaded external owners/newer or unreviewed formats.
-
-[Audit/architecture/rights/limits](docs/OPERATIONS_EXPANSION.md) · [One combined proving checklist and rollback](docs/OPERATIONS_ACCEPTANCE.md). [Draft PR #15](https://github.com/MarshalTitan/SentinelHub/pull/15) stays unmerged until the required supervised gate passes. Live public Hub/catalog remain 0.6.0.0; no intermediate public releases.
+See [audit and source boundaries](docs/OPERATIONS_EXPANSION.md), [supervised acceptance](docs/OPERATIONS_ACCEPTANCE.md) and [held integration PR](https://github.com/MarshalTitan/SentinelHub/pull/15). Public release remains 0.6.0.0 until the combined native gate passes.

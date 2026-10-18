@@ -7,7 +7,7 @@ def get(url):
     if len(raw)>4_000_000: raise ValueError("Response exceeds audit bound")
     return json.loads(raw),hashlib.sha256(raw).hexdigest()
 
-for endpoint,kind,sheet,name in [("bardings","Barding","BuddyEquip","Name"),("emotes","Emote","Emote","Name")]:
+for endpoint,kind,sheet,name in [("emotes","Emote","Emote","Name")]:
     url="https://ffxivcollect.com/api/"+endpoint+"?language=en"
     body,digest=get(url)
     if len(body["results"])!=body["count"] or not 20<=body["count"]<=1000: raise ValueError("Incomplete result set")
@@ -28,5 +28,3 @@ for endpoint,kind,sheet,name in [("bardings","Barding","BuddyEquip","Name"),("em
     filename="inspection-"+endpoint+"-review.json"
     with open(filename,"w",encoding="utf-8") as output: json.dump(snapshot,output,ensure_ascii=True,indent=2)
     print(json.dumps({"kind":kind,"records":len(rows),"with_sources":sum(bool(r["Sources"]) for r in rows),"game_identity_matches":len(matched),"unmatched_ids":mismatched,"game_version":game["version"],"game_sha256":game_digest,"source_sha256":digest}))
-    # Candidate short facts are visible for explicit human/architect review. No raw game table is logged or bundled.
-    print("SENTINEL_REVIEW_"+kind+"="+json.dumps(snapshot,ensure_ascii=True,separators=(",",":")))

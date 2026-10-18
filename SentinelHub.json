@@ -3,7 +3,7 @@
   "Name": "Sentinel Hub",
   "InternalName": "SentinelHub",
   "Punchline": "Optional Sentinel ecosystem control center.",
-  "Description": "Sentinel ecosystem control center with health/dependency checks, sanitized diagnostics, compatibility protection, passive player inspection and collections, cooperative automation pause, recent activity and selective configuration backups. Other Sentinel plugins remain independent.",
+  "Description": "Sentinel ecosystem control center with health/dependency checks, sanitized diagnostics, compatibility protection, passive player inspection and collections and recent activity. Other Sentinel plugins remain independent.",
   "ApplicableVersion": "any",
   "DalamudApiLevel": 15,
   "LoadRequiredState": 0,

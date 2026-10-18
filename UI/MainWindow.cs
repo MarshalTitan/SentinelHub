@@ -34,15 +34,13 @@ public sealed class MainWindow : Window, IDisposable
     private readonly HealthPanel health;
     private readonly CompatibilityPanel compatibility;
     private readonly PlayerInspectorPanel inspector;
-    private readonly PausePanel pause;
     private readonly RecentActivityPanel activity;
-    private readonly BackupsPanel backups;
     private PlayerIdentification? identification;
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
     private readonly SentinelModernNavItem[] navigation;
     private static readonly HubPage[] PageOrder = [HubPage.Dashboard, HubPage.Plugins, HubPage.Profiles, HubPage.Dependencies,
-        HubPage.Utilities, HubPage.Mounts, HubPage.Fashion, HubPage.PlayerInspector, HubPage.RecentActivity, HubPage.Backups, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
+        HubPage.Utilities, HubPage.Mounts, HubPage.Fashion, HubPage.PlayerInspector, HubPage.RecentActivity, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
     private Vector2 frameSize;
     private Vector2? pendingSize;
     private bool modern;
@@ -54,17 +52,13 @@ public sealed class MainWindow : Window, IDisposable
         Func<SentinelHub.Health.HealthView>? healthView=null, Action? refreshHealth=null, Action? publicVersions=null,
         Func<SentinelHub.Compatibility.CompatibilityView>? compatibilityView=null,
         Func<SentinelHub.Inspection.InspectorView>? inspectorView=null,
-        Func<SentinelHub.Coordination.PauseView>? pauseView=null, Action<bool>? pauseRequest=null,
-        Func<SentinelHub.Activity.ActivityEntry[]>? activityEntries=null, Action? clearActivity=null, Func<SentinelHub.Backups.BackupView>? backupView=null,
-        Action<string>? createBackup=null, Action? refreshBackups=null, Action<string,string>? restoreBackup=null, Action<string>? deleteBackup=null) : base(WindowId)
+        Func<SentinelHub.Activity.ActivityEntry[]>? activityEntries=null, Action? clearActivity=null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.questView = questView ?? (() => QuestConvenienceView.Off);
         this.latencyView = latencyView ?? (() => LatencyView.Off);
         health=new(healthView??(()=>SentinelHub.Health.HealthView.Empty),refreshHealth??(()=>{}),publicVersions??(()=>{}));
-        backups=new(backupView??(()=>SentinelHub.Backups.BackupView.Empty),createBackup??(_=>{}),refreshBackups??(()=>{}),restoreBackup??((_,_)=>{}),deleteBackup??(_=>{}));
         activity=new(activityEntries??(()=>[]),clearActivity??(()=>{}));
-        pause=new(pauseView??(()=>SentinelHub.Coordination.PauseView.Empty),pauseRequest??(_=>{}));
         compatibility=new(compatibilityView??(()=>SentinelHub.Compatibility.CompatibilityView.Empty));
         inspector=new(config,save,inspectorView??(()=>SentinelHub.Inspection.InspectorView.Empty),OpenMount,OpenFashion,mountIcon);
         mounts = new(config, mountView ?? (() => MountCollectionView.Empty), save,
@@ -84,7 +78,7 @@ public sealed class MainWindow : Window, IDisposable
     private static FontAwesomeIcon Icon(HubPage p) => p switch
     {
         HubPage.Dashboard => FontAwesomeIcon.Home, HubPage.Plugins => FontAwesomeIcon.Cubes,
-        HubPage.Profiles => FontAwesomeIcon.Users, HubPage.Dependencies => FontAwesomeIcon.Link, HubPage.PlayerInspector=>FontAwesomeIcon.Search, HubPage.RecentActivity=>FontAwesomeIcon.Bell, HubPage.Backups=>FontAwesomeIcon.Save,
+        HubPage.Profiles => FontAwesomeIcon.Users, HubPage.Dependencies => FontAwesomeIcon.Link, HubPage.PlayerInspector=>FontAwesomeIcon.Search, HubPage.RecentActivity=>FontAwesomeIcon.Bell,
         HubPage.Utilities => FontAwesomeIcon.Tools, HubPage.Diagnostics => FontAwesomeIcon.Heartbeat,
         HubPage.Appearance => FontAwesomeIcon.Palette, HubPage.Mounts => FontAwesomeIcon.Horse, HubPage.Fashion => FontAwesomeIcon.Umbrella, _ => FontAwesomeIcon.InfoCircle,
     };
@@ -142,7 +136,6 @@ public sealed class MainWindow : Window, IDisposable
     }
     public void ClearIdentification() => identification = null;
     public void OpenPlayerInspector(){config.Page=HubPage.PlayerInspector;OpenAndExpand();save();}
-    public void OpenBackup(string? id){config.Page=HubPage.Backups;backups.Select(id);OpenAndExpand();save();}
     public void OpenIdentification(PlayerIdentification result)
     {
         identification = result;
@@ -209,13 +202,11 @@ public sealed class MainWindow : Window, IDisposable
             case HubPage.Fashion: fashion.Draw(); break;
             case HubPage.PlayerInspector: inspector.Draw(); break;
             case HubPage.RecentActivity: activity.Draw(); break;
-            case HubPage.Backups: backups.Draw(); break;
         }
         if (Notice.Length > 0) { ImGui.Spacing(); ImGui.TextWrapped(Notice); }
     }
     private void DrawDashboard()
     {
-        pause.Draw();
         var s = snapshot();
         ImGui.TextWrapped("Optional ecosystem overview. Loaded means enabled in Dalamud; it does not prove gameplay readiness or an internal automation toggle.");
         ImGui.TextWrapped(s.DiscoveryAvailable ? "Inventory captured: " + s.CapturedAt.ToLocalTime().ToString("T") : "Inventory unavailable. Previous observations are not shown as current.");
@@ -245,7 +236,7 @@ public sealed class MainWindow : Window, IDisposable
         };
         if (detail && p.Component.DiagnosticsCommand is not null)
             actions.Add(("Open diagnostics", p.State == Presence.Loaded, () => Open(p.Component.Id, true)));
-        Card(p.Component.Id, p.State.ToString().ToUpperInvariant(), Tone(p.State), lines, actions);
+        Card(p.Component.Id, p.State.ToString().ToUpperInvariant(), Tone(p.State), lines, actions, actionsOnRight: true);
     }
     private void DrawDependencies()
     {
@@ -266,7 +257,6 @@ public sealed class MainWindow : Window, IDisposable
     }
     private void DrawUtilities()
     {
-        pause.Draw();
         compatibility.Draw();
         var view = antiAfkView();
         ImGui.TextWrapped("Prevent AFK Disconnect");
@@ -377,13 +367,17 @@ public sealed class MainWindow : Window, IDisposable
     };
     private static bool Button(string text) => ImGui.Button(text, new Vector2(-1, 28 * ImGuiHelpers.GlobalScale));
     private void Card(string id, string status, SentinelModernPillTone tone, IEnumerable<string> lines,
-        IReadOnlyList<(string Label, bool Enabled, Action Click)>? actions = null)
+        IReadOnlyList<(string Label, bool Enabled, Action Click)>? actions = null, bool actionsOnRight = false)
     {
         var text = lines.ToArray();
         var scale = ImGuiHelpers.GlobalScale;
         var width = Math.Max(80, ImGui.GetContentRegionAvail().X - 28 * scale - 16 * scale);
-        var height = 34 * scale + text.Sum(s => ImGui.CalcTextSize(s, false, width).Y + 8 * scale)
-            + (modern ? 26 * scale : 0) + (actions?.Count ?? 0) * (36 * scale) + 14 * scale;
+        var actionWidth = Math.Max(140 * scale, actions?.Max(a => ImGui.CalcTextSize(a.Label).X + 24 * scale) ?? 0);
+        var sideBySide = actionsOnRight && actions is { Count: > 0 } && width >= actionWidth + 260 * scale + 16 * scale;
+        var textWidth = sideBySide ? width - actionWidth - 16 * scale : width;
+        var textHeight = text.Sum(s => ImGui.CalcTextSize(s, false, textWidth).Y + 8 * scale) + (modern ? 26 * scale : 0);
+        var actionsHeight = (actions?.Count ?? 0) * 36 * scale;
+        var height = 48 * scale + (sideBySide ? Math.Max(textHeight, actionsHeight) : textHeight + actionsHeight);
         if (modern)
         {
             using var card = SentinelModernGlassCard.Begin(id, new() { Size = new(0, height / scale) }, scale);
@@ -397,8 +391,23 @@ public sealed class MainWindow : Window, IDisposable
         ImGui.Spacing();
         void Body()
         {
+            if (sideBySide && ImGui.BeginTable("##PluginActions", 2, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings))
+            {
+                ImGui.TableSetupColumn("Information", ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn("Actions", ImGuiTableColumnFlags.WidthFixed, actionWidth);
+                ImGui.TableNextColumn(); Information();
+                ImGui.TableNextColumn(); Actions();
+                ImGui.EndTable();
+            }
+            else { Information(); Actions(); }
+        }
+        void Information()
+        {
             if (modern) SentinelModernStatusPill.Draw(new(status, tone), shell.Motion, scale);
             foreach (var line in text) { ImGui.TextWrapped(line); ImGui.Spacing(); }
+        }
+        void Actions()
+        {
             if (actions is not null) foreach (var a in actions)
             {
                 ImGui.BeginDisabled(!a.Enabled);

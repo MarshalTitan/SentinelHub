@@ -2,9 +2,10 @@ using System.Text.Json;
 using SentinelHub.Ecosystem;
 namespace SentinelHub.Activity;
 public enum ActivitySeverity { Info, Success, Warning, Error }
-public enum ActivityCode { HealthUnavailable, HealthRecovered, HealthChanged, CompatibilitySuspended, CompatibilityRecovered,
-    PauseRequested, PauseAcknowledged, PauseReleased, DiagnosticsSaved, DiagnosticsFailed, BackupSaved, BackupRestored, BackupDeleted, BackupFailed,
-    ProfileApplied, ProfileVerificationFailed, HuntTagged, HuntCredited, RelayDisconnected, RelayRecovered }
+// Explicit values preserve retained event identities; retired candidate codes are discarded on load.
+public enum ActivityCode { HealthUnavailable=0, HealthRecovered=1, HealthChanged=2, CompatibilitySuspended=3, CompatibilityRecovered=4,
+    DiagnosticsSaved=8, DiagnosticsFailed=9, ProfileApplied=14, ProfileVerificationFailed=15, HuntTagged=16, HuntCredited=17,
+    RelayDisconnected=18, RelayRecovered=19 }
 public sealed record ActivityEntry(DateTimeOffset At,DateTimeOffset LastAt,string Source,ActivityCode Code,int Count);
 public static class ActivityCatalog
 {
@@ -14,15 +15,14 @@ public static class ActivityCatalog
         ActivityCode.ProfileApplied or ActivityCode.ProfileVerificationFailed=>source=="SentinelProfiles",
         ActivityCode.HuntTagged or ActivityCode.HuntCredited=>source=="SRankSentinel",
         ActivityCode.RelayDisconnected or ActivityCode.RelayRecovered=>source=="SentinelRelay",
-        ActivityCode.PauseRequested or ActivityCode.PauseAcknowledged or ActivityCode.PauseReleased or ActivityCode.DiagnosticsSaved or ActivityCode.DiagnosticsFailed
-            or ActivityCode.BackupSaved or ActivityCode.BackupRestored or ActivityCode.BackupDeleted or ActivityCode.BackupFailed=>source=="SentinelHub",
+        ActivityCode.DiagnosticsSaved or ActivityCode.DiagnosticsFailed=>source=="SentinelHub",
         _=>true,
     });
     public static ActivitySeverity Severity(ActivityCode code)=>code switch{
-        ActivityCode.DiagnosticsFailed or ActivityCode.BackupFailed or ActivityCode.ProfileVerificationFailed=>ActivitySeverity.Error,
+        ActivityCode.DiagnosticsFailed or ActivityCode.ProfileVerificationFailed=>ActivitySeverity.Error,
         ActivityCode.HealthUnavailable or ActivityCode.CompatibilitySuspended or ActivityCode.RelayDisconnected=>ActivitySeverity.Warning,
-        ActivityCode.HealthRecovered or ActivityCode.CompatibilityRecovered or ActivityCode.PauseAcknowledged or ActivityCode.DiagnosticsSaved
-            or ActivityCode.BackupSaved or ActivityCode.BackupRestored or ActivityCode.ProfileApplied or ActivityCode.HuntTagged or ActivityCode.HuntCredited or ActivityCode.RelayRecovered=>ActivitySeverity.Success,
+        ActivityCode.HealthRecovered or ActivityCode.CompatibilityRecovered or ActivityCode.DiagnosticsSaved
+            or ActivityCode.ProfileApplied or ActivityCode.HuntTagged or ActivityCode.HuntCredited or ActivityCode.RelayRecovered=>ActivitySeverity.Success,
         _=>ActivitySeverity.Info,
     };
     public static string Message(ActivityEntry entry)=>entry.Code switch{
@@ -30,12 +30,7 @@ public static class ActivityCatalog
         ActivityCode.HealthChanged=>entry.Source+" health observation changed.",
         ActivityCode.CompatibilitySuspended=>entry.Source+" overlap detected; affected Hub behavior is suspended.",
         ActivityCode.CompatibilityRecovered=>entry.Source+" overlap cleared; Hub's own preferences/readiness apply.",
-        ActivityCode.PauseRequested=>"Sentinel automation pause requested; check each acknowledgement.",
-        ActivityCode.PauseAcknowledged=>"All present participating automation acknowledged the pause.",
-        ActivityCode.PauseReleased=>"Hub pause released; unsupported components and other restrictions retain their own controls.",
         ActivityCode.DiagnosticsSaved=>"Sanitized Sentinel diagnostics package saved.",ActivityCode.DiagnosticsFailed=>"Diagnostics package could not be saved.",
-        ActivityCode.BackupSaved=>"Sentinel configuration backup created.",ActivityCode.BackupRestored=>"Selected supported settings restored; pre-restore backup retained.",
-        ActivityCode.BackupDeleted=>"Selected backup deleted.",ActivityCode.BackupFailed=>"Backup operation was rejected or failed; review its result.",
         ActivityCode.ProfileApplied=>"Sentinel Profiles reports a profile applied.",ActivityCode.ProfileVerificationFailed=>"Sentinel Profiles reports verification failed.",
         ActivityCode.HuntTagged=>"S Rank Sentinel reports a hunt tagged.",ActivityCode.HuntCredited=>"S Rank Sentinel reports hunt credit confirmed.",
         ActivityCode.RelayDisconnected=>"Sentinel Relay reports disconnected.",ActivityCode.RelayRecovered=>"Sentinel Relay reports recovered.",_=>"State changed.",

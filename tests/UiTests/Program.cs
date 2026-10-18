@@ -15,8 +15,6 @@ using SentinelHub.Identification;
 using SentinelHub.Inspection;
 using SentinelHub.Health;
 using SentinelHub.Activity;
-using SentinelHub.Backups;
-using SentinelHub.Coordination;
 using SentinelHub.Compatibility;
 using CSCharacter=FFXIVClientStructs.FFXIV.Client.Game.Character.Character;
 internal static class Program
@@ -102,6 +100,29 @@ internal static class Program
                         Check(!settings.Collapsed && Find(MainWindow.WindowId).Size.Y >= 800 * scale - 1, "Restore lost expanded size");
                     }
                 }
+                var pluginResizeCases=0;
+                foreach(var theme in new[]{0,1})
+                foreach(var scale in new[]{1f,1.5f,2f})
+                {
+                    io.FontGlobalScale=scale;
+                    var settings=new HubSettings{Theme=theme,Page=HubPage.Plugins};
+                    using var plugins=new MainWindow(settings,()=>fixtures[1],new FaultJournal(),()=>{},()=>{},(_,_)=>true,()=>{},()=>true,()=>font);
+                    var saved=JsonSerializer.Serialize(settings);float narrowHeight=0;
+                    foreach(var width in new[]{480f,860f,480f})
+                    {
+                        for(var i=0;i<12;i++)Frame(plugins,new(width,680),scale);
+                        var root=Find(MainWindow.WindowId);
+                        var card=Find(MainWindow.WindowId,"SRankSentinel");
+                        Check((root.Flags&ImGuiWindowFlags.NoResize)==0,"Hub cannot be resized");
+                        Check(card.ContentSize.X<=card.Size.X+1&&!card.ScrollbarX,"Plugin card overflows horizontally after resize");
+                        Check(card.ContentSize.Y+2*card.WindowPadding.Y<=card.Size.Y+1,"Plugin actions are clipped after resize");
+                        if(width==480){if(narrowHeight>0)Check(Math.Abs(narrowHeight-card.Size.Y)<1,"Narrow fallback changed after resize");narrowHeight=card.Size.Y;}
+                        else Check(card.Size.Y<narrowHeight,"Wide plugin actions did not reduce card height");
+                        Check(JsonSerializer.Serialize(settings)==saved,"Resizing changed saved feature settings");
+                    }
+                    pluginResizeCases++;
+                }
+                Console.WriteLine("PASS "+pluginResizeCases+" plugin narrow/wide/narrow layout resize, clipping and preference cases.");
                 foreach (var scale in new[] { 1f, 1.5f, 2f })
                 foreach (var theme in new[] { 0, 1 })
                 foreach (var state in Enum.GetValues<AntiAfkState>())
@@ -152,17 +173,14 @@ internal static class Program
                 foreach(var scale in new[]{1f,1.5f,2f})
                 foreach(var width in new[]{480f,860f})
                 foreach(var populated in new[]{false,true})
-                foreach(var operationPage in new[]{HubPage.Dependencies,HubPage.Utilities,HubPage.Dashboard,HubPage.RecentActivity,HubPage.Backups}){
+                foreach(var operationPage in new[]{HubPage.Dependencies,HubPage.Utilities,HubPage.Dashboard,HubPage.RecentActivity}){
                     io.FontGlobalScale=scale;
-                    var settings=new HubSettings{Theme=theme,Page=operationPage,AutomationPaused=populated};
+                    var settings=new HubSettings{Theme=theme,Page=operationPage};
                     var health=populated?new HealthView(DateTimeOffset.UtcNow,true,Enum.GetValues<HealthState>().Select(s=>new HealthCheck("SRankSentinel",s,"0.7.99.0","0.7.62.0",true,"A long explanation distinguishes installation/load/internal enable/IPC response/readiness and development override without declaring a DLL healthy.")).ToArray(),DateTimeOffset.UtcNow,"Dated public catalog; feature readiness remains separate"):HealthView.Empty;
                     var compatibility=populated?new CompatibilityView([new(OverlapProvider.TextAdvance,CompatibilityFeature.Cutscene,OverlapKind.Definite,true,"Enabled and responding; Hub self-suspends and preserves saved preferences."),new(OverlapProvider.NoClippy,CompatibilityFeature.Latency,OverlapKind.Possible,true,"Loaded; module activity unknown.")]):CompatibilityView.Empty;
-                    var pause=populated?new PauseView(true,[new("SentinelHub",PauseState.Acknowledged,"Hub writers suspended."),new("SRankSentinel",PauseState.Unsupported,"Older provider does not implement the optional contract and may still automate."),new("PvPSentinel",PauseState.Pending,"No acknowledgement yet; a complete stop is not assumed.")]):PauseView.Empty;
-                    var events=populated?Enumerable.Range(0,200).Select(i=>new ActivityEntry(DateTimeOffset.UtcNow,DateTimeOffset.UtcNow,"SentinelHub",ActivityCode.BackupSaved,9999)).ToArray():[];
-                    var backup=populated?new BackupView([new("0123456789abcdef0123456789abcdef","A lengthy named backup at the maximum supported responsive width",DateTimeOffset.UtcNow,BackupRegistry.Owners.Select(o=>o.Id).ToArray(),true),new("11111111111111111111111111111111","Invalid backup",DateTimeOffset.MinValue,[],false)],"One owner's settings restored atomically; other current data and pre-restore backup retained.",true):BackupView.Empty;
+                    var events=populated?Enumerable.Range(0,200).Select(i=>new ActivityEntry(DateTimeOffset.UtcNow,DateTimeOffset.UtcNow,"SentinelHub",ActivityCode.DiagnosticsSaved,9999)).ToArray():[];
                     using var operations=new MainWindow(settings,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>false,()=>{},()=>true,
-                        ()=>font,healthView:()=>health,compatibilityView:()=>compatibility,pauseView:()=>pause,activityEntries:()=>events,backupView:()=>backup);
-                    if(operationPage==HubPage.Backups&&populated)operations.OpenBackup(backup.Items[0].Id);
+                        ()=>font,healthView:()=>health,compatibilityView:()=>compatibility,activityEntries:()=>events);
                     var saved=JsonSerializer.Serialize(settings);for(var i=0;i<12;i++)Frame(operations,new(width,500),scale);
                     var content=theme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
                     Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Operations content overflows: "+operationPage+"/"+theme+"/"+scale);
@@ -268,23 +286,6 @@ internal static class Program
                 actor.GameObject.EntityId=43;
                 Check(!LiveEmoteReader.ObserveFields((nint)(&actor),42,5,true,emoteGuard).Valid,"Reused emote actor identity was accepted");
                 Console.WriteLine("PASS typed emote reader active/ended/thread/identity fixtures.");
-                actor.GameObject.EntityId=84;actor.GameObject.ObjectIndex=7;actor.GameObject.OwnerId=42;
-                actor.GameObject.ObjectKind=FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind.BattleNpc;
-                actor.GameObject.BattleNpcSubKind=FFXIVClientStructs.FFXIV.Client.Game.Object.BattleNpcSubKind.Buddy;
-                actor.DrawData.Equipment(FFXIVClientStructs.FFXIV.Client.Game.Character.DrawDataContainer.EquipmentSlot.Head).Value=0x10001;
-                actor.DrawData.Equipment(FFXIVClientStructs.FFXIV.Client.Game.Character.DrawDataContainer.EquipmentSlot.Body).Value=0x10002;
-                actor.DrawData.Equipment(FFXIVClientStructs.FFXIV.Client.Game.Character.DrawDataContainer.EquipmentSlot.Feet).Value=0x10003;
-                var barding=LiveBardingReader.ObserveFields((nint)(&actor),84,7,42,true,true,false);
-                Check(barding==new BardingObservation(true,true,0x10001,0x10002,0x10003),"Typed barding models were not read by their supported slots");
-                Check(!LiveBardingReader.ObserveFields((nint)(&actor),84,7,99,true,true,false).Valid,"Another owner's companion was accepted");
-                Check(!LiveBardingReader.ObserveFields(1,84,7,42,false,true,false).Valid,"Wrong-thread barding reader dereferenced a pointer");
-                actor.GameObject.ObjectKind=FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind.Mount;
-                Check(LiveBardingReader.ObserveFields((nint)(&actor),84,7,42,true,true,true).Valid,"Validated Company Chocobo mount wrapper was rejected");
-                actor.CharacterData.TransformationId=1;
-                Check(!LiveBardingReader.ObserveFields((nint)(&actor),84,7,42,true,true,true).Valid,"Transformed chocobo model was accepted");
-                actor.CharacterData.TransformationId=0;actor.GameObject.DrawObject=null;
-                Check(!LiveBardingReader.ObserveFields((nint)(&actor),84,7,42,true,true,true).Valid,"Unloaded chocobo model was accepted");
-                Console.WriteLine("PASS typed barding model/thread/owner/kind/transformation/unloaded fixtures.");
                 var fashionRows=new[]{
                     new FashionEntry(16,"An extremely long localized fashion accessory title that wraps in a narrow window","Red Moon Parasol",0,3288,15,"5.55",3,
                         [new("Seasonal / event","The Rising 2021, a historical source with a lengthy explanation of eligibility and current uncertainty","Community snapshot 2026-10-18","https://ffxivcollect.com/fashions/16"),

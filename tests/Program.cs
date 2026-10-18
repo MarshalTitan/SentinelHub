@@ -289,15 +289,26 @@ Test("Quest diagnostics export only allowlisted state, never native status strin
  Check(json.Contains("\"QuestConvenience\"")&&json.Contains("\"Active\"")&&!json.Contains("PRIVATE")&&!json.Contains("HudPreferences"));
 });
 
-Test("cleaned HUD remains compatible without bypassing fresh acknowledgment", () => {
- foreach(var version in new[]{"0.8.5.0","0.8.5.1"}){
-  Check(AntiAfkOwnershipPolicy.Resolve(true,true,true,true,version,false)==AntiAfkState.WaitingForHud);
+Test("HUD without native utility engines needs no ownership acknowledgement", () => {
+ Check(HudUtilityOwnership.RequiresLease(null)&&HudUtilityOwnership.RequiresLease("bad")&&HudUtilityOwnership.RequiresLease("0.8.4.9"));
+ foreach(var version in new[]{"0.8.5.0","0.8.5.1","0.8.5.2"}){
+  Check(!HudUtilityOwnership.RequiresLease(version));
+  Check(AntiAfkOwnershipPolicy.Resolve(true,true,true,true,version,false)==AntiAfkState.Active);
   Check(AntiAfkOwnershipPolicy.Resolve(true,true,true,true,version,true)==AntiAfkState.Active);
   Check(AntiAfkOwnershipPolicy.Resolve(false,true,true,true,version,true)==AntiAfkState.Off);
-  Check(QuestConvenienceOwnershipPolicy.Resolve(true,true,true,true,version,false)==QuestConvenienceState.WaitingForHud);
+  Check(QuestConvenienceOwnershipPolicy.Resolve(true,true,true,true,version,false)==QuestConvenienceState.Active);
   Check(QuestConvenienceOwnershipPolicy.Resolve(true,true,true,true,version,true)==QuestConvenienceState.Active);
   Check(QuestConvenienceOwnershipPolicy.Resolve(false,true,true,true,version,true)==QuestConvenienceState.Off);
  }
+});
+Test("HUD ownership selection does not let disabled modern inventory hide a loaded or unsafe older engine", () => {
+ var modern=new InstalledPlugin("SentinelHUD",false,"0.8.5.2");
+ foreach(var older in new[]{new InstalledPlugin("SentinelHUD",true,"0.8.4.7",IsDev:true),new InstalledPlugin("SentinelHUD",false,"0.8.4.5"),new InstalledPlugin("SentinelHUD",true,null)})
+ foreach(var order in new[]{new[]{modern,older},new[]{older,modern}})
+  Check(HudUtilityOwnership.Select(order,new Version(0,8,4,7))==older);
+ Check(HudUtilityOwnership.Select([],new Version(0,8,4,7)) is null);
+ var active=modern with{Loaded=true};
+ Check(HudUtilityOwnership.Select([modern,active],new Version(0,8,4,7))==active);
 });
 Test("live inventory wins over development in either discovery order", () => {
  foreach(var liveLoaded in new[]{false,true})

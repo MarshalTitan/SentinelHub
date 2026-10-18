@@ -8,10 +8,8 @@ using SentinelHub.Compatibility;
 using SentinelHub.Utilities.Quest;
 using SentinelHub.Inspection;
 using SentinelHub.Identification;
-using SentinelHub.Coordination;
 using SentinelHub.Activity;
 using SentinelHub.Storage;
-using SentinelHub.Backups;
 internal static class OperationsTests
 {
     public static void Run(Action<string,Action> test,Action<bool> check)
@@ -52,7 +50,6 @@ internal static class OperationsTests
             var provider=DiagnosticProviderPolicy.Parse("SRankSentinel","{\"Schema\":1,\"State\":1,\"Warnings\":2,\"Errors\":0,\"Token\":\""+secret+"\",\"Password\":\""+secret+"\",\"WebhookUrl\":\""+secret+"\",\"Cookie\":\""+secret+"\"}");
             var bytes=DiagnosticsBundle.Create(state,h,[],[provider,new(secret,ProviderState.Ready,1,0,0)],1,uint.MaxValue,uint.MaxValue,
                 compatibility:new([new(OverlapProvider.NoClippy,CompatibilityFeature.Latency,OverlapKind.Possible,true,secret)]),
-                pause:new(true,[new("SRankSentinel",PauseState.Acknowledged,secret,true)]),
                 activity:[new(DateTimeOffset.UtcNow,DateTimeOffset.UtcNow,"SentinelHub",ActivityCode.DiagnosticsSaved,1),new(DateTimeOffset.UtcNow,DateTimeOffset.UtcNow,secret,ActivityCode.HuntCredited,1)]);
             using var zip=new ZipArchive(new MemoryStream(bytes),ZipArchiveMode.Read);
             check(zip.Entries.Select(e=>e.FullName).SequenceEqual(new[]{"report.json","hub-state.json","summary.txt"}));
@@ -109,39 +106,13 @@ internal static class OperationsTests
             check(!InspectionPolicy.SessionMatches(t,1,2,3,4,5,200,true,false));
             check(InspectionPolicy.Resolve(InspectionKind.Mount,0,(_,_)=>throw new Exception()).State==InspectionState.None);
             check(InspectionPolicy.Resolve(InspectionKind.Fashion,999,(_,_)=>null).State==InspectionState.UnknownId);
-            check(InspectorView.Empty.Barding.State==InspectionState.Unavailable);
+            check(InspectorView.Empty.Emote.State==InspectionState.Unavailable);
         });
-        test("Pause requires acknowledgement, respects unsupported/missing/rejecting participants and resumes only its own lease",()=>{
-            var paused=false;var writes=0;
-            bool Set(bool value){writes++;paused=value;return true;}
-            check(PausePolicy.Resolve("owner",false,true,true,()=>1,Set,()=>paused).State==PauseState.NotRequested&&writes==0);
-            check(PausePolicy.Resolve("owner",true,true,true,()=>1,Set,()=>paused).State==PauseState.Acknowledged&&paused);
-            check(PausePolicy.Resolve("owner",false,true,true,()=>1,Set,()=>paused,true).State==PauseState.Running&&!paused);
-            check(PausePolicy.Resolve("owner",true,false,false,()=>throw new Exception(),Set,()=>false).State==PauseState.Missing);
-            check(PausePolicy.Resolve("owner",true,true,true,()=>throw new Exception(),Set,()=>false).State==PauseState.Unsupported);
-            check(PausePolicy.Resolve("owner",true,true,true,()=>1,_=>false,()=>false).State==PauseState.Rejected);
-            check(PausePolicy.Resolve("owner",true,true,true,()=>1,_=>true,()=>false).State==PauseState.Pending);
-            check(PausePolicy.Resolve("owner",false,true,true,()=>1,_=>true,()=>true,true).State==PauseState.RemainsPaused);
-            check(!new PauseView(true,[new("owner",PauseState.Unsupported,"")]).FullyAcknowledged);
-        });
-        test("Barding model mapping requires a unique exact encoded model and handles missing/invalid metadata",()=>{
-            var rows=new[]{new BardingModel(1,0x10001,0x10002,0x10003),new BardingModel(2,0x20001,0x20002,0x20003)};
-            check(BardingPolicy.Match(rows,BardingSlot.Head,0x10001)==1);
-            check(BardingPolicy.Match(rows,BardingSlot.Body,0x20002)==2);
-            check(BardingPolicy.Match(rows,BardingSlot.Legs,0x10003)==1);
-            check(BardingPolicy.Match(rows,BardingSlot.Head,0)==0&&BardingPolicy.Match(rows,BardingSlot.Head,9999) is null);
-            check(BardingPolicy.Match([..rows,new(3,0x10001,0,0)],BardingSlot.Head,0x10001) is null);
-            check(BardingPolicy.Match([new(0,0x10001,0,0),new(999,0x10001,0,0)],BardingSlot.Head,0x10001) is null);
-            check(BardingPolicy.Resolve(new(true,false,0,0,0),(_,_)=>throw new Exception()).Length==0);
-            check(BardingPolicy.Resolve(default,(_,_)=>throw new Exception()).Length==0);
-            var parts=BardingPolicy.Resolve(new(true,true,0x10001,0,999),(_,_)=>null);
-            check(parts.Length==3&&parts[0].State==InspectionState.UnknownId&&parts[1].State==InspectionState.None&&parts[2].State==InspectionState.UnknownId);
-        });
-        test("Inspection acquisition snapshot covers all 107 barding and 201 emote identities with exact ID/name gates",()=>{
-            check(InspectionMetadata.Bardings.Rows.Length==107&&InspectionMetadata.Emotes.Rows.Length==201);
-            foreach(var kind in new[]{InspectionKind.Barding,InspectionKind.Emote}){
-                var snapshot=kind==InspectionKind.Barding?InspectionMetadata.Bardings:InspectionMetadata.Emotes;
-                foreach(var fact in snapshot.Rows){check(InspectionMetadata.Find(kind,fact.Id,fact.EnglishName)==fact);check(InspectionMetadata.Find(kind,fact.Id,fact.EnglishName+" changed") is null);}
+        test("Inspection acquisition snapshot covers all 201 emote identities with exact ID/name gates",()=>{
+            check(InspectionMetadata.Emotes.Rows.Length==201);
+            foreach(var fact in InspectionMetadata.Emotes.Rows){
+                check(InspectionMetadata.Find(InspectionKind.Emote,fact.Id,fact.EnglishName)==fact);
+                check(InspectionMetadata.Find(InspectionKind.Emote,fact.Id,fact.EnglishName+" changed") is null);
             }
             check(InspectionMetadata.Patch("7.55")=="7.55"&&InspectionMetadata.Expansion("3.55a")=="Heavensward");
             check(InspectionMetadata.Patch("unknown") is null&&InspectionMetadata.Expansion("8.0") is null);
@@ -153,7 +124,7 @@ internal static class OperationsTests
             var journal=new ActivityJournal();var now=DateTimeOffset.UtcNow;
             for(var i=0;i<1000;i++)journal.Add("SentinelHub",ActivityCode.DiagnosticsSaved,now);
             check(journal.Snapshot(now).Length==1&&journal.Snapshot(now)[0].Count==1000);
-            for(var i=0;i<400;i++)journal.Add("SentinelHub",ActivityCode.BackupSaved,now.AddMinutes(i+1));
+            for(var i=0;i<400;i++)journal.Add("SentinelHub",ActivityCode.DiagnosticsSaved,now.AddMinutes(i+1));
             check(journal.Snapshot(now.AddMinutes(401)).Length<=ActivityJournal.Capacity);
             check(journal.Snapshot(now.AddDays(8)).Length==0);
             check(ActivityCatalog.Severity(ActivityCode.DiagnosticsFailed)==ActivitySeverity.Error);
@@ -178,58 +149,15 @@ internal static class OperationsTests
                 AtomicFile.Write(path,Encoding.UTF8.GetBytes("replacement"));check(File.ReadAllText(path)=="replacement");
             }finally{Directory.Delete(folder,true);}
         });
-        test("Backup registry is unique, versioned and permits only reviewed non-text scalar fields",()=>{
-            check(BackupRegistry.Owners.Length==7&&BackupRegistry.Owners.Select(o=>o.Id).Distinct().Count()==7);
-            foreach(var owner in BackupRegistry.Owners){check(owner.Schema>0&&Version.TryParse(owner.Version,out _));check(owner.Fields.Select(f=>f.Path).Distinct().Count()==owner.Fields.Length);
-                check(owner.Fields.All(f=>f.Path!="Version"&&!f.Path.Contains("Token")&&!f.Path.Contains("Password")&&!f.Path.Contains("Webhook")&&!f.Path.Contains("Character")&&!f.Path.Contains("Session")&&!f.Path.Contains("History")&&!f.Path.Contains("Profiles")&&!f.Path.Contains("Gearset")));
-            }
-            check(BackupRegistry.Find("SentinelRelay")!.Fields.All(f=>!f.Path.StartsWith("CharacterProfiles")));
-            check(BackupRegistry.Find("SentinelHub")!.Fields.All(f=>f.Path!="AutomationPaused"));
-        });
-        test("Backup projections exclude credentials/ciphertext/IDs and restore preserves current excluded and unrelated fields",()=>{
-            var relay=BackupRegistry.Find("SentinelRelay")!;
-            var before=Encoding.UTF8.GetBytes("{\"Version\":5,\"ConfigurationTheme\":1,\"CharacterProfiles\":{\"PRIVATE_ID\":{\"ProtectedWebhookUrl\":\"SECRET_WEBHOOK\",\"ProtectedDiscordBotToken\":\"SECRET_BOT\",\"Password\":\"SECRET_PASSWORD\",\"Cookie\":\"SECRET_COOKIE\"}},\"ApiToken\":\"SECRET_API\"}");
-            var entry=BackupPolicy.Project(relay,relay.Version,before);var json=BackupPolicy.Write(new(1,"test backup",DateTimeOffset.UtcNow,[entry]));
-            var text=Encoding.UTF8.GetString(json);check(!text.Contains("SECRET")&&!text.Contains("PRIVATE_ID")&&!text.Contains("CharacterProfiles")&&!text.Contains("Token"));
-            var current=Encoding.UTF8.GetBytes("{\"Version\":5,\"ConfigurationTheme\":0,\"FutureField\":987,\"CharacterProfiles\":{\"NEW_ID\":{\"ProtectedWebhookUrl\":\"CURRENT_SECRET\"}}}");
-            var restored=Encoding.UTF8.GetString(BackupPolicy.Restore(entry,relay,relay.Version,current));
-            using var doc=JsonDocument.Parse(restored);check(doc.RootElement.GetProperty("ConfigurationTheme").GetInt32()==1&&doc.RootElement.GetProperty("FutureField").GetInt32()==987&&restored.Contains("CURRENT_SECRET")&&!restored.Contains("SECRET_WEBHOOK"));
-        });
-        test("Backup schema/version/type/owner/checksum/duplicate/invalid payloads reject before restore",()=>{
-            var owner=BackupRegistry.Find("SentinelHub")!;var entry=BackupPolicy.Project(owner,owner.Version,Encoding.UTF8.GetBytes("{\"Version\":1,\"Theme\":1}"));
-            var rejected=0;
-            foreach(var action in new Action[]{
-                ()=>BackupPolicy.Restore(entry,owner,owner.Version,Encoding.UTF8.GetBytes("{\"Version\":2,\"Theme\":0}")),
-                ()=>BackupPolicy.Restore(entry,owner,"0.8.0.0",Encoding.UTF8.GetBytes("{\"Version\":1}")),
-                ()=>BackupPolicy.Validate(new(1,"test",DateTimeOffset.UtcNow,[entry with{Sha256="bad"}])),
-                ()=>BackupPolicy.Validate(new(1,"test",DateTimeOffset.UtcNow,[entry,entry])),
-                ()=>BackupPolicy.Parse(Encoding.UTF8.GetBytes("{\"Version\":1,\"Version\":2}")),
-                ()=>BackupPolicy.Project(owner,owner.Version,Encoding.UTF8.GetBytes("{\"Version\":1,\"Theme\":\"SECRET\"}")),
-                ()=>BackupPolicy.Parse(new byte[BackupPolicy.MaximumBytes+1]),
-            }){try{action();}catch{rejected++;}}
-            check(rejected==7&&!BackupPolicy.ValidName("https://discord.com/webhook")&&BackupPolicy.ValidName("Before restore 2026-10-18"));
-        });
-        test("Actual backup service creates sanitized package, rejects loaded owner and atomically restores one owner with pre-backup",()=>{
-            var folder=Path.Combine(Path.GetTempPath(),"sentinel-backup-tests-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(folder);
-            try{
-                var hub=Path.Combine(folder,"SentinelHub.json");var srank=Path.Combine(folder,"SRankSentinel.json");var root=Path.Combine(folder,"backups");
-                File.WriteAllText(hub,"{\"Version\":1,\"Theme\":1,\"FutureField\":1}");
-                File.WriteAllText(srank,"{\"Version\":16,\"WindowTheme\":1,\"Enabled\":true,\"FaloopProtectedPassword\":\"SECRET_CANARY\"}");
-                var settings=new SentinelHub.Configuration.HubSettings{Theme=1,AutomationPaused=true};var loaded=true;var events=new List<ActivityCode>();
-                var service=new BackupService(root,hub,settings,()=>[new("SRankSentinel",loaded,"0.7.62.0")],events.Add,()=>"0.7.0.0");
-                service.RequestCreate("Before test");service.Tick();check(service.View.Items.Length==1);
-                var backup=service.View.Items[0];check(backup.Owners.Contains("SRankSentinel")&&!File.ReadAllText(Directory.GetFiles(root).Single()).Contains("SECRET_CANARY"));
-                var original=File.ReadAllText(srank);service.RequestRestore(backup.Id,"SRankSentinel");service.Tick();check(File.ReadAllText(srank)==original&&events.Last()==ActivityCode.BackupFailed);
-                loaded=false;File.WriteAllText(srank,"{\"Version\":16,\"WindowTheme\":0,\"Enabled\":false,\"FutureField\":9,\"FaloopProtectedPassword\":\"CURRENT_SECRET\"}");
-                service.RequestRestore(backup.Id,"SRankSentinel");service.Tick();var restored=File.ReadAllText(srank);
-                check(restored.Contains("CURRENT_SECRET")&&!restored.Contains("SECRET_CANARY")&&restored.Contains("FutureField")&&events.Last()==ActivityCode.BackupRestored&&service.View.Items.Length==2);
-                using(var doc=JsonDocument.Parse(restored))check(doc.RootElement.GetProperty("Enabled").GetBoolean()&&doc.RootElement.GetProperty("FutureField").GetInt32()==9);
-                File.WriteAllText(hub,"{\"Version\":1,\"Theme\":0,\"FutureField\":99}");settings.Theme=0;service.RequestRestore(backup.Id,"SentinelHub");service.Tick();
-                check(settings.Theme==1&&settings.AutomationPaused&&File.ReadAllText(hub).Contains("FutureField"));
-                var rejected=File.ReadAllText(hub);var failing=new BackupService(root,hub,settings,()=>[],events.Add,()=>"0.7.0.0",(_,_)=>throw new IOException());
-                failing.RequestRestore(backup.Id,"SentinelHub");failing.Tick();check(File.ReadAllText(hub)==rejected&&events.Last()==ActivityCode.BackupFailed);
-                check(!Directory.GetFiles(folder,".sentinel-*.tmp").Any());
-            }finally{Directory.Delete(folder,true);}
+        test("Retired candidate settings and activity codes do not change retained preferences or identities",()=>{
+            var config=JsonSerializer.Deserialize<SentinelHub.Configuration.HubSettings>("{\"Version\":1,\"Page\":12,\"AutomationPaused\":true,\"QuestConvenienceEnabled\":false,\"AntiAfkEnabled\":true,\"LatencyMode\":1}")!;
+            config.Normalize();check(config.Page==SentinelHub.Configuration.HubPage.Dashboard&&!config.QuestConvenienceEnabled&&config.AntiAfkEnabled&&config.LatencyMode==SentinelHub.Utilities.LatencyMode.Measure);
+            check(!JsonSerializer.Serialize(config).Contains("AutomationPaused"));
+            var journal=new ActivityJournal();var now=DateTimeOffset.UtcNow;
+            foreach(var code in new[]{5,6,7,10,11,12,13})check(!journal.Add("SentinelHub",(ActivityCode)code,now));
+            check((int)ActivityCode.DiagnosticsSaved==8&&(int)ActivityCode.ProfileApplied==14&&(int)ActivityCode.HuntCredited==17);
+            var old=JsonSerializer.Serialize(new[]{new ActivityEntry(now,now,"SentinelHub",(ActivityCode)10,1),new ActivityEntry(now,now,"SentinelHub",ActivityCode.DiagnosticsSaved,1)});
+            journal.Load(old,now);check(journal.Snapshot(now).Length==1&&journal.Snapshot(now)[0].Code==ActivityCode.DiagnosticsSaved);
         });
     }
 }
