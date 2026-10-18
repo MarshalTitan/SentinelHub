@@ -2,6 +2,7 @@ using Dalamud.Bindings.ImGui;
 using SentinelHub.Configuration;
 using SentinelHub.Inspection;
 using System.Numerics;
+using Dalamud.Interface.Utility;
 namespace SentinelHub.UI;
 public sealed class PlayerInspectorPanel(HubSettings settings,Action save,Func<InspectorView> view,Action<uint> mount,Action<uint?> fashion,Action<uint,Vector2>? icon)
 {
@@ -24,7 +25,7 @@ public sealed class PlayerInspectorPanel(HubSettings settings,Action save,Func<I
     {
         ImGui.Separator();ImGui.TextWrapped(title+": "+(p.State==InspectionState.None?"None identifiable currently active":p.State.ToString()));
         if(p.Entry is {} e){
-            icon?.Invoke(e.Icon,new Vector2(32));ImGui.TextWrapped(e.Name+(e.Command.Length>0?" ("+e.Command+")":""));
+            icon?.Invoke(e.Icon,new Vector2(32*ImGuiHelpers.GlobalScale));ImGui.TextWrapped(e.Name+(e.Command.Length>0?" ("+e.Command+")":""));
             if(e.Kind==InspectionKind.Emote){
                 ImGui.TextWrapped("Your unlock: "+(e.Owned is true?"Unlocked":e.Owned is false?"Locked":"Unknown"));
                 ImGui.TextWrapped("Source category: "+e.Category);

@@ -34,6 +34,7 @@ public sealed class MainWindow : Window, IDisposable
     private readonly HealthPanel health;
     private readonly CompatibilityPanel compatibility;
     private readonly PlayerInspectorPanel inspector;
+    private readonly PausePanel pause;
     private PlayerIdentification? identification;
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
@@ -50,12 +51,14 @@ public sealed class MainWindow : Window, IDisposable
         Action? refreshMounts = null, Action? retryMounts = null, Action<uint, Vector2>? mountIcon = null, Func<FashionView>? fashionView = null, Action? refreshFashion = null, Action? retryFashion = null,
         Func<SentinelHub.Health.HealthView>? healthView=null, Action? refreshHealth=null, Action? publicVersions=null,
         Func<SentinelHub.Compatibility.CompatibilityView>? compatibilityView=null,
-        Func<SentinelHub.Inspection.InspectorView>? inspectorView=null) : base(WindowId)
+        Func<SentinelHub.Inspection.InspectorView>? inspectorView=null,
+        Func<SentinelHub.Coordination.PauseView>? pauseView=null, Action<bool>? pauseRequest=null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.questView = questView ?? (() => QuestConvenienceView.Off);
         this.latencyView = latencyView ?? (() => LatencyView.Off);
         health=new(healthView??(()=>SentinelHub.Health.HealthView.Empty),refreshHealth??(()=>{}),publicVersions??(()=>{}));
+        pause=new(pauseView??(()=>SentinelHub.Coordination.PauseView.Empty),pauseRequest??(_=>{}));
         compatibility=new(compatibilityView??(()=>SentinelHub.Compatibility.CompatibilityView.Empty));
         inspector=new(config,save,inspectorView??(()=>SentinelHub.Inspection.InspectorView.Empty),OpenMount,OpenFashion,mountIcon);
         mounts = new(config, mountView ?? (() => MountCollectionView.Empty), save,
@@ -203,6 +206,7 @@ public sealed class MainWindow : Window, IDisposable
     }
     private void DrawDashboard()
     {
+        pause.Draw();
         var s = snapshot();
         ImGui.TextWrapped("Optional ecosystem overview. Loaded means enabled in Dalamud; it does not prove gameplay readiness or an internal automation toggle.");
         ImGui.TextWrapped(s.DiscoveryAvailable ? "Inventory captured: " + s.CapturedAt.ToLocalTime().ToString("T") : "Inventory unavailable. Previous observations are not shown as current.");
@@ -253,6 +257,7 @@ public sealed class MainWindow : Window, IDisposable
     }
     private void DrawUtilities()
     {
+        pause.Draw();
         compatibility.Draw();
         var view = antiAfkView();
         ImGui.TextWrapped("Prevent AFK Disconnect");

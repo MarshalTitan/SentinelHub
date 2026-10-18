@@ -7,6 +7,7 @@ using SentinelHub.Compatibility;
 using SentinelHub.Utilities.Quest;
 using SentinelHub.Inspection;
 using SentinelHub.Identification;
+using SentinelHub.Coordination;
 internal static class OperationsTests
 {
     public static void Run(Action<string,Action> test,Action<bool> check)
@@ -95,6 +96,19 @@ internal static class OperationsTests
             check(InspectionPolicy.Resolve(InspectionKind.Mount,0,(_,_)=>throw new Exception()).State==InspectionState.None);
             check(InspectionPolicy.Resolve(InspectionKind.Fashion,999,(_,_)=>null).State==InspectionState.UnknownId);
             check(InspectorView.Empty.Barding.State==InspectionState.Unsupported);
+        });
+        test("Pause requires acknowledgement, respects unsupported/missing/rejecting participants and resumes only its own lease",()=>{
+            var paused=false;var writes=0;
+            bool Set(bool value){writes++;paused=value;return true;}
+            check(PausePolicy.Resolve("owner",false,true,true,()=>1,Set,()=>paused).State==PauseState.NotRequested&&writes==0);
+            check(PausePolicy.Resolve("owner",true,true,true,()=>1,Set,()=>paused).State==PauseState.Acknowledged&&paused);
+            check(PausePolicy.Resolve("owner",false,true,true,()=>1,Set,()=>paused,true).State==PauseState.Running&&!paused);
+            check(PausePolicy.Resolve("owner",true,false,false,()=>throw new Exception(),Set,()=>false).State==PauseState.Missing);
+            check(PausePolicy.Resolve("owner",true,true,true,()=>throw new Exception(),Set,()=>false).State==PauseState.Unsupported);
+            check(PausePolicy.Resolve("owner",true,true,true,()=>1,_=>false,()=>false).State==PauseState.Rejected);
+            check(PausePolicy.Resolve("owner",true,true,true,()=>1,_=>true,()=>false).State==PauseState.Pending);
+            check(PausePolicy.Resolve("owner",false,true,true,()=>1,_=>true,()=>true,true).State==PauseState.RemainsPaused);
+            check(!new PauseView(true,[new("owner",PauseState.Unsupported,"")]).FullyAcknowledged);
         });
     }
 }

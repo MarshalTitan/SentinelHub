@@ -15,6 +15,7 @@ using SentinelHub.Identification;
 using SentinelHub.Health;
 using SentinelHub.Compatibility;
 using SentinelHub.Inspection;
+using SentinelHub.Coordination;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 namespace SentinelHub;
@@ -50,6 +51,7 @@ public sealed class Plugin : IDalamudPlugin
     private readonly HealthService health;
     private readonly CompatibilityScanner compatibility;
     private readonly PlayerInspector inspector;
+    private readonly PauseCoordinator pause;
     private bool disposed;
     public Plugin()
     {
@@ -57,12 +59,13 @@ public sealed class Plugin : IDalamudPlugin
         settings.Normalize();
         discovery = new(Pi, faults);
         health=new(Pi,discovery.Capture,()=>discovery.Snapshot,publicCatalog);
+        pause=new(Pi,settings,Save);
         compatibility=new(Pi);
         compatibility.Tick(true);
-        antiAfk = new(Pi, Client, settings, faults,()=>compatibility.View.Blocks(CompatibilityFeature.AntiAfk));
+        antiAfk = new(Pi, Client, settings, faults,()=>settings.AutomationPaused||compatibility.View.Blocks(CompatibilityFeature.AntiAfk));
         quest = new(Pi, Client, GameGui, Condition, Objects, Data, settings, faults,
-            ()=>false,o=>compatibility.View.Effective(o));
-        latency = new(Pi, Interop, Data, Client, Condition, Objects, settings, faults,()=>compatibility.View.Blocks(CompatibilityFeature.Latency));
+            ()=>settings.AutomationPaused,o=>compatibility.View.Effective(o));
+        latency = new(Pi, Interop, Data, Client, Condition, Objects, settings, faults,()=>settings.AutomationPaused||compatibility.View.Blocks(CompatibilityFeature.Latency));
         mounts = new(Data, Unlocks, Client, Player, Objects, Condition, faults);
         fashion = new(Data, Unlocks, Client, Player, Objects, Condition, faults);
         inspector=new(Objects,Player,Client,Framework,settings,()=>mounts.Ready&&fashion.Ready,
@@ -73,7 +76,7 @@ public sealed class Plugin : IDalamudPlugin
             () => Pi.UiBuilder.ShouldUseReducedMotion, antiAfkView: () => antiAfk.View, questView: () => quest.View, latencyView: () => latency.View,
             mountView: () => mounts.View, refreshMounts: mounts.RequestRefresh, retryMounts: mounts.Retry, mountIcon: DrawCollectionIcon, fashionView: () => fashion.View, refreshFashion: fashion.RequestRefresh, retryFashion: fashion.Retry,
             healthView:()=>health.View,refreshHealth:()=>{discovery.Refresh(true);health.Tick(true);},publicVersions:publicCatalog.Request,
-            compatibilityView:()=>compatibility.View,inspectorView:()=>inspector.View);
+            compatibilityView:()=>compatibility.View,inspectorView:()=>inspector.View,pauseView:()=>pause.View,pauseRequest:pause.Request);
         identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, window.ClearIdentification, faults,
             ticket=>{inspector.Select(ticket);window.OpenPlayerInspector();});
         windows.AddWindow(window);
@@ -84,7 +87,7 @@ public sealed class Plugin : IDalamudPlugin
         Framework.Update += Update;
         discovery.Refresh(true);
     }
-    private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); health.Tick(); compatibility.Tick(); antiAfk.Tick(); quest.Tick(); latency.Tick(); mounts.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Mounts); fashion.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Fashion); identifyMenu.Tick(); inspector.Tick(window.IsOpen&&!settings.Collapsed&&settings.Page==Configuration.HubPage.PlayerInspector); } }
+    private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); health.Tick(); compatibility.Tick(); antiAfk.Tick(); quest.Tick(); latency.Tick(); pause.Tick(antiAfk.View.State!=Utilities.AntiAfkState.Active&&quest.View.State!=Utilities.QuestConvenienceState.Active&&latency.View.State is not (Utilities.LatencyState.Compensating or Utilities.LatencyState.Measuring)); mounts.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Mounts); fashion.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Fashion); identifyMenu.Tick(); inspector.Tick(window.IsOpen&&!settings.Collapsed&&settings.Page==Configuration.HubPage.PlayerInspector); } }
     private void DrawCollectionIcon(uint id, Vector2 size)
     {
         Dalamud.Interface.Textures.TextureWraps.IDalamudTextureWrap? wrap = null;

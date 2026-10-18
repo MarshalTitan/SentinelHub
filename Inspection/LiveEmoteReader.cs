@@ -13,7 +13,8 @@ public static class LiveEmoteReader
     }
     internal static unsafe EmoteObservation ObserveFields(nint address,uint entity,ushort index,bool frameworkThread,ActorObservation guard)
     {
-        if(!frameworkThread||address==0||!guard.Valid||!guard.DrawLoaded||guard.Transformed)return new(guard.Valid,guard.DrawLoaded,guard.Transformed,0,0,0);
+        if(!frameworkThread||address==0)return default;
+        if(!guard.Valid||!guard.DrawLoaded||guard.Transformed)return new(guard.Valid,guard.DrawLoaded,guard.Transformed,0,0,0);
         var actor=(CSCharacter*)address;
         if(actor->GameObject.EntityId!=entity||actor->GameObject.ObjectIndex!=index)return default;
         return new(true,true,false,actor->EmoteController.EmoteId,(byte)actor->Mode,actor->ModeParam);

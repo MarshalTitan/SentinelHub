@@ -146,6 +146,7 @@ internal static class Program
                 foreach(var scale in new[]{1f,1.5f,2f})
                 foreach(var state in Enum.GetValues<InspectionState>())
                 foreach(var width in new[]{480f,860f}){
+                    io.FontGlobalScale=scale;
                     var settings=new HubSettings{Theme=theme,Page=HubPage.PlayerInspector,PlayerInspectorEnabled=true};
                     var entry=new InspectionEntry(InspectionKind.Emote,123,"A long localized explicitly identified emote display name",0,"/lean",true,
                         ["A lengthy local quest/vendor source with requirements that must wrap at minimum width"],"Game reward/shop evidence");
@@ -228,6 +229,17 @@ internal static class Program
                 Check(!LiveOrnamentReader.ObserveFields(1,42,5,true,false,true).Valid,"Invalid wrapper read was not blocked before dereference");
                 actor.GameObject.EntityId=43;Check(!Read(&actor).Valid,"Reused entity identity was accepted");
                 Console.WriteLine("PASS typed ornament reader memory/auto-umbrella/transformation/unloaded/thread/identity fixtures; binding "+typeof(CSCharacter).Assembly.GetName().Version);
+                actor.GameObject.EntityId=42;actor.GameObject.DrawObject=(FFXIVClientStructs.FFXIV.Client.Graphics.Scene.DrawObject*)1;
+                actor.EmoteController.EmoteId=123;actor.Mode=FFXIVClientStructs.FFXIV.Client.Game.Character.CharacterModes.EmoteLoop;actor.ModeParam=25;
+                var emoteGuard=new ActorObservation(true,true,false,0);
+                Check(LiveEmoteReader.ObserveFields((nint)(&actor),42,5,true,emoteGuard).EmoteId==123,"Explicit typed emote ID was not read");
+                actor.EmoteController.EmoteId=0;
+                Check(LiveEmoteReader.ObserveFields((nint)(&actor),42,5,true,emoteGuard).EmoteId==0,"Ended emote was retained");
+                Check(!LiveEmoteReader.ObserveFields(1,42,5,false,emoteGuard).Valid,"Wrong-thread emote reader dereferenced a pointer");
+                Check(!LiveEmoteReader.ObserveFields(1,42,5,true,new(false,false,false,0)).Valid,"Invalid emote actor was read");
+                actor.GameObject.EntityId=43;
+                Check(!LiveEmoteReader.ObserveFields((nint)(&actor),42,5,true,emoteGuard).Valid,"Reused emote actor identity was accepted");
+                Console.WriteLine("PASS typed emote reader active/ended/thread/identity fixtures.");
                 var fashionRows=new[]{
                     new FashionEntry(16,"An extremely long localized fashion accessory title that wraps in a narrow window","Red Moon Parasol",0,3288,15,"5.55",3,
                         [new("Seasonal / event","The Rising 2021, a historical source with a lengthy explanation of eligibility and current uncertainty","Community snapshot 2026-10-18","https://ffxivcollect.com/fashions/16"),
