@@ -41,7 +41,8 @@ public sealed class PlayerIdentificationMenu : IDisposable
                 ||target.TargetObject is not IPlayerCharacter pc||!pc.IsValid()||!pc.IsTargetable||pc.Address==0
                 ||pc.EntityId is 0 or 0xE0000000||pc.GameObjectId==objects.LocalPlayer?.GameObjectId)return;
             // Preserve Mount-only behavior on unmounted players. Fashion opt-in adds the explicit no-accessory result.
-            if(!settings.FashionContextMenuEnabled&&(pc.CurrentMount?.RowId??0)==0)return;
+            if(!IdentificationPolicy.Offer(settings.MountContextMenuEnabled,settings.FashionContextMenuEnabled,
+                settings.MountContextMenuEnabled&&(pc.CurrentMount?.RowId??0)!=0))return;
             var ticket=new IdentificationTicket(pc.GameObjectId,pc.EntityId,pc.ObjectIndex,player.ContentId,client.TerritoryType,Environment.TickCount64);
             args.AddMenuItem(new MenuItem{Name="Sentinel Hub: Identify player",PrefixChar='S',
                 OnClicked=_=>{if(!disposed&&Enabled)queue.Request(ticket);}});

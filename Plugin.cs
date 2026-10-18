@@ -58,7 +58,7 @@ public sealed class Plugin : IDalamudPlugin
         window = new(settings, () => discovery.Snapshot, faults, Save, () => discovery.Refresh(true),
             (id, diagnostics) => quickOpen.Open(id, diagnostics), Export,
             () => Pi.UiBuilder.ShouldUseReducedMotion, antiAfkView: () => antiAfk.View, questView: () => quest.View, latencyView: () => latency.View,
-            mountView: () => mounts.View, refreshMounts: mounts.RequestRefresh, retryMounts: mounts.Retry, mountIcon: DrawMountIcon, fashionView: () => fashion.View, refreshFashion: fashion.RequestRefresh, retryFashion: fashion.Retry);
+            mountView: () => mounts.View, refreshMounts: mounts.RequestRefresh, retryMounts: mounts.Retry, mountIcon: DrawCollectionIcon, fashionView: () => fashion.View, refreshFashion: fashion.RequestRefresh, retryFashion: fashion.Retry);
         identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, window.ClearIdentification, faults);
         windows.AddWindow(window);
         Commands.AddHandler("/shub", new CommandInfo(OnCommand) { HelpMessage = "Open Sentinel Hub. /shub export saves sanitized Hub diagnostics." });
@@ -69,11 +69,11 @@ public sealed class Plugin : IDalamudPlugin
         discovery.Refresh(true);
     }
     private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); antiAfk.Tick(); quest.Tick(); latency.Tick(); mounts.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Mounts); fashion.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Fashion); identifyMenu.Tick(); } }
-    private void DrawMountIcon(uint id, Vector2 size)
+    private void DrawCollectionIcon(uint id, Vector2 size)
     {
         Dalamud.Interface.Textures.TextureWraps.IDalamudTextureWrap? wrap = null;
         try { if (Textures.TryGetFromGameIcon(id, out var texture)) texture.TryGetWrap(out wrap, out _); }
-        catch { faults.Record(FaultCode.MountCollectionUnavailable); }
+        catch { faults.Record(FaultCode.CollectionIconUnavailable); }
         if (wrap is not null) ImGui.Image(wrap.Handle, size);
         else ImGui.Dummy(size);
     }

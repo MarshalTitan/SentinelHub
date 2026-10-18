@@ -9,6 +9,7 @@ public readonly record struct IdentificationTicket(ulong ObjectId,uint EntityId,
 public readonly record struct ActorObservation(bool Valid,bool DrawLoaded,bool Transformed,uint OrnamentId);
 public static class IdentificationPolicy
 {
+    public static bool Offer(bool mountEnabled,bool fashionEnabled,bool mounted) => fashionEnabled || mountEnabled && mounted;
     public static bool TicketMatches(IdentificationTicket t,ulong objectId,uint entity,ushort index,ulong session,uint territory,
         long now,bool enabled,bool ready,bool player,bool valid,bool disposed) =>
         !disposed&&enabled&&ready&&player&&valid&&t.ObjectId!=0&&t.ObjectId==objectId&&t.EntityId!=0&&t.EntityId!=0xE0000000

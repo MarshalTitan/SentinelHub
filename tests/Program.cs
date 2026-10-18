@@ -796,6 +796,14 @@ Test("Shared identification rejects stale tickets, identity reuse, zoning, logou
  queue.Request(t);queue.Clear();Check(queue.Take()==null);
 });
 
+
+Test("Shared menu preserves Mount-only offers and adds the explicit Fashion no-accessory flow",()=>{
+ Check(!IdentificationPolicy.Offer(false,false,false)&&!IdentificationPolicy.Offer(false,false,true));
+ Check(!IdentificationPolicy.Offer(true,false,false)&&IdentificationPolicy.Offer(true,false,true));
+ Check(IdentificationPolicy.Offer(false,true,false)&&IdentificationPolicy.Offer(false,true,true));
+ Check(IdentificationPolicy.Offer(true,true,false)&&IdentificationPolicy.Offer(true,true,true));
+});
+
 Console.WriteLine(passed + " policy test groups passed.");
 
 sealed class FakeLatencyRuntime : ILatencyRuntime
