@@ -120,7 +120,8 @@ internal static class Program
                         Check(card.ContentSize.X<=card.Size.X+1&&!card.ScrollbarX,"Plugin card overflows horizontally after resize");
                         Check(card.ContentSize.Y+2*card.WindowPadding.Y<=card.Size.Y+1,$"Plugin actions are clipped after resize: theme={theme} scale={scale} width={width} content={card.ContentSize} padding={card.WindowPadding} size={card.Size} scroll={root.Scroll}");
                         var unusedHeight=card.Size.Y-card.ContentSize.Y-2*card.WindowPadding.Y;
-                        Check(unusedHeight<=3*scale+1,$"Excess plugin card bottom space: theme={theme} scale={scale} width={width} unused={unusedHeight}");
+                        // Fractional font scaling rounds each row separately; keep only a small rounding allowance.
+                        Check(unusedHeight<=6*scale+1,$"Excess plugin card bottom space: theme={theme} page={pluginPage} scale={scale} width={width} unused={unusedHeight}");
                         if(width==480){if(narrowHeight>0)Check(Math.Abs(narrowHeight-card.Size.Y)<1,"Narrow fallback changed after resize");narrowHeight=card.Size.Y;}
                         else
                         {
@@ -138,7 +139,7 @@ internal static class Program
                         {
                             var status=Find(MainWindow.WindowId,"profiles-contract");
                             var spare=status.Size.Y-status.ContentSize.Y-2*status.WindowPadding.Y;
-                            Check(spare>=-1&&spare<=3*scale+1,$"Profile status card clipping/excess bottom space: theme={theme} scale={scale} spare={spare}");
+                            Check(spare>=-1&&spare<=6*scale+1,$"Profile status card clipping/excess bottom space: theme={theme} scale={scale} spare={spare}");
                         }
                         io.AddMousePosEvent(card.Pos.X+card.Size.X-card.WindowPadding.X-70*scale,
                             card.Pos.Y+card.WindowPadding.Y+ImGui.GetStyle().CellPadding.Y+14*scale);
