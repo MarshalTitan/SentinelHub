@@ -6,11 +6,11 @@ HUD visuals and camera, SRankSentinel, PvPSentinel, ClassySentinel, SentinelProf
 
 ## Control center and utilities
 
-Dashboard, Plugins, Health, Profiles, Utilities, Mount Collection, Fashion Accessories, Player Inspector, Recent Activity, Diagnostics, Appearance and About (new operations pages are part of the held 0.7 candidate). Inventory comes from public Dalamud installed-plugin interfaces. Loaded means enabled in Dalamud, not gameplay-ready or automation-enabled. Verified read-only dependency IPC covers vnavmesh, Lifestream, RotationSolverReborn and Splatoon.
+Dashboard, Plugins, Health, Profiles, Utilities, Mount Collection, Fashion Accessories, Player Inspector, Recent Activity, Diagnostics, Appearance and About. Inventory comes from public Dalamud installed-plugin interfaces. Loaded means enabled in Dalamud, not gameplay-ready or automation-enabled. Verified read-only dependency IPC covers vnavmesh, Lifestream, RotationSolverReborn and Splatoon.
 
 Consumer settings use a fixed source-verified command allowlist; some consumers toggle their windows. Disabled/missing/restricted components have unavailable actions. No consumer assembly dependency or private reflection.
 
-Profiles selected/last-applied/drift and Relay runtime connectivity remain **unknown unless a compatible optional provider responds**. Public versions are a dated explicit catalog fetch in the held candidate. Consumers remain authoritative.
+Profiles selected/last-applied/drift and Relay runtime connectivity remain **unknown unless a compatible optional provider responds**. Public versions are a dated explicit catalog fetch in Hub 0.7. Consumers remain authoritative.
 
 **0.2.0.0 adds default-OFF Anti-AFK.** Hub uses the existing HUD timer behavior: one synchronous check every 10 seconds, resetting finite inactivity timers above 30 seconds. It generates no input, movement or chat. Compatible loaded HUD 0.8.4.6+ must acknowledge ownership before Hub writes; installed legacy/unknown HUD blocks Hub. Optional versioned primitive IPC prevents duplicate owners and preserves HUD's original preference. Import copies that single preference only on explicit click. HUD 0.8.4.6/0.8.4.7 can resume their saved preferences when Hub stops; HUD 0.8.5.0 has no fallback engine and leaves actions off.
 
@@ -64,3 +64,9 @@ See [audit and source boundaries](docs/OPERATIONS_EXPANSION.md), [supervised acc
 Anti-AFK is kept to a heading and state-labeled switch, with no text/counter below it. Activity and live diagnostics are RAM-only, clear on Hub reload/game close and do not create automatic history files. Startup retires only the earlier candidate's exact recent-activity.json. Optional manual export atomically replaces one diagnostics/sentinel-diagnostics.zip; exported files intentionally survive game close. Earlier manually saved timestamp ZIPs are not deleted. Saved user preferences remain on disk normally. See the latest [scoped results and focused checks](docs/OPERATIONS_ACCEPTANCE.md).
 
 Plugin cards on Dashboard, Plugins and Profiles now measure the real inner wrap width and omit trailing row gaps/extra height allowance. Standard Core card padding, responsive action placement and resize behavior are retained. Native regression checks bound unused bottom space and reject clipping in both themes at 1×/1.5×/2× scale, including narrow→wide→narrow resizing, action dispatch/disabled gating and the Profiles status card. This is layout-only; compact Anti-AFK and session-only activity/manual-export changes remain included.
+
+## Published 0.7.0.0
+
+[Immutable release](https://github.com/MarshalTitan/SentinelHub/releases/tag/v0.7.0.0) published from `8e449cd4e75001a277ffdce2ca45e725801f1293`. [Release pipeline](https://github.com/MarshalTitan/SentinelHub/actions/runs/39162571980) validates the package and compares the downloaded public ZIP against its tested CI artifact before distribution. GitHub asset metadata: SentinelHub.zip, 429065 bytes, SHA256 `7a7ded95f95e5d7fc581f7d64ca4736518c88c6e22fd7f6dfe26e0edc6e8367b` (metadata read; hash equality is checked by the pipeline). Exact child/central promotion evidence is recorded in the canonical Sentinel RELEASE_PROCESS.md and release PR.
+
+For normal use, disable the isolated development copy, enable/update live Sentinel Hub through the existing custom repository and confirm 0.7.0.0. Saved preferences remain intact. The focused gate is closed; unreported scenarios retain their documented scope.
