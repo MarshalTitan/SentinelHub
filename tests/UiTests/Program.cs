@@ -122,7 +122,12 @@ internal static class Program
                         var unusedHeight=card.Size.Y-card.ContentSize.Y-2*card.WindowPadding.Y;
                         Check(unusedHeight<=3*scale+1,$"Excess plugin card bottom space: theme={theme} scale={scale} width={width} unused={unusedHeight}");
                         if(width==480){if(narrowHeight>0)Check(Math.Abs(narrowHeight-card.Size.Y)<1,"Narrow fallback changed after resize");narrowHeight=card.Size.Y;}
-                        else Check(card.Size.Y<narrowHeight,"Wide plugin actions did not reduce card height");
+                        else
+                        {
+                            // Classic can already fit side actions at the minimum width.
+                            Check(card.Size.Y<=narrowHeight+1,"Wider plugin card increased its height");
+                            if(theme==1)Check(card.Size.Y<narrowHeight,"Wide Modern actions did not reduce card height");
+                        }
                         Check(JsonSerializer.Serialize(settings)==saved,"Resizing changed saved feature settings");
                     }
                     void ClickSettings()
