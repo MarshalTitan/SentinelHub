@@ -36,12 +36,13 @@ public sealed class MainWindow : Window, IDisposable
     private readonly PlayerInspectorPanel inspector;
     private readonly PausePanel pause;
     private readonly RecentActivityPanel activity;
+    private readonly BackupsPanel backups;
     private PlayerIdentification? identification;
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
     private readonly SentinelModernNavItem[] navigation;
     private static readonly HubPage[] PageOrder = [HubPage.Dashboard, HubPage.Plugins, HubPage.Profiles, HubPage.Dependencies,
-        HubPage.Utilities, HubPage.Mounts, HubPage.Fashion, HubPage.PlayerInspector, HubPage.RecentActivity, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
+        HubPage.Utilities, HubPage.Mounts, HubPage.Fashion, HubPage.PlayerInspector, HubPage.RecentActivity, HubPage.Backups, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
     private Vector2 frameSize;
     private Vector2? pendingSize;
     private bool modern;
@@ -54,12 +55,14 @@ public sealed class MainWindow : Window, IDisposable
         Func<SentinelHub.Compatibility.CompatibilityView>? compatibilityView=null,
         Func<SentinelHub.Inspection.InspectorView>? inspectorView=null,
         Func<SentinelHub.Coordination.PauseView>? pauseView=null, Action<bool>? pauseRequest=null,
-        Func<SentinelHub.Activity.ActivityEntry[]>? activityEntries=null, Action? clearActivity=null) : base(WindowId)
+        Func<SentinelHub.Activity.ActivityEntry[]>? activityEntries=null, Action? clearActivity=null, Func<SentinelHub.Backups.BackupView>? backupView=null,
+        Action<string>? createBackup=null, Action? refreshBackups=null, Action<string,string>? restoreBackup=null, Action<string>? deleteBackup=null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.questView = questView ?? (() => QuestConvenienceView.Off);
         this.latencyView = latencyView ?? (() => LatencyView.Off);
         health=new(healthView??(()=>SentinelHub.Health.HealthView.Empty),refreshHealth??(()=>{}),publicVersions??(()=>{}));
+        backups=new(backupView??(()=>SentinelHub.Backups.BackupView.Empty),createBackup??(_=>{}),refreshBackups??(()=>{}),restoreBackup??((_,_)=>{}),deleteBackup??(_=>{}));
         activity=new(activityEntries??(()=>[]),clearActivity??(()=>{}));
         pause=new(pauseView??(()=>SentinelHub.Coordination.PauseView.Empty),pauseRequest??(_=>{}));
         compatibility=new(compatibilityView??(()=>SentinelHub.Compatibility.CompatibilityView.Empty));
@@ -81,7 +84,7 @@ public sealed class MainWindow : Window, IDisposable
     private static FontAwesomeIcon Icon(HubPage p) => p switch
     {
         HubPage.Dashboard => FontAwesomeIcon.Home, HubPage.Plugins => FontAwesomeIcon.Cubes,
-        HubPage.Profiles => FontAwesomeIcon.Users, HubPage.Dependencies => FontAwesomeIcon.Link, HubPage.PlayerInspector=>FontAwesomeIcon.Search, HubPage.RecentActivity=>FontAwesomeIcon.Bell,
+        HubPage.Profiles => FontAwesomeIcon.Users, HubPage.Dependencies => FontAwesomeIcon.Link, HubPage.PlayerInspector=>FontAwesomeIcon.Search, HubPage.RecentActivity=>FontAwesomeIcon.Bell, HubPage.Backups=>FontAwesomeIcon.Save,
         HubPage.Utilities => FontAwesomeIcon.Tools, HubPage.Diagnostics => FontAwesomeIcon.Heartbeat,
         HubPage.Appearance => FontAwesomeIcon.Palette, HubPage.Mounts => FontAwesomeIcon.Horse, HubPage.Fashion => FontAwesomeIcon.Umbrella, _ => FontAwesomeIcon.InfoCircle,
     };
@@ -205,6 +208,7 @@ public sealed class MainWindow : Window, IDisposable
             case HubPage.Fashion: fashion.Draw(); break;
             case HubPage.PlayerInspector: inspector.Draw(); break;
             case HubPage.RecentActivity: activity.Draw(); break;
+            case HubPage.Backups: backups.Draw(); break;
         }
         if (Notice.Length > 0) { ImGui.Spacing(); ImGui.TextWrapped(Notice); }
     }

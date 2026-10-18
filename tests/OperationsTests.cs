@@ -10,6 +10,7 @@ using SentinelHub.Identification;
 using SentinelHub.Coordination;
 using SentinelHub.Activity;
 using SentinelHub.Storage;
+using SentinelHub.Backups;
 internal static class OperationsTests
 {
     public static void Run(Action<string,Action> test,Action<bool> check)
@@ -139,6 +140,59 @@ internal static class OperationsTests
                 try{AtomicFile.Write(path,Encoding.UTF8.GetBytes("candidate"),(_,_)=>throw new IOException());}catch{failed=true;}
                 check(failed&&File.ReadAllText(path)=="original"&&Directory.GetFiles(folder).Length==1);
                 AtomicFile.Write(path,Encoding.UTF8.GetBytes("replacement"));check(File.ReadAllText(path)=="replacement");
+            }finally{Directory.Delete(folder,true);}
+        });
+        test("Backup registry is unique, versioned and permits only reviewed non-text scalar fields",()=>{
+            check(BackupRegistry.Owners.Length==7&&BackupRegistry.Owners.Select(o=>o.Id).Distinct().Count()==7);
+            foreach(var owner in BackupRegistry.Owners){check(owner.Schema>0&&Version.TryParse(owner.Version,out _));check(owner.Fields.Select(f=>f.Path).Distinct().Count()==owner.Fields.Length);
+                check(owner.Fields.All(f=>f.Path!="Version"&&!f.Path.Contains("Token")&&!f.Path.Contains("Password")&&!f.Path.Contains("Webhook")&&!f.Path.Contains("Character")&&!f.Path.Contains("Session")&&!f.Path.Contains("History")&&!f.Path.Contains("Profiles")&&!f.Path.Contains("Gearset")));
+            }
+            check(BackupRegistry.Find("SentinelRelay")!.Fields.All(f=>!f.Path.StartsWith("CharacterProfiles")));
+            check(BackupRegistry.Find("SentinelHub")!.Fields.All(f=>f.Path!="AutomationPaused"));
+        });
+        test("Backup projections exclude credentials/ciphertext/IDs and restore preserves current excluded and unrelated fields",()=>{
+            var relay=BackupRegistry.Find("SentinelRelay")!;
+            var before=Encoding.UTF8.GetBytes("{\"Version\":5,\"ConfigurationTheme\":1,\"CharacterProfiles\":{\"PRIVATE_ID\":{\"ProtectedWebhookUrl\":\"SECRET_WEBHOOK\",\"ProtectedDiscordBotToken\":\"SECRET_BOT\",\"Password\":\"SECRET_PASSWORD\",\"Cookie\":\"SECRET_COOKIE\"}},\"ApiToken\":\"SECRET_API\"}");
+            var entry=BackupPolicy.Project(relay,relay.Version,before);var json=BackupPolicy.Write(new(1,"test backup",DateTimeOffset.UtcNow,[entry]));
+            var text=Encoding.UTF8.GetString(json);check(!text.Contains("SECRET")&&!text.Contains("PRIVATE_ID")&&!text.Contains("CharacterProfiles")&&!text.Contains("Token"));
+            var current=Encoding.UTF8.GetBytes("{\"Version\":5,\"ConfigurationTheme\":0,\"FutureField\":987,\"CharacterProfiles\":{\"NEW_ID\":{\"ProtectedWebhookUrl\":\"CURRENT_SECRET\"}}}");
+            var restored=Encoding.UTF8.GetString(BackupPolicy.Restore(entry,relay,relay.Version,current));
+            using var doc=JsonDocument.Parse(restored);check(doc.RootElement.GetProperty("ConfigurationTheme").GetInt32()==1&&doc.RootElement.GetProperty("FutureField").GetInt32()==987&&restored.Contains("CURRENT_SECRET")&&!restored.Contains("SECRET_WEBHOOK"));
+        });
+        test("Backup schema/version/type/owner/checksum/duplicate/invalid payloads reject before restore",()=>{
+            var owner=BackupRegistry.Find("SentinelHub")!;var entry=BackupPolicy.Project(owner,owner.Version,Encoding.UTF8.GetBytes("{\"Version\":1,\"Theme\":1}"));
+            var rejected=0;
+            foreach(var action in new Action[]{
+                ()=>BackupPolicy.Restore(entry,owner,owner.Version,Encoding.UTF8.GetBytes("{\"Version\":2,\"Theme\":0}")),
+                ()=>BackupPolicy.Restore(entry,owner,"0.8.0.0",Encoding.UTF8.GetBytes("{\"Version\":1}")),
+                ()=>BackupPolicy.Validate(new(1,"test",DateTimeOffset.UtcNow,[entry with{Sha256="bad"}])),
+                ()=>BackupPolicy.Validate(new(1,"test",DateTimeOffset.UtcNow,[entry,entry])),
+                ()=>BackupPolicy.Parse(Encoding.UTF8.GetBytes("{\"Version\":1,\"Version\":2}")),
+                ()=>BackupPolicy.Project(owner,owner.Version,Encoding.UTF8.GetBytes("{\"Version\":1,\"Theme\":\"SECRET\"}")),
+                ()=>BackupPolicy.Parse(new byte[BackupPolicy.MaximumBytes+1]),
+            }){try{action();}catch{rejected++;}}
+            check(rejected==7&&!BackupPolicy.ValidName("https://discord.com/webhook")&&BackupPolicy.ValidName("Before restore 2026-10-18"));
+        });
+        test("Actual backup service creates sanitized package, rejects loaded owner and atomically restores one owner with pre-backup",()=>{
+            var folder=Path.Combine(Path.GetTempPath(),"sentinel-backup-tests-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(folder);
+            try{
+                var hub=Path.Combine(folder,"SentinelHub.json");var srank=Path.Combine(folder,"SRankSentinel.json");var root=Path.Combine(folder,"backups");
+                File.WriteAllText(hub,"{\"Version\":1,\"Theme\":1,\"FutureField\":1}");
+                File.WriteAllText(srank,"{\"Version\":16,\"WindowTheme\":1,\"Enabled\":true,\"FaloopProtectedPassword\":\"SECRET_CANARY\"}");
+                var settings=new SentinelHub.Configuration.HubSettings{Theme=1,AutomationPaused=true};var loaded=true;var events=new List<ActivityCode>();
+                var service=new BackupService(root,hub,settings,()=>[new("SRankSentinel",loaded,"0.7.62.0")],events.Add,()=>"0.7.0.0");
+                service.RequestCreate("Before test");service.Tick();check(service.View.Items.Length==1);
+                var backup=service.View.Items[0];check(backup.Owners.Contains("SRankSentinel")&&!File.ReadAllText(Directory.GetFiles(root).Single()).Contains("SECRET_CANARY"));
+                var original=File.ReadAllText(srank);service.RequestRestore(backup.Id,"SRankSentinel");service.Tick();check(File.ReadAllText(srank)==original&&events.Last()==ActivityCode.BackupFailed);
+                loaded=false;File.WriteAllText(srank,"{\"Version\":16,\"WindowTheme\":0,\"Enabled\":false,\"FutureField\":9,\"FaloopProtectedPassword\":\"CURRENT_SECRET\"}");
+                service.RequestRestore(backup.Id,"SRankSentinel");service.Tick();var restored=File.ReadAllText(srank);
+                check(restored.Contains("CURRENT_SECRET")&&!restored.Contains("SECRET_CANARY")&&restored.Contains("FutureField")&&events.Last()==ActivityCode.BackupRestored&&service.View.Items.Length==2);
+                using(var doc=JsonDocument.Parse(restored))check(doc.RootElement.GetProperty("Enabled").GetBoolean()&&doc.RootElement.GetProperty("FutureField").GetInt32()==9);
+                File.WriteAllText(hub,"{\"Version\":1,\"Theme\":0,\"FutureField\":99}");settings.Theme=0;service.RequestRestore(backup.Id,"SentinelHub");service.Tick();
+                check(settings.Theme==1&&settings.AutomationPaused&&File.ReadAllText(hub).Contains("FutureField"));
+                var rejected=File.ReadAllText(hub);var failing=new BackupService(root,hub,settings,()=>[],events.Add,()=>"0.7.0.0",(_,_)=>throw new IOException());
+                failing.RequestRestore(backup.Id,"SentinelHub");failing.Tick();check(File.ReadAllText(hub)==rejected&&events.Last()==ActivityCode.BackupFailed);
+                check(!Directory.GetFiles(folder,".sentinel-*.tmp").Any());
             }finally{Directory.Delete(folder,true);}
         });
     }
