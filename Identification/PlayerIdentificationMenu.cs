@@ -55,13 +55,14 @@ public sealed class PlayerIdentificationMenu : IDisposable
         if(!ready()||!Enabled||player.ContentId!=session||client.TerritoryType!=territory)
         {queue.Clear();clear();session=player.ContentId;territory=client.TerritoryType;return;}
         var request=queue.Take();if(request is not {} ticket)return;
+        clear(); // A new request never keeps a previous player's inspector result visible.
         try{
             if(!framework.IsInFrameworkUpdateThread){clear();return;}
             var now=Environment.TickCount64;
             var pc=objects.SearchById(ticket.ObjectId) as IPlayerCharacter;
             if(!IdentificationPolicy.TicketMatches(ticket,pc?.GameObjectId??0,pc?.EntityId??0,pc?.ObjectIndex??0,player.ContentId,
                 client.TerritoryType,now,Enabled,ready(),pc is not null,pc?.IsValid()==true,disposed)||pc is null||!pc.IsTargetable)
-            {open(Unavailable(now));return;}
+            {if(settings.PlayerInspectorEnabled&&inspect is not null)inspect(ticket);else open(Unavailable(now));return;}
             if(settings.PlayerInspectorEnabled&&inspect is not null){inspect(ticket);return;}
             var mountId=settings.MountContextMenuEnabled?pc.CurrentMount?.RowId??0:0;
             var mount=new IdentificationPart(!settings.MountContextMenuEnabled?IdentificationState.Off:mountId==0?IdentificationState.None:IdentificationState.Found,mountId);

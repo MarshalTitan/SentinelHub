@@ -90,7 +90,7 @@ public sealed class InspectionGameData(IDataManager data,IUnlockState unlocks,Fu
         var shops=data.GetExcelSheet<GilShop>();
         foreach(var item in data.GetSubrowExcelSheet<GilShopItem>().Flatten()){
             if(itemLinks.TryGetValue(item.Item.RowId,out var targets)&&item.Item.IsValid){
-                var shop=shops.GetRowOrDefault(item.RowId);var price=item.IsHQ?"HQ price unresolved":item.Item.Value.PriceMid+" gil (NQ base price)";
+                var shop=shops.GetRowOrDefault(item.RowId);var price=item.IsHQ?"HQ price unresolved":item.Item.Value.PriceMid>0?item.Item.Value.PriceMid+" gil (NQ base price)":"price unknown";
                 foreach(var key in targets)sources[key].Add("Gil shop: "+(shop?.Name.ToString()??("#"+item.RowId))+"; "+price+"; vendor unlock/quest/festival conditions must be checked in game");
             }
             if(++work%192==0)yield return 5;

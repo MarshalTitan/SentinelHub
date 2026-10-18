@@ -10,7 +10,11 @@ using SentinelHub.Activity;
 namespace SentinelHub.Diagnostics;
 
 public enum ProviderState { Unavailable, Ready, Disabled, Paused, Degraded }
-public sealed record ProviderDiagnostic(string Id,ProviderState State,int Schema,int Warnings,int Errors);
+public sealed record ProviderDiagnostic(string Id,ProviderState State,int Schema,int Warnings,int Errors)
+{
+    public int? QueueCount {get;init;}
+    public bool? Recovering {get;init;}
+}
 public static class DiagnosticProviderPolicy
 {
     public static ProviderDiagnostic Parse(string id,string? json)
@@ -37,9 +41,9 @@ public static class DiagnosticsBundle
         // No file enumeration, config serialization, provider strings or exception text.
         var checks=health.Checks.Where(x=>HealthPolicy.KnownIds.Contains(x.Id,StringComparer.Ordinal)||x.Id=="Faloop")
             .Take(32).Select(x=>new{Id=x.Id,State=Enum.IsDefined(x.State)?x.State:HealthState.Unknown,
-                RuntimeVersion=StatusPolicy.NumericVersion(x.RuntimeVersion),PublicVersion=StatusPolicy.NumericVersion(x.PublicVersion),x.DevelopmentOverride}).ToArray();
+                RuntimeVersion=StatusPolicy.NumericVersion(x.RuntimeVersion),PublicVersion=StatusPolicy.NumericVersion(x.PublicVersion),x.DevelopmentOverride,ProviderHealth=x.ProviderHealth is >=-1 and <=2?x.ProviderHealth:null}).ToArray();
         var safeProviders=providers.Where(p=>Catalog.Components.Any(c=>c.Id==p.Id)).Take(7).Select(p=>new{
-            p.Id,State=Enum.IsDefined(p.State)?p.State:ProviderState.Unavailable,Schema=Math.Clamp(p.Schema,0,1),Warnings=Math.Clamp(p.Warnings,0,100000),Errors=Math.Clamp(p.Errors,0,100000)}).ToArray();
+            p.Id,State=Enum.IsDefined(p.State)?p.State:ProviderState.Unavailable,Schema=Math.Clamp(p.Schema,0,1),Warnings=Math.Clamp(p.Warnings,0,100000),Errors=Math.Clamp(p.Errors,0,100000),QueueCount=p.QueueCount is {} q?Math.Clamp(q,0,100000):(int?)null,p.Recovering}).ToArray();
         var options=new JsonSerializerOptions{WriteIndented=true,Converters={new JsonStringEnumConverter()}};
         var report=JsonSerializer.Serialize(new{Schema="sentinel.diagnostics.v2",CreatedAt=DateTimeOffset.UtcNow,
             HubVersion=StatusPolicy.NumericVersion(typeof(DiagnosticsBundle).Assembly.GetName().Version?.ToString()),

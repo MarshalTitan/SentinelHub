@@ -2,7 +2,10 @@ using SentinelHub.Ecosystem;
 namespace SentinelHub.Health;
 
 public enum HealthState { Unknown, Missing, Disabled, Loaded, Ready, Degraded, DependencyMissing, DependencyDisabled, IpcUnavailable, DevelopmentBuild, VersionMismatch }
-public sealed record HealthCheck(string Id, HealthState State, string RuntimeVersion, string PublicVersion, bool DevelopmentOverride, string Explanation);
+public sealed record HealthCheck(string Id, HealthState State, string RuntimeVersion, string PublicVersion, bool DevelopmentOverride, string Explanation)
+{
+    public int? ProviderHealth {get;init;}
+}
 public sealed record HealthView(DateTimeOffset At, bool Available, HealthCheck[] Checks, DateTimeOffset? CatalogAt, string CatalogStatus)
 {
     public static HealthView Empty => new(DateTimeOffset.MinValue, false, [], null, "Public versions not fetched");
@@ -37,7 +40,7 @@ public static class HealthPolicy
             HealthState.IpcUnavailable=>"Loaded, but the optional Sentinel health endpoint is unavailable or unsupported.",
             _=>"Loaded; internal enable/readiness is not exposed by this build. DLL presence is not proof of readiness.",
         };
-        return new(component.Id,state,version,published,dev,text);
+        return new(component.Id,state,version,published,dev,text){ProviderHealth=response};
     }
     public static HealthCheck Dependency(DependencyStatus d) => new(d.Dependency.Id,
         d.State switch { Presence.Missing=>HealthState.DependencyMissing,Presence.Disabled=>HealthState.DependencyDisabled,

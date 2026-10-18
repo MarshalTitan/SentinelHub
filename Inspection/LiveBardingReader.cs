@@ -17,6 +17,7 @@ public static class LiveBardingReader
         var owner=(CSCharacter*)player.Address;
         if(owner->GameObject.EntityId!=player.EntityId||owner->GameObject.ObjectIndex!=player.ObjectIndex)return default;
         var mounted=(player.CurrentMount?.RowId??0)==1;
+        if(mounted&&owner->Mount.MountId!=1)return default;
         var mountAddress=mounted?(nint)owner->Mount.MountObject:0;
         // Only current object-table wrappers may provide a dereferenceable actor address. The mount pointer is a relationship key, never followed directly.
         var candidates=objects.Where(o=>o.IsValid()&&o.Address!=0&&(mounted?o.Address==mountAddress&&o.ObjectKind==ObjectKind.Mount:

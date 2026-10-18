@@ -17,6 +17,7 @@ public sealed class HealthPanel(Func<HealthView> view,Action refresh,Action publ
             ImGui.PushID(c.Id);
             ImGui.Separator();ImGui.TextWrapped(c.Id+" — "+c.State);
             ImGui.TextWrapped("Runtime: "+c.RuntimeVersion+(c.DevelopmentOverride?" DEV":"")+" | Public catalog: "+c.PublicVersion);
+            if(c.ProviderHealth is {} provider)ImGui.TextWrapped("Provider observation: "+(provider switch{0=>"Ready",1=>"Automation disabled/paused",2=>"Degraded",_=>"IPC unavailable / unsupported"}));
             ImGui.TextWrapped(c.Explanation);ImGui.PopID();
         }
     }

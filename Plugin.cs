@@ -66,7 +66,7 @@ public sealed class Plugin : IDalamudPlugin
         operationsIpc=new(Pi,Framework,settings,activity.Journal,faults);
         discovery = new(Pi, faults);
         backups=new(Path.Combine(Pi.GetPluginConfigDirectory(),"backups"),Pi.ConfigFile.FullName,settings,discovery.Capture,code=>activity.Add(code));
-        health=new(Pi,discovery.Capture,()=>discovery.Snapshot,publicCatalog);
+        health=new(Pi,discovery.Capture,()=>discovery.Snapshot,publicCatalog,OwnCharacterKey);
         pause=new(Pi,settings,Save);
         compatibility=new(Pi);
         compatibility.Tick(true);
@@ -87,7 +87,7 @@ public sealed class Plugin : IDalamudPlugin
             compatibilityView:()=>compatibility.View,inspectorView:()=>inspector.View,pauseView:()=>pause.View,pauseRequest:pause.Request,
             activityEntries:()=>activity.Journal.Snapshot(DateTimeOffset.UtcNow),clearActivity:activity.Journal.Clear,
             backupView:()=>backups.View,createBackup:backups.RequestCreate,refreshBackups:backups.RequestRefresh,restoreBackup:backups.RequestRestore,deleteBackup:backups.RequestDelete);
-        identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, window.ClearIdentification, faults,
+        identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, ()=>{window.ClearIdentification();inspector.Clear();}, faults,
             ticket=>{inspector.Select(ticket);window.OpenPlayerInspector();});
         windows.AddWindow(window);
         Commands.AddHandler("/shub", new CommandInfo(OnCommand) { HelpMessage = "Open Sentinel Hub. /shub export saves a sanitized Sentinel diagnostics ZIP." });
@@ -127,6 +127,7 @@ public sealed class Plugin : IDalamudPlugin
         else ImGui.Dummy(size);
     }
     private void Open() => window.OpenAndExpand();
+    private static string OwnCharacterKey()=>Player.IsLoaded&&Player.ContentId!=0?$"cid:{Player.ContentId:X16}":"";
     private void OnCommand(string _, string arguments)
     {
         if (arguments.Trim().Equals("export", StringComparison.OrdinalIgnoreCase)) Export();
@@ -147,7 +148,7 @@ public sealed class Plugin : IDalamudPlugin
             health.Tick(true);
             var name = "sentinel-diagnostics-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + ".zip";
             var bundle = DiagnosticsBundle.Create(discovery.Snapshot,health.View,faults.Snapshot(),
-                new ProviderDiagnosticsReader(Pi).Read(),settings.Version,Client.TerritoryType,Objects.LocalPlayer?.CurrentWorld.RowId??0,
+                new ProviderDiagnosticsReader(Pi,OwnCharacterKey).Read(),settings.Version,Client.TerritoryType,Objects.LocalPlayer?.CurrentWorld.RowId??0,
                 antiAfk.View,quest.View,latency.View,compatibility.View,pause.View,activity.Journal.Snapshot(DateTimeOffset.UtcNow));
             var path=Path.Combine(directory,name);
             using(var file=new FileStream(path,FileMode.CreateNew,FileAccess.Write,FileShare.None))file.Write(bundle);

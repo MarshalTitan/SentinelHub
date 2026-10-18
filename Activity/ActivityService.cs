@@ -11,6 +11,7 @@ public sealed class ActivityService : IDisposable
     private HashSet<string> overlaps=[];
     private bool? paused;
     private bool acknowledged;
+    private bool? healthAvailable;
     private long next;
     public ActivityJournal Journal {get;}=new();
     public ActivityService(string directory)
@@ -21,6 +22,8 @@ public sealed class ActivityService : IDisposable
     public void Add(ActivityCode code,string source="SentinelHub")=>Journal.Add(source,code,DateTimeOffset.UtcNow);
     public void Observe(HealthView health,CompatibilityView compatibility,PauseView pause)
     {
+        if(healthAvailable is {} previous&&previous!=health.Available)Add(health.Available?ActivityCode.HealthRecovered:ActivityCode.HealthUnavailable);
+        healthAvailable=health.Available;
         foreach(var check in health.Checks){
             if(healthStates.TryGetValue(check.Id,out var prior)&&prior!=check.State){
                 var unavailable=check.State is HealthState.Missing or HealthState.Disabled or HealthState.Degraded or HealthState.DependencyMissing or HealthState.DependencyDisabled or HealthState.IpcUnavailable or HealthState.Unknown;

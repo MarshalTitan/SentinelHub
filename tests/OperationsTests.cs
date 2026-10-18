@@ -61,6 +61,13 @@ internal static class OperationsTests
                 check(DiagnosticProviderPolicy.Parse("SentinelRelay",json).State==ProviderState.Unavailable);
             var failed=false;try{DiagnosticProviderPolicy.Parse("arbitrary",null);}catch{failed=true;}check(failed);
         });
+        test("Existing SRank status projects useful primitives while discarding private names/IDs/status text",()=>{
+            const string raw="{\"Schema\":\"sentinel.srank.remote.v1\",\"Success\":true,\"Status\":{\"Loaded\":true,\"Enabled\":true,\"Ready\":true,\"QueueCount\":12,\"Recovering\":false,\"Character\":\"PRIVATE_NAME\",\"CharacterKey\":\"PRIVATE_CID\",\"ActiveHunt\":\"PRIVATE_TEXT\",\"StatusText\":\"SECRET_TOKEN\"}}";
+            var safe=SRankStatusProjection.Parse(raw);check(safe.Available&&safe.Health==0&&safe.QueueCount==12);
+            var json=JsonSerializer.Serialize(safe);check(!json.Contains("PRIVATE")&&!json.Contains("SECRET"));
+            check(!SRankStatusProjection.Parse("{\"Success\":false}").Available&&!SRankStatusProjection.Parse("{").Available);
+            check(SRankStatusProjection.Parse(raw.Replace("\"Enabled\":true","\"Enabled\":false")).Health==1);
+        });
         test("Compatibility distinguishes definite/possible/inactive and suspends only Hub's overlapping features",()=>{
             var saved=new QuestConvenienceOptions{SkipDialogue=true,SkipCutscenes=true,QuestRewardSelection=QuestRewardSelectionMode.FirstReward};
             var view=new CompatibilityView(CompatibilityPolicy.TextAdvance(true,true,false,true,false,true));

@@ -18,9 +18,12 @@ public sealed class HubOperationsIpc : IDisposable
         pauseRequested=pi.GetIpcProvider<bool>("SentinelHub.AutomationPaused.v1");
         health=pi.GetIpcProvider<int>("Sentinel.SentinelHub.Health.v1");
         diagnostics=pi.GetIpcProvider<string>("Sentinel.SentinelHub.Diagnostics.v1");
-        publish.RegisterFunc((source,code)=>framework.IsInFrameworkUpdateThread&&Enum.IsDefined((ActivityCode)code)
-            &&Ecosystem.Catalog.Components.Any(c=>c.Id==source)&&source!="SentinelHub"
-            &&pi.InstalledPlugins.Any(p=>p.InternalName==source&&p.IsLoaded)&&journal.Add(source,(ActivityCode)code,DateTimeOffset.UtcNow));
+        publish.RegisterFunc((source,code)=>{
+            if(!framework.IsInFrameworkUpdateThread)return false;
+            try{return Enum.IsDefined((ActivityCode)code)&&Ecosystem.Catalog.Components.Any(c=>c.Id==source)&&source!="SentinelHub"
+                &&pi.InstalledPlugins.Any(p=>p.InternalName==source&&p.IsLoaded)&&journal.Add(source,(ActivityCode)code,DateTimeOffset.UtcNow);}
+            catch{return false;}
+        });
         // Desired persistent pause, for optional startup guards. This is not an acknowledgement of remote consumer state.
         pauseRequested.RegisterFunc(()=>settings.AutomationPaused);
         health.RegisterFunc(()=>0);
