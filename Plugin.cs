@@ -116,7 +116,8 @@ public sealed class Plugin : IDalamudPlugin
         mounts.Tick(expanded&&settings.Page==Configuration.HubPage.Mounts);
         fashion.Tick(expanded&&settings.Page==Configuration.HubPage.Fashion);
         identifyMenu.Tick();
-        inspector.Tick(expanded&&settings.Page==Configuration.HubPage.PlayerInspector);
+        // The menu may have opened/restored Hub during this tick; evaluate visibility after consuming it.
+        inspector.Tick(window.IsOpen&&!settings.Collapsed&&settings.Page==Configuration.HubPage.PlayerInspector);
     }
     private void DrawCollectionIcon(uint id, Vector2 size)
     {

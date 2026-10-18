@@ -11,6 +11,7 @@ public sealed class HubOperationsIpc : IDisposable
     private readonly ICallGateProvider<bool>? pauseRequested;
     private readonly ICallGateProvider<int>? health;
     private readonly ICallGateProvider<string>? diagnostics;
+    private bool disposed;
     public HubOperationsIpc(IDalamudPluginInterface pi,IFramework framework,HubSettings settings,ActivityJournal journal,FaultJournal faults)
     {
         try{
@@ -30,5 +31,5 @@ public sealed class HubOperationsIpc : IDisposable
         diagnostics.RegisterFunc(()=>System.Text.Json.JsonSerializer.Serialize(new{Schema=1,State=(int)(settings.AutomationPaused?ProviderState.Paused:ProviderState.Ready),Warnings=faults.Snapshot().Length,Errors=0}));
         }catch{Dispose();faults.Record(FaultCode.OperationsContractUnavailable);}
     }
-    public void Dispose(){try{publish?.UnregisterFunc();}catch{}try{pauseRequested?.UnregisterFunc();}catch{}try{health?.UnregisterFunc();}catch{}try{diagnostics?.UnregisterFunc();}catch{}}
+    public void Dispose(){if(disposed)return;disposed=true;try{publish?.UnregisterFunc();}catch{}try{pauseRequested?.UnregisterFunc();}catch{}try{health?.UnregisterFunc();}catch{}try{diagnostics?.UnregisterFunc();}catch{}}
 }

@@ -50,7 +50,10 @@ internal static class OperationsTests
             var h=new HealthView(DateTimeOffset.UtcNow,true,[new("SRankSentinel",HealthState.Ready,secret,secret,false,secret),new(secret,HealthState.Ready,secret,secret,true,secret)],null,secret);
             var state=StatusPolicy.Build([new("SRankSentinel",true,secret),new(secret,true,secret)],true,_=>Response.Ready);
             var provider=DiagnosticProviderPolicy.Parse("SRankSentinel","{\"Schema\":1,\"State\":1,\"Warnings\":2,\"Errors\":0,\"Token\":\""+secret+"\",\"Password\":\""+secret+"\",\"WebhookUrl\":\""+secret+"\",\"Cookie\":\""+secret+"\"}");
-            var bytes=DiagnosticsBundle.Create(state,h,[],[provider,new(secret,ProviderState.Ready,1,0,0)],1,uint.MaxValue,uint.MaxValue);
+            var bytes=DiagnosticsBundle.Create(state,h,[],[provider,new(secret,ProviderState.Ready,1,0,0)],1,uint.MaxValue,uint.MaxValue,
+                compatibility:new([new(OverlapProvider.NoClippy,CompatibilityFeature.Latency,OverlapKind.Possible,true,secret)]),
+                pause:new(true,[new("SRankSentinel",PauseState.Acknowledged,secret,true)]),
+                activity:[new(DateTimeOffset.UtcNow,DateTimeOffset.UtcNow,"SentinelHub",ActivityCode.DiagnosticsSaved,1),new(DateTimeOffset.UtcNow,DateTimeOffset.UtcNow,secret,ActivityCode.HuntCredited,1)]);
             using var zip=new ZipArchive(new MemoryStream(bytes),ZipArchiveMode.Read);
             check(zip.Entries.Select(e=>e.FullName).SequenceEqual(new[]{"report.json","hub-state.json","summary.txt"}));
             foreach(var entry in zip.Entries){using var reader=new StreamReader(entry.Open());var text=reader.ReadToEnd();check(!text.Contains(secret)&&!text.Contains("PRIVATE_CANARY")&&!text.Contains("webhooks/"));}

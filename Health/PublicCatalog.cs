@@ -11,7 +11,7 @@ public sealed class PublicCatalog : IDisposable
     public IReadOnlyDictionary<string,string> Versions {get;private set;}=new Dictionary<string,string>();
     public DateTimeOffset? At {get;private set;}
     public string Status {get;private set;}="Public versions not fetched";
-    public PublicCatalog(HttpMessageHandler? handler=null) => http=new(handler??new HttpClientHandler{AllowAutoRedirect=false}){Timeout=TimeSpan.FromSeconds(15)};
+    public PublicCatalog(HttpMessageHandler? handler=null) => http=new(handler??new HttpClientHandler{AllowAutoRedirect=false,UseCookies=false}){Timeout=TimeSpan.FromSeconds(15)};
     public void Request()
     {
         if(pending is {IsCompleted:false})return;

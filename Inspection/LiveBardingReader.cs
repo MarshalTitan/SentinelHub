@@ -25,7 +25,7 @@ public static class LiveBardingReader
         if(candidates.Length==0)return mounted?default:new(true,false,0,0,0);
         if(candidates.Length!=1)return default;var target=candidates[0];
         var result=ObserveFields(target.Address,target.EntityId,target.ObjectIndex,player.EntityId,framework.IsInFrameworkUpdateThread,target.IsValid(),mounted);
-        var again=objects.SearchById(target.GameObjectId);
+        var again=objects.FirstOrDefault(o=>o.ObjectIndex==target.ObjectIndex&&o.Address==target.Address);
         if(again is null||!again.IsValid()||again.Address!=target.Address||again.EntityId!=target.EntityId||again.ObjectIndex!=target.ObjectIndex)return default;
         if(mounted&&(owner->Mount.MountId!=1||(nint)owner->Mount.MountObject!=mountAddress))return default;
         if(!mounted&&again.OwnerId!=player.EntityId)return default;
