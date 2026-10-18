@@ -1,14 +1,16 @@
-# Hub 0.7.0.0 — consolidated supervised gate
+# Hub 0.7.0.0 — supervised acceptance record
 
-Status: **pending on the latest candidate**. [PR #15](https://github.com/MarshalTitan/SentinelHub/pull/15) links its exact successful CI artifact. Public Hub/catalog remain 0.6.0.0; earlier dev artifacts are superseded.
+Status: **focused release gate PASS — 2026-10-18 16:13 America/Toronto**. The user confirmed the final supplied build from source `2a02f29aa48cd5c59b5117e80a0d42cc7489f220`: Anti-AFK is good and its extra text is gone; Activity works after reload; card spacing is better when wide and narrow. This closes the remaining focused gate in [PR #15](https://github.com/MarshalTitan/SentinelHub/pull/15). Release preparation below changes documentation only; product code remains the accepted implementation.
+
+Software evidence: [CI 39161131977](https://github.com/MarshalTitan/SentinelHub/actions/runs/39161131977), 107 policy groups / 1990 native UI cases, typed ornament/emote fixtures and exact package/Core validation. Final release build/distribution evidence is tracked in the PR and canonical ecosystem documents.
 
 Observed on earlier candidates: Quest Convenience Off persisted across dev→live; pause removal and responsive plugin actions passed; Health looked good. On the e046cde proving build, Anti-AFK reached 46 checks (screenshot 47) and stopped after Off; Inspector Off removed the menu action, On showed accessory and emote; Activity recorded changes. These checks retain that scope; names/icons/own unlock/source and every stale-target case were not separately reported. Barding, backups and global pause are removed.
 
-The latest change simplifies Anti-AFK presentation and makes Activity session-only. The new build needs the two focused checks below; already reported behavior does not require a full repeated gameplay test.
+The final changes simplify Anti-AFK presentation, make Activity session-only and tighten cards. Both focused checks below have now passed as reported. Earlier observed behavior retains its recorded scope.
 
-## Install
+## Historical proving installation
 
-Download the latest `SentinelHub-0.7.0.0` Actions artifact linked in the PR, extract the outer archive and inner `latest.zip` to an isolated dev folder. Disable live Hub before loading the candidate DLL using the existing development-plugin setup. Confirm 0.7.0.0; keep the usual consumers. Only one Hub copy may run. Core/UI remain 0.4.1 and Dalamud API 15. The public custom-repository URL is unchanged.
+The accepted proving procedure used the latest `SentinelHub-0.7.0.0` Actions artifact linked in the PR, extract the outer archive and inner `latest.zip` to an isolated dev folder. Disable live Hub before loading the candidate DLL using the existing development-plugin setup. Confirm 0.7.0.0; keep the usual consumers. Only one Hub copy may run. Core/UI remain 0.4.1 and Dalamud API 15. The public custom-repository URL is unchanged.
 
 ## Checklist
 
@@ -19,7 +21,7 @@ Optional troubleshooting check: Diagnostics explains that normal history is RAM-
 
 Remaining unreported scenarios stay explicit: Quest's refreshed no-HUD-wait behavior, broader collection/Inspector own-unlock/source/stale-target cases, and optional provider recovery/compatibility. Use these when available; do not install extra providers solely for acceptance. Prior scoped Mount/Fashion/utility acceptance remains recorded.
 
-Report PASS/FAIL plus untested cases. Automated checks do not establish live game replication. Keep the PR held until required observed checks pass; record unsupported scenarios honestly.
+The focused release gate is closed. Unreported scenarios above remain unreported; this is not blanket certification of every provider, acquisition field or invalid-actor scenario. Automated checks and scoped human evidence are recorded separately.
 
 ## Rollback
 

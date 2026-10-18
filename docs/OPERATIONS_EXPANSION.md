@@ -1,6 +1,6 @@
-# Hub operations candidate — audit and boundaries
+# Hub operations 0.7 — audit and boundaries
 
-Candidate **0.7.0.0**, [Hub PR #15](https://github.com/MarshalTitan/SentinelHub/pull/15). Live baseline remains **0.6.0.0** at `9aec4202373bee5e3b10adda35287987c6340b38`. One combined native gate is required before public release. The latest successful artifact in the PR supersedes earlier candidates.
+Release **0.7.0.0**, [Hub PR #15](https://github.com/MarshalTitan/SentinelHub/pull/15), audited against live baseline **0.6.0.0** at `9aec4202373bee5e3b10adda35287987c6340b38`. The final focused native gate passed on 2026-10-18 at 16:13 America/Toronto. Product code was proven from `2a02f29aa48cd5c59b5117e80a0d42cc7489f220`; subsequent release-preparation edits are documentation only. Final build/publication/catalog evidence is tracked in the PR and canonical ecosystem documents.
 
 ## Scope after supervised feedback
 
@@ -68,3 +68,7 @@ Policy tests, real native ImGui regressions, owned-memory reader fixtures and in
 Anti-AFK now displays only its heading and one state-labeled switch. Active/Off/Starting/Waiting/Blocked/Unavailable remain distinguishable within the control; no explanation, cadence or counter text appears underneath. The native engine is unchanged. Diagnostics remains optional troubleshooting, not automatic logging. Unit coverage exercises session restart/clear, exact legacy-file cleanup without touching settings/exports, repeated manual export replacing one file, and atomic-write failure. Existing read-only metadata/collection behavior is unchanged.
 
 Plugin cards on Dashboard, Plugins and Profiles now measure the real inner wrap width and omit trailing row gaps/extra height allowance. Standard Core card padding, responsive action placement and resize behavior are retained. Native regression checks bound unused bottom space and reject clipping in both themes at 1×/1.5×/2× scale, including narrow→wide→narrow resizing, action dispatch/disabled gating and the Profiles status card. This is layout-only; compact Anti-AFK and session-only activity/manual-export changes remain included.
+
+## Final focused acceptance
+
+2026-10-18 16:13 America/Toronto: user reports Anti-AFK is good with extra text gone, Activity working after reload and improved card spacing in wide/narrow layouts. Record PASS for the remaining focused release gate, preserving the scope of all previous reports and unreported scenarios. No product code change was needed after that report.
