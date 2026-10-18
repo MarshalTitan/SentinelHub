@@ -10,6 +10,8 @@ using SentinelHub.Ecosystem;
 using SentinelHub.Utilities;
 using SentinelHub.Utilities.Quest;
 using SentinelHub.Mounts;
+using SentinelHub.Fashion;
+using SentinelHub.Identification;
 namespace SentinelHub.UI;
 public sealed class MainWindow : Window, IDisposable
 {
@@ -28,11 +30,13 @@ public sealed class MainWindow : Window, IDisposable
     private readonly Func<QuestConvenienceView> questView;
     private readonly Func<LatencyView> latencyView;
     private readonly MountCollectionPanel mounts;
+    private readonly FashionAccessoriesPanel fashion;
+    private PlayerIdentification? identification;
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
     private readonly SentinelModernNavItem[] navigation;
     private static readonly HubPage[] PageOrder = [HubPage.Dashboard, HubPage.Plugins, HubPage.Profiles, HubPage.Dependencies,
-        HubPage.Utilities, HubPage.Mounts, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
+        HubPage.Utilities, HubPage.Mounts, HubPage.Fashion, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
     private Vector2 frameSize;
     private Vector2? pendingSize;
     private bool modern;
@@ -40,13 +44,14 @@ public sealed class MainWindow : Window, IDisposable
     public MainWindow(HubSettings config, Func<HubSnapshot> snapshot, FaultJournal faults,
         Action save, Action refresh, Func<string, bool, bool> open, Action export,
         Func<bool> systemReducedMotion, Func<ImFontPtr>? iconFont = null, Func<AntiAfkView>? antiAfkView = null, Func<QuestConvenienceView>? questView = null, Func<LatencyView>? latencyView = null, Func<MountCollectionView>? mountView = null,
-        Action? refreshMounts = null, Action? retryMounts = null, Action<uint, Vector2>? mountIcon = null) : base(WindowId)
+        Action? refreshMounts = null, Action? retryMounts = null, Action<uint, Vector2>? mountIcon = null, Func<FashionView>? fashionView = null, Action? refreshFashion = null, Action? retryFashion = null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.questView = questView ?? (() => QuestConvenienceView.Off);
         this.latencyView = latencyView ?? (() => LatencyView.Off);
         mounts = new(config, mountView ?? (() => MountCollectionView.Empty), save,
             refreshMounts ?? (() => {}), retryMounts ?? (() => {}), mountIcon);
+        fashion = new(config, fashionView ?? (() => FashionView.Empty), save, refreshFashion ?? (() => {}), retryFashion ?? (() => {}), mountIcon);
         this.config = config; this.snapshot = snapshot; this.faults = faults;
         this.save = save; this.refresh = refresh; this.open = open; this.export = export;
         this.systemReducedMotion = systemReducedMotion;
@@ -63,9 +68,9 @@ public sealed class MainWindow : Window, IDisposable
         HubPage.Dashboard => FontAwesomeIcon.Home, HubPage.Plugins => FontAwesomeIcon.Cubes,
         HubPage.Profiles => FontAwesomeIcon.Users, HubPage.Dependencies => FontAwesomeIcon.Link,
         HubPage.Utilities => FontAwesomeIcon.Tools, HubPage.Diagnostics => FontAwesomeIcon.Heartbeat,
-        HubPage.Appearance => FontAwesomeIcon.Palette, HubPage.Mounts => FontAwesomeIcon.Horse, _ => FontAwesomeIcon.InfoCircle,
+        HubPage.Appearance => FontAwesomeIcon.Palette, HubPage.Mounts => FontAwesomeIcon.Horse, HubPage.Fashion => FontAwesomeIcon.Umbrella, _ => FontAwesomeIcon.InfoCircle,
     };
-    public static string PageTitle(HubPage p) => p == HubPage.Mounts ? "Mount Collection" : p.ToString();
+    public static string PageTitle(HubPage p) => p == HubPage.Mounts ? "Mount Collection" : p == HubPage.Fashion ? "Fashion Accessories" : p.ToString();
     public override void PreDraw()
     {
         style.Pop();
@@ -91,7 +96,7 @@ public sealed class MainWindow : Window, IDisposable
             SentinelModernAppShell.Draw(new("SentinelHub.Modern", "Sentinel Hub", config.Page.ToString())
             {
                 Scale = ImGuiHelpers.GlobalScale, DeltaTime = ImGui.GetIO().DeltaTime,
-                Layout = SentinelModernAppLayoutOptions.Default with { RailButtonSize = frameSize.Y / ImGuiHelpers.GlobalScale < 560 ? 36 : SentinelModernAppLayoutOptions.Default.RailButtonSize },
+                Layout = SentinelModernAppLayoutOptions.Default with { RailButtonSize = frameSize.Y / ImGuiHelpers.GlobalScale < 620 ? 32 : SentinelModernAppLayoutOptions.Default.RailButtonSize },
                 ReducedMotion = config.ReducedMotion || systemReducedMotion(),
                 EnableWindowDragging = true,
                 RequestCollapse = ToggleCollapse, CollapseTooltip = config.Collapsed ? "Expand" : "Minimize",
@@ -112,6 +117,35 @@ public sealed class MainWindow : Window, IDisposable
     public void OpenMount(uint id)
     {
         config.Page = HubPage.Mounts; mounts.Select(id); OpenAndExpand(); save();
+    }
+    public void OpenFashion(uint? id)
+    {
+        config.Page = HubPage.Fashion; fashion.Select(id); OpenAndExpand(); save();
+    }
+    public void ClearIdentification() => identification = null;
+    public void OpenIdentification(PlayerIdentification result)
+    {
+        identification = result;
+        if (result.Fashion.State == IdentificationState.Found) OpenFashion(result.Fashion.Id);
+        else if (result.Mount.State == IdentificationState.Found) OpenMount(result.Mount.Id);
+        else if (config.FashionContextMenuEnabled) OpenFashion(null);
+        else { config.Page=HubPage.Mounts; mounts.Select(null); OpenAndExpand(); save(); }
+    }
+    private void DrawIdentification()
+    {
+        if (identification is not {} result) return;
+        ImGui.TextWrapped("Last player identification (snapshot at your click)");
+        string Status(IdentificationPart part) => part.State switch {
+            IdentificationState.None => "None active", IdentificationState.Off => "Lookup disabled",
+            IdentificationState.Found => "Identified #" + part.Id, IdentificationState.UnknownId => "Unknown ornament #" + part.Id,
+            _ => "Unavailable; identify a loaded player again",
+        };
+        ImGui.TextWrapped("Mount: " + Status(result.Mount));
+        ImGui.TextWrapped("Fashion accessory: " + Status(result.Fashion));
+        if (result.Mount.State == IdentificationState.Found && Button("View identified mount")) OpenMount(result.Mount.Id);
+        if (result.Fashion.State == IdentificationState.Found && Button("View identified accessory")) OpenFashion(result.Fashion.Id);
+        if (Button("Dismiss identification")) ClearIdentification();
+        ImGui.Separator();
     }
     public void OpenAndExpand()
     {
@@ -140,6 +174,7 @@ public sealed class MainWindow : Window, IDisposable
     {
         ImGui.TextWrapped(PageTitle(config.Page));
         ImGui.Separator(); ImGui.Spacing();
+        if (config.Page is HubPage.Mounts or HubPage.Fashion) DrawIdentification();
         switch (config.Page)
         {
             case HubPage.Dashboard: DrawDashboard(); break;
@@ -151,6 +186,7 @@ public sealed class MainWindow : Window, IDisposable
             case HubPage.Appearance: DrawAppearance(); break;
             case HubPage.About: DrawAbout(); break;
             case HubPage.Mounts: mounts.Draw(); break;
+            case HubPage.Fashion: fashion.Draw(); break;
         }
         if (Notice.Length > 0) { ImGui.Spacing(); ImGui.TextWrapped(Notice); }
     }

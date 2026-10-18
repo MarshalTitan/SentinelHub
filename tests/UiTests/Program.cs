@@ -10,6 +10,9 @@ using SentinelHub.Diagnostics;
 using SentinelHub.Ecosystem;
 using SentinelHub.Utilities;
 using SentinelHub.Mounts;
+using SentinelHub.Fashion;
+using SentinelHub.Identification;
+using CSCharacter=FFXIVClientStructs.FFXIV.Client.Game.Character.Character;
 internal static class Program
 {
     static void Check(bool value, string why) { if (!value) throw new Exception(why); }
@@ -187,6 +190,78 @@ internal static class Program
                     mountCases++;
                 }
                 Console.WriteLine($"PASS {mountCases} populated mount browser/details/character/loading/theme/width/scale cases.");
+
+
+                // Exercise the typed adapter against owned fixture memory, never a game actor or copied offset.
+                var actor=new CSCharacter();
+                actor.GameObject.EntityId=42;actor.GameObject.ObjectIndex=5;
+                actor.GameObject.DrawObject=(FFXIVClientStructs.FFXIV.Client.Graphics.Scene.DrawObject*)1;
+                actor.ModelContainer.ModelCharaId_2=-1;
+                actor.OrnamentData.OrnamentId=16;actor.OrnamentData.AutoUmbrellaOrnamentId=9;
+                ActorObservation Read(CSCharacter* current)=>LiveOrnamentReader.ObserveFields((nint)current,42,5,true,true,true);
+                Check(Read(&actor)==new ActorObservation(true,true,false,16),"Typed ornament field did not resolve current ID");
+                actor.OrnamentData.OrnamentId=0;
+                Check(Read(&actor).OrnamentId==0,"Auto umbrella preference leaked into active ID");
+                actor.OrnamentData.OrnamentId=16;actor.CharacterData.TransformationId=1;
+                Check(Read(&actor).Transformed&&Read(&actor).OrnamentId==0,"Transformed actor was read as an active accessory");
+                actor.CharacterData.TransformationId=0;actor.GameObject.DrawObject=null;
+                Check(!Read(&actor).DrawLoaded&&Read(&actor).OrnamentId==0,"Unloaded draw actor was not rejected");
+                Check(!LiveOrnamentReader.ObserveFields(1,42,5,false,true,true).Valid,"Wrong-thread read was not blocked before dereference");
+                Check(!LiveOrnamentReader.ObserveFields(1,42,5,true,false,true).Valid,"Invalid wrapper read was not blocked before dereference");
+                actor.GameObject.EntityId=43;Check(!Read(&actor).Valid,"Reused entity identity was accepted");
+                Console.WriteLine("PASS typed ornament reader memory/auto-umbrella/transformation/unloaded/thread/identity fixtures; binding "+typeof(CSCharacter).Assembly.GetName().Version);
+                var fashionRows=new[]{
+                    new FashionEntry(16,"An extremely long localized fashion accessory title that wraps in a narrow window","Red Moon Parasol",0,3288,15,"5.55",3,
+                        [new("Seasonal / event","The Rising 2021, a historical source with a lengthy explanation of eligibility and current uncertainty","Community snapshot 2026-10-18","https://ffxivcollect.com/fashions/16"),
+                         new("Online Store","Regional store purchase; verify the current product page","Official source link","https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/882")],
+                        [new(33711,"A lengthy localized unlock-item name for the parasol",false,false)],FashionKnowledge.No,FashionKnowledge.No,FashionKnowledge.Yes,FashionKnowledge.Unknown,"Not verified","Former event does not certify current availability"),
+                    new FashionEntry(42,"Mandragora Parasol","Mandragora Parasol",0,4406,40,null,null,[],[],FashionKnowledge.Unknown,FashionKnowledge.Unknown,FashionKnowledge.Unknown,FashionKnowledge.Unknown,"Not verified"),
+                };
+                var fashionCatalog=new FashionCatalog(fashionRows,new Dictionary<int,string>{{3,"Shadowbringers"},{4,"Endwalker"},{5,"Dawntrail"}},52,1,"2026-10-18");
+                var fashionCharacters=new[]{FashionCharacter.Unknown,new FashionCharacter(true,new Dictionary<uint,bool>{{16,true},{42,false}}),
+                    new FashionCharacter(true,new Dictionary<uint,bool>{{16,false},{42,true}})};
+                int fashionCases=0,identifyCases=0;
+                foreach(var theme in new[]{0,1})
+                foreach(var scale in new[]{1f,1.5f,2f})
+                foreach(var width in new[]{480f,860f})
+                foreach(var character in fashionCharacters)
+                foreach(var details in new[]{false,true}){
+                    io.FontGlobalScale=scale;
+                    var settings=new HubSettings{Theme=theme,Page=HubPage.Fashion};
+                    using var window=new MainWindow(settings,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>false,()=>{},()=>true,
+                        ()=>font,fashionView:()=>new(FashionLoad.Ready,fashionCatalog,character));
+                    if(details)window.OpenFashion(16);
+                    var saved=JsonSerializer.Serialize(settings);
+                    for(int i=0;i<12;i++)Frame(window,new(width,500),scale);
+                    var content=theme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
+                    Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Fashion page overflow");
+                    Check(content.ContentSize.Y<=content.Size.Y+1||content.ScrollMax.Y>0,"Fashion controls not reachable");
+                    Check(saved==JsonSerializer.Serialize(settings),"Fashion rendering changed opt-ins");fashionCases++;
+                }
+                foreach(var theme in new[]{0,1})foreach(var state in Enum.GetValues<FashionLoad>()){
+                    io.FontGlobalScale=1;var settings=new HubSettings{Theme=theme,Page=HubPage.Fashion};
+                    using var window=new MainWindow(settings,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>false,()=>{},()=>true,
+                        ()=>font,fashionView:()=>new(state,FashionCatalog.Empty,FashionCharacter.Unknown));
+                    for(int i=0;i<12;i++)Frame(window,new(480,500),1);
+                    var content=theme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
+                    Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Fashion loading state overflow");fashionCases++;
+                }
+                foreach(var theme in new[]{0,1})foreach(var scale in new[]{1f,1.5f,2f})foreach(var width in new[]{480f,860f})
+                foreach(var state in Enum.GetValues<IdentificationState>())foreach(var mountFound in new[]{false,true}){
+                    io.FontGlobalScale=scale;var settings=new HubSettings{Theme=theme,Page=HubPage.Fashion};
+                    using var window=new MainWindow(settings,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>false,()=>{},()=>true,
+                        ()=>font,mountView:()=>new(MountLoadState.Ready,mountCatalog,mountCharacters[1]),
+                        fashionView:()=>new(FashionLoad.Ready,fashionCatalog,fashionCharacters[1]));
+                    window.OpenIdentification(new(new(mountFound?IdentificationState.Found:IdentificationState.None,1),new(state,16),Environment.TickCount64));
+                    var saved=JsonSerializer.Serialize(settings);
+                    for(int i=0;i<12;i++)Frame(window,new(width,500),scale);
+                    var content=theme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
+                    Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Shared identification overflow");
+                    Check(saved==JsonSerializer.Serialize(settings),"Identification rendering mutated settings");
+                    window.ClearIdentification();identifyCases++;
+                }
+                Console.WriteLine($"PASS {fashionCases} fashion database/details/loading/theme/width/scale cases.");
+                Console.WriteLine($"PASS {identifyCases} shared mount/fashion identification result cases.");
 
                 Console.WriteLine("PASS 198 native Latency mode/state/theme/scale cases.");
                 Console.WriteLine("PASS 288 native Quest state/import/mode/theme/scale cases.");

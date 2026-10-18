@@ -1,0 +1,708 @@
+{
+  "Provider": "FFXIV Collect",
+  "Endpoint": "https://ffxivcollect.com/api/fashions?language=en",
+  "RetrievedUtc": "2026-10-18T15:02:59.902094+00:00",
+  "ResponseSha256": "3b08be4c5f89c660053570fd36470548327a8d6c58be1c7e05bf73402140d707",
+  "Permission": "https://ffxivcollect.com/ ; https://www.reddit.com/r/ffxiv/comments/i75cb0/ffxiv_collect_whats_new/",
+  "Accessories": [
+    {
+      "Id": 1,
+      "EnglishName": "Parasol",
+      "Patch": "5.21",
+      "ItemId": 30269,
+      "Sources": [
+        {
+          "Type": "Skybuilders",
+          "Text": "Enie - The Firmament - 1,800 Skybuilders' Scrips"
+        },
+        {
+          "Type": "Skybuilders",
+          "Text": "Fête Present"
+        },
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Bronze/Silver Ancient Record - Oizys"
+        }
+      ]
+    },
+    {
+      "Id": 2,
+      "EnglishName": "Sky Blue Parasol",
+      "Patch": "5.21",
+      "ItemId": 30270,
+      "Sources": [
+        {
+          "Type": "Skybuilders",
+          "Text": "Enie - The Firmament - 900 Skybuilders' Scrips"
+        },
+        {
+          "Type": "Skybuilders",
+          "Text": "Fête Present"
+        },
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Bronze/Silver Ancient Record - Oizys"
+        }
+      ]
+    },
+    {
+      "Id": 3,
+      "EnglishName": "Vermilion Paper Parasol",
+      "Patch": "5.3",
+      "ItemId": 31321,
+      "Sources": [
+        {
+          "Type": "Purchase",
+          "Text": "Tokohana - Kugane - 100,000 Gil"
+        }
+      ]
+    },
+    {
+      "Id": 4,
+      "EnglishName": "Plum Paper Parasol",
+      "Patch": "5.3",
+      "ItemId": 31322,
+      "Sources": [
+        {
+          "Type": "Voyages",
+          "Text": "Subaquatic Voyages - Sea of Jade (F/P), Sirensong Sea (F), South Indigo Deep (G)"
+        }
+      ]
+    },
+    {
+      "Id": 5,
+      "EnglishName": "Gold Paper Parasol",
+      "Patch": "5.3",
+      "ItemId": 31323,
+      "Sources": [
+        {
+          "Type": "Gold Saucer",
+          "Text": "200,000 MGP"
+        }
+      ]
+    },
+    {
+      "Id": 6,
+      "EnglishName": "Calming Checkered Parasol",
+      "Patch": "5.31",
+      "ItemId": 31324,
+      "Sources": [
+        {
+          "Type": "Skybuilders",
+          "Text": "Enie - The Firmament - 900 Skybuilders' Scrips"
+        },
+        {
+          "Type": "Skybuilders",
+          "Text": "Fête Present"
+        },
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Bronze Ancient Record - Oizys or Auxesia"
+        }
+      ]
+    },
+    {
+      "Id": 7,
+      "EnglishName": "Cheerful Checkered Parasol",
+      "Patch": "5.31",
+      "ItemId": 31325,
+      "Sources": [
+        {
+          "Type": "Skybuilders",
+          "Text": "Enie - The Firmament - 1,800 Skybuilders' Scrips"
+        },
+        {
+          "Type": "Skybuilders",
+          "Text": "Fête Present"
+        },
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Bronze/Silver Ancient Record - Oizys"
+        }
+      ]
+    },
+    {
+      "Id": 8,
+      "EnglishName": "Classy Checkered Parasol",
+      "Patch": "5.35",
+      "ItemId": 31326,
+      "Sources": [
+        {
+          "Type": "Bozja",
+          "Text": "Southern Front Lockbox"
+        }
+      ]
+    },
+    {
+      "Id": 9,
+      "EnglishName": "Angel Wings",
+      "Patch": "5.4",
+      "ItemId": 33041,
+      "Sources": [
+        {
+          "Type": "Gold Saucer",
+          "Text": "500,000 MGP"
+        }
+      ]
+    },
+    {
+      "Id": 10,
+      "EnglishName": "Gold Parasaucer",
+      "Patch": "5.4",
+      "ItemId": 33040,
+      "Sources": [
+        {
+          "Type": "Achievement",
+          "Text": "Open to Victory III"
+        }
+      ]
+    },
+    {
+      "Id": 11,
+      "EnglishName": "Pleasant Dot Parasol",
+      "Patch": "5.45",
+      "ItemId": 33037,
+      "Sources": [
+        {
+          "Type": "Bozja",
+          "Text": "25 Bozjan Clusters"
+        }
+      ]
+    },
+    {
+      "Id": 12,
+      "EnglishName": "Prim Dot Parasol",
+      "Patch": "5.4",
+      "ItemId": 33038,
+      "Sources": [
+        {
+          "Type": "Purchase",
+          "Text": "Pixie Hoarder - Lydha Lran (Il Mheg) - 100,000 Gil"
+        }
+      ]
+    },
+    {
+      "Id": 13,
+      "EnglishName": "Pastoral Dot Parasol",
+      "Patch": "5.41",
+      "ItemId": 33039,
+      "Sources": [
+        {
+          "Type": "Skybuilders",
+          "Text": "Enie - The Firmament - 1,800 Skybuilders' Scrips"
+        },
+        {
+          "Type": "Skybuilders",
+          "Text": "Fête Present"
+        },
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Bronze Ancient Record - Oizys or Auxesia"
+        }
+      ]
+    },
+    {
+      "Id": 14,
+      "EnglishName": "Fat Cat Parasol",
+      "Patch": "5.5",
+      "ItemId": 33712,
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "Moogle Treasure Trove Event"
+        }
+      ]
+    },
+    {
+      "Id": 15,
+      "EnglishName": "Great Paraserpent",
+      "Patch": "5.5",
+      "ItemId": 33713,
+      "Sources": [
+        {
+          "Type": "Other",
+          "Text": "Community Events Reward"
+        }
+      ]
+    },
+    {
+      "Id": 16,
+      "EnglishName": "Red Moon Parasol",
+      "Patch": "5.55",
+      "ItemId": 33711,
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "The Rising (2021)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 17,
+      "EnglishName": "Fallen Angel Wings",
+      "Patch": "6.0",
+      "ItemId": 36340,
+      "Sources": [
+        {
+          "Type": "FATE",
+          "Text": "Edelina - Mor Dhona - 500 Bicolor Gemstone Vouchers"
+        }
+      ]
+    },
+    {
+      "Id": 18,
+      "EnglishName": "Archangel Wings",
+      "Patch": "6.05",
+      "ItemId": 36341,
+      "Sources": [
+        {
+          "Type": "Treasure Hunt",
+          "Text": "The Excitatron 6000"
+        },
+        {
+          "Type": "Treasure Hunt",
+          "Text": "The Shifting Gymnasion Agonon"
+        }
+      ]
+    },
+    {
+      "Id": 19,
+      "EnglishName": "Diabolos Wings",
+      "Patch": "6.0",
+      "ItemId": 36342,
+      "Sources": [
+        {
+          "Type": "Hunts",
+          "Text": "J'lakshai (Old Sharlayan) / Wilmetta (Radz-at-Han) - 800 Sacks Of Nuts"
+        }
+      ]
+    },
+    {
+      "Id": 20,
+      "EnglishName": "Pixie Wings",
+      "Patch": "6.0",
+      "ItemId": 36343,
+      "Sources": [
+        {
+          "Type": "Treasure Hunt",
+          "Text": "Timeworn Kumbhiraskin/Ophiotauroskin Map"
+        }
+      ]
+    },
+    {
+      "Id": 23,
+      "EnglishName": "White Lace Parasol",
+      "Patch": "6.1",
+      "ItemId": 37484,
+      "Sources": [
+        {
+          "Type": "Treasure Hunt",
+          "Text": "The Excitatron 6000"
+        },
+        {
+          "Type": "Treasure Hunt",
+          "Text": "The Shifting Gymnasion Agonon"
+        }
+      ]
+    },
+    {
+      "Id": 24,
+      "EnglishName": "Blue Blossom Parasol",
+      "Patch": "6.1",
+      "ItemId": 37485,
+      "Sources": [
+        {
+          "Type": "Voyages",
+          "Text": "Subaquatic Voyages - Sirensong Sea (F/I/N), The Lilac Sea (B), South Indigo Deep (B)"
+        }
+      ]
+    },
+    {
+      "Id": 27,
+      "EnglishName": "Sabotender Parasol",
+      "Patch": "6.25",
+      "ItemId": 38537,
+      "Sources": [
+        {
+          "Type": "V&C Dungeon",
+          "Text": "The Sil'dihn Subterrane"
+        }
+      ]
+    },
+    {
+      "Id": 28,
+      "EnglishName": "Bluepowder Pixie Wings",
+      "Patch": "6.2",
+      "ItemId": 38538,
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "6,000 Seafarer's Cowries"
+        }
+      ]
+    },
+    {
+      "Id": 30,
+      "EnglishName": "Felicitous Furball Umbrella",
+      "Patch": "6.3",
+      "ItemId": 39503,
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "6,000 Seafarer's Cowries"
+        }
+      ]
+    },
+    {
+      "Id": 31,
+      "EnglishName": "Raindrop Defense System",
+      "Patch": "6.35",
+      "ItemId": 39504,
+      "Sources": [
+        {
+          "Type": "Deep Dungeon",
+          "Text": "Eureka Orthos - Bronze Sack"
+        }
+      ]
+    },
+    {
+      "Id": 33,
+      "EnglishName": "Tsukumogami Parasol",
+      "Patch": "6.45",
+      "ItemId": 40365,
+      "Sources": [
+        {
+          "Type": "V&C Dungeon",
+          "Text": "Mount Rokkon"
+        }
+      ]
+    },
+    {
+      "Id": 34,
+      "EnglishName": "Tactful Taskmaster Umbrella",
+      "Patch": "6.4",
+      "ItemId": 40366,
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "6,000 Seafarer's Cowries"
+        }
+      ]
+    },
+    {
+      "Id": 35,
+      "EnglishName": "Knapsack",
+      "Patch": "6.55",
+      "ItemId": 41469,
+      "Sources": [
+        {
+          "Type": "Quest",
+          "Text": "The Coming Dawn"
+        }
+      ]
+    },
+    {
+      "Id": 36,
+      "EnglishName": "Statice's Wings",
+      "Patch": "6.51",
+      "ItemId": 41466,
+      "Sources": [
+        {
+          "Type": "V&C Dungeon",
+          "Text": "Trisassant - Old Sharlayan - 3 Aloalo Potsherds"
+        }
+      ]
+    },
+    {
+      "Id": 37,
+      "EnglishName": "Giant Leaf Parasol",
+      "Patch": "6.51",
+      "ItemId": 41467,
+      "Sources": [
+        {
+          "Type": "V&C Dungeon",
+          "Text": "Aloalo Island"
+        }
+      ]
+    },
+    {
+      "Id": 38,
+      "EnglishName": "Colorful Carrotsol",
+      "Patch": "6.5",
+      "ItemId": 41468,
+      "Sources": [
+        {
+          "Type": "Island Sanctuary",
+          "Text": "6,000 Seafarer's Cowries"
+        }
+      ]
+    },
+    {
+      "Id": 39,
+      "EnglishName": "Neon Parasol",
+      "Patch": "7.0",
+      "ItemId": 44256,
+      "Sources": [
+        {
+          "Type": "FATE",
+          "Text": "Beryl - Solution Nine - 500 Bicolor Gemstones"
+        }
+      ]
+    },
+    {
+      "Id": 40,
+      "EnglishName": "Ribboned Parasol",
+      "Patch": "7.05",
+      "ItemId": 44257,
+      "Sources": [
+        {
+          "Type": "Treasure Hunt",
+          "Text": "Cenote Ja Ja Gural"
+        },
+        {
+          "Type": "Treasure Hunt",
+          "Text": "Vault Oneiron"
+        }
+      ]
+    },
+    {
+      "Id": 41,
+      "EnglishName": "Bomb Parasol",
+      "Patch": "7.0",
+      "ItemId": 44258,
+      "Sources": [
+        {
+          "Type": "PvP",
+          "Text": "PvP Series 6 - Level 5"
+        }
+      ]
+    },
+    {
+      "Id": 42,
+      "EnglishName": "Mandragora Parasol",
+      "Patch": "7.1",
+      "ItemId": 44996,
+      "Sources": []
+    },
+    {
+      "Id": 43,
+      "EnglishName": "Archon Egg Parasol",
+      "Patch": "7.2",
+      "ItemId": 44997,
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "Hatching-tide (2025)"
+        },
+        {
+          "Type": "Premium",
+          "Text": "Online Store"
+        }
+      ]
+    },
+    {
+      "Id": 44,
+      "EnglishName": "Pelupack",
+      "Patch": "7.1",
+      "ItemId": 44998,
+      "Sources": [
+        {
+          "Type": "Tribal",
+          "Text": "Pavli - Dock Poga (Kozama'uka) - 10 Pelu Pelplumes (Rank 6)"
+        }
+      ]
+    },
+    {
+      "Id": 45,
+      "EnglishName": "Black Embroidered Parasol",
+      "Patch": "7.25",
+      "ItemId": 48162,
+      "Sources": [
+        {
+          "Type": "Occult Crescent",
+          "Text": "Expedition Antiquarian - South Horn - 30 Chunks of Sanguinite"
+        },
+        {
+          "Type": "Occult Crescent",
+          "Text": "South Horn - Pot/Bunny Coffer"
+        }
+      ]
+    },
+    {
+      "Id": 46,
+      "EnglishName": "White Embroidered Parasol",
+      "Patch": "7.25",
+      "ItemId": 48161,
+      "Sources": [
+        {
+          "Type": "Occult Crescent",
+          "Text": "Expedition Antiquarian - South Horn - 30 Chunks of Sanguinite"
+        },
+        {
+          "Type": "Occult Crescent",
+          "Text": "South Horn - Pot/Bunny Coffer"
+        }
+      ]
+    },
+    {
+      "Id": 47,
+      "EnglishName": "Loparasol",
+      "Patch": "7.21",
+      "ItemId": 48160,
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Cosmic Fortune - Sinus Ardonum"
+        }
+      ]
+    },
+    {
+      "Id": 48,
+      "EnglishName": "Torch",
+      "Patch": "7.3",
+      "ItemId": 46848,
+      "Sources": [
+        {
+          "Type": "Treasure Hunt",
+          "Text": "Cenote Ja Ja Gural"
+        },
+        {
+          "Type": "Treasure Hunt",
+          "Text": "Vault Oneiron"
+        }
+      ]
+    },
+    {
+      "Id": 49,
+      "EnglishName": "Mizutsune Parasol",
+      "Patch": "7.35",
+      "ItemId": 46788,
+      "Sources": [
+        {
+          "Type": "Trial",
+          "Text": "Smithy - Tuliyollal - 3 Guardian Scales"
+        }
+      ]
+    },
+    {
+      "Id": 50,
+      "EnglishName": "Pixie Parasol",
+      "Patch": "7.35",
+      "ItemId": 46787,
+      "Sources": [
+        {
+          "Type": "Deep Dungeon",
+          "Text": "Pilgrim's Traverse - Silver/Platinum Sack"
+        }
+      ]
+    },
+    {
+      "Id": 51,
+      "EnglishName": "Blue Pixie Parasol",
+      "Patch": "7.35",
+      "ItemId": 46847,
+      "Sources": [
+        {
+          "Type": "Deep Dungeon",
+          "Text": "30 First Light Relics"
+        },
+        {
+          "Type": "Deep Dungeon",
+          "Text": "Pilgrim's Traverse - Sack of First Light"
+        }
+      ]
+    },
+    {
+      "Id": 52,
+      "EnglishName": "Senor Otter Pack",
+      "Patch": "7.5",
+      "ItemId": 50825,
+      "Sources": [
+        {
+          "Type": "Event",
+          "Text": "The Make It Rain Campaign (2026)"
+        }
+      ]
+    },
+    {
+      "Id": 53,
+      "EnglishName": "Corvosi Parasol",
+      "Patch": "7.45",
+      "ItemId": 50826,
+      "Sources": [
+        {
+          "Type": "V&C Dungeon",
+          "Text": "*The Merchant's Tale*"
+        }
+      ]
+    },
+    {
+      "Id": 54,
+      "EnglishName": "Spriggan Parasol",
+      "Patch": "7.4",
+      "ItemId": 50827,
+      "Sources": [
+        {
+          "Type": "Other",
+          "Text": "Fan Festival 2026 Art & Video Contests"
+        }
+      ]
+    },
+    {
+      "Id": 55,
+      "EnglishName": "Avalanche Gatling Gun",
+      "Patch": "7.55",
+      "ItemId": 52287,
+      "Sources": [
+        {
+          "Type": "Gold Saucer",
+          "Text": "430 MGC"
+        }
+      ]
+    },
+    {
+      "Id": 56,
+      "EnglishName": "Pitchfork",
+      "Patch": "7.56",
+      "ItemId": 51744,
+      "Sources": [
+        {
+          "Type": "Beastmaster",
+          "Text": "Kornago Merchant - Bentbranch Meadows - 100 Faded Remnants of Resilience"
+        }
+      ]
+    },
+    {
+      "Id": 57,
+      "EnglishName": "Shovel",
+      "Patch": "7.51",
+      "ItemId": 52288,
+      "Sources": [
+        {
+          "Type": "Cosmic Exploration",
+          "Text": "Silver Ancient Record - Auxesia"
+        }
+      ]
+    },
+    {
+      "Id": 58,
+      "EnglishName": "Antique Lantern",
+      "Patch": "7.55",
+      "ItemId": 52289,
+      "Sources": [
+        {
+          "Type": "Occult Crescent",
+          "Text": "Expedition Antiquarian - North Horn - 40 Arcane Amulets "
+        },
+        {
+          "Type": "Occult Crescent",
+          "Text": "North Horn - Pot/Bunny Coffer"
+        }
+      ]
+    }
+  ]
+}

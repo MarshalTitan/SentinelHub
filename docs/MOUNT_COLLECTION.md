@@ -28,3 +28,7 @@ Update normally to **Hub 0.5.1.0**, keep existing utility settings, and:
 Return PASS/FAIL, Hub version, theme, incorrect mount/item ID if any, and untested steps. Compilation/render tests do not establish actual game-sheet completeness, native inventory correctness or live context-menu behavior.
 
 Rollback: disable the context lookup option, or disable Hub / restore immutable Hub 0.4.0.1. Keep configuration; appended page value normalizes safely on an older build. No character collection or inventory data is persisted or exported. External pages open only when you select a source button; collection browsing makes no network request.
+
+## Shared identification in 0.6.0.0
+
+The saved Mount lookup preference remains effective. Its label is now Include mounts in player identification and the context item is Sentinel Hub: Identify player. When Fashion lookup is also enabled, the shared result can open either entry and handles no-accessory explicitly. Mount-only mode still offers the action only for mounted players. Mount catalog/source/token behavior is unchanged. Follow FASHION_ACCESSORIES.md for the combined check.

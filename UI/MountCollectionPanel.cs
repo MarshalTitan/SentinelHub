@@ -21,7 +21,7 @@ public sealed class MountCollectionPanel
         this.settings = settings; this.view = view; this.save = save; this.refresh = refresh; this.retry = retry;
         this.icon = icon ?? ((_, size) => ImGui.Dummy(size));
     }
-    public void Select(uint mount) { selected = mount; refresh(); }
+    public void Select(uint? mount) { selected = mount; refresh(); }
     private static bool FullButton(string label) => ImGui.Button(label, new Vector2(-1, 28 * ImGuiHelpers.GlobalScale));
     private static bool Combo(string id, ref int value, string[] names)
     {
@@ -32,7 +32,7 @@ public sealed class MountCollectionPanel
     {
         ImGui.TextWrapped("Passive collection browser for your current character.");
         var enabled = settings.MountContextMenuEnabled;
-        if (ImGui.Checkbox("Player context-menu mount lookup", ref enabled))
+        if (ImGui.Checkbox("Include mounts in player identification", ref enabled))
         { settings.MountContextMenuEnabled = enabled; save(); }
         var v = view();
         if (v.State is MountLoadState.NotLoaded or MountLoadState.Loading)

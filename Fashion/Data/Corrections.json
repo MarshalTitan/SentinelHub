@@ -1,0 +1,65 @@
+{
+  "Provenance": "Sentinel-authored factual records from the linked official pages, checked 2026-10-18. No copied prose/data table. Availability is dated and expires; it does not establish character/vendor/account eligibility.",
+  "Entries": [
+    {
+      "Id": 3,
+      "EnglishName": "Vermilion Paper Parasol",
+      "Note": "Official item database lists a 100,000-gil vendor route. Community source names Tokohana in Kugane.",
+      "SourceUrl": "https://na.finalfantasyxiv.com/lodestone/playguide/db/item/41cb3c6b931/",
+      "Availability": "Yes",
+      "CheckedUtc": "2026-10-18T00:00:00Z",
+      "ExpiresUtc": "2026-11-17T00:00:00Z",
+      "AvailabilityEvidence": "Official Eorzea Database lists a gil sale route; character access is not checked."
+    },
+    {
+      "Id": 16,
+      "EnglishName": "Red Moon Parasol",
+      "Note": "Former Rising 2021 event reward; an official Online Store listing also exists. A historical event ending does not imply that all acquisition routes ended.",
+      "SourceUrl": "https://store.finalfantasyxiv.com/ffxivstore/en-gb/product/882",
+      "Availability": null,
+      "CheckedUtc": "2026-10-18T00:00:00Z",
+      "ExpiresUtc": null,
+      "AvailabilityEvidence": null
+    },
+    {
+      "Id": 42,
+      "EnglishName": "Mandragora Parasol",
+      "Note": "A real client ornament row, but no verified acquisition source was found in this audit. Its presence does not establish release or obtainability.",
+      "SourceUrl": null,
+      "Availability": null,
+      "CheckedUtc": null,
+      "ExpiresUtc": null,
+      "AvailabilityEvidence": null
+    },
+    {
+      "Id": 41,
+      "EnglishName": "Bomb Parasol",
+      "Note": "Recorded as a PvP Series 6 level-5 reward. That source is historical; current alternate acquisition is not verified.",
+      "SourceUrl": null,
+      "Availability": null,
+      "CheckedUtc": null,
+      "ExpiresUtc": null,
+      "AvailabilityEvidence": null
+    },
+    {
+      "Id": 15,
+      "EnglishName": "Great Paraserpent",
+      "Note": "Community-event/contest prize; award eligibility and current contest availability are not checked. Similar prize wording is not treated as a different unlock ID.",
+      "SourceUrl": null,
+      "Availability": null,
+      "CheckedUtc": null,
+      "ExpiresUtc": null,
+      "AvailabilityEvidence": null
+    },
+    {
+      "Id": 54,
+      "EnglishName": "Spriggan Parasol",
+      "Note": "Recorded as a Fan Festival 2026 contest reward; current eligibility or distribution is not verified.",
+      "SourceUrl": null,
+      "Availability": null,
+      "CheckedUtc": null,
+      "ExpiresUtc": null,
+      "AvailabilityEvidence": null
+    }
+  ]
+}
