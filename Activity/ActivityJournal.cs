@@ -1,8 +1,7 @@
-using System.Text.Json;
 using SentinelHub.Ecosystem;
 namespace SentinelHub.Activity;
 public enum ActivitySeverity { Info, Success, Warning, Error }
-// Explicit values preserve retained event identities; retired candidate codes are discarded on load.
+// Stable public event values; retired candidate codes remain invalid.
 public enum ActivityCode { HealthUnavailable=0, HealthRecovered=1, HealthChanged=2, CompatibilitySuspended=3, CompatibilityRecovered=4,
     DiagnosticsSaved=8, DiagnosticsFailed=9, ProfileApplied=14, ProfileVerificationFailed=15, HuntTagged=16, HuntCredited=17,
     RelayDisconnected=18, RelayRecovered=19 }
@@ -41,7 +40,6 @@ public sealed class ActivityJournal
     public const int Capacity=200;
     public static readonly TimeSpan Retention=TimeSpan.FromDays(7);
     private readonly List<ActivityEntry> entries=[];
-    public bool Dirty {get;private set;}
     public ActivityEntry[] Snapshot(DateTimeOffset now){Prune(now);return entries.OrderByDescending(e=>e.LastAt).ToArray();}
     public bool Add(string source,ActivityCode code,DateTimeOffset now)
     {
@@ -49,20 +47,8 @@ public sealed class ActivityJournal
         var index=entries.FindLastIndex(e=>e.Source==source&&e.Code==code&&now>=e.LastAt&&now-e.LastAt<TimeSpan.FromSeconds(60));
         if(index>=0)entries[index]=entries[index] with{LastAt=now,Count=Math.Min(9999,entries[index].Count+1)};
         else{if(entries.Count>=Capacity)entries.RemoveAt(entries.FindIndex(e=>e.LastAt==entries.Min(v=>v.LastAt)));entries.Add(new(now,now,source,code,1));}
-        Dirty=true;return true;
+        return true;
     }
-    private void Prune(DateTimeOffset now){if(entries.RemoveAll(e=>e.LastAt<now-Retention||e.LastAt>now.AddMinutes(5))>0)Dirty=true;}
-    public void Load(string json,DateTimeOffset now)
-    {
-        entries.Clear();try{
-            if(json.Length>256*1024)throw new InvalidDataException();
-            var parsed=JsonSerializer.Deserialize<ActivityEntry[]>(json,new JsonSerializerOptions{MaxDepth=8})??[];
-            if(parsed.Length>Capacity)throw new InvalidDataException();
-            entries.AddRange(parsed.Where(e=>e is not null&&ActivityCatalog.Allowed(e.Source,e.Code)&&e.Count is >=1 and <=9999
-                &&e.At<=e.LastAt&&e.LastAt>=now-Retention&&e.LastAt<=now.AddMinutes(5)).OrderBy(e=>e.LastAt));
-        }catch{entries.Clear();}Dirty=false;
-    }
-    public string Serialize(DateTimeOffset now)=>JsonSerializer.Serialize(Snapshot(now));
-    public void MarkSaved()=>Dirty=false;
-    public void Clear(){entries.Clear();Dirty=true;}
+    private void Prune(DateTimeOffset now)=>entries.RemoveAll(e=>e.LastAt<now-Retention||e.LastAt>now.AddMinutes(5));
+    public void Clear()=>entries.Clear();
 }

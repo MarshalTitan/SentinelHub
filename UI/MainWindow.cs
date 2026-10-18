@@ -261,13 +261,11 @@ public sealed class MainWindow : Window, IDisposable
         var view = antiAfkView();
         ImGui.TextWrapped("Prevent AFK Disconnect");
         var enabled = config.AntiAfkEnabled;
+        var label = view.ControlLabel(enabled);
         var changed = modern
-            ? SentinelModernSwitch.Draw("anti-afk-enable", "Enable Anti-AFK", ref enabled, shell.Motion, ImGuiHelpers.GlobalScale)
-            : ImGui.Checkbox("Enable Anti-AFK", ref enabled);
+            ? SentinelModernSwitch.Draw("anti-afk-enable", label, ref enabled, shell.Motion, ImGuiHelpers.GlobalScale)
+            : ImGui.Checkbox(label + "###anti-afk-enable", ref enabled);
         if (changed) { config.AntiAfkEnabled = enabled; save(); }
-        ImGui.TextWrapped(view.Description);
-        ImGui.TextWrapped("Checks every 10 seconds and resets inactivity timers above 30 seconds. No keys, movement or chat.");
-        ImGui.TextWrapped("Successful timer checks this session: " + view.Cycles);
         ImGui.Separator(); ImGui.Spacing();
         DrawQuestConvenience();
         ImGui.Separator(); ImGui.Spacing();
@@ -321,6 +319,8 @@ public sealed class MainWindow : Window, IDisposable
         : ImGui.Checkbox(label, ref value);
     private void DrawDiagnostics()
     {
+        ImGui.TextWrapped("Optional troubleshooting. Live history stays in memory and clears when Hub unloads or the game closes.");
+        ImGui.TextWrapped("Export saves one sentinel-diagnostics.zip, replacing the previous export. Nothing is saved here automatically.");
         ImGui.TextWrapped("The ZIP contains structured JSON and a readable summary: known Sentinel versions, health, dependency responses, bounded Hub faults and compatible provider counters.");
         ImGui.TextWrapped("Credentials, configuration contents, names, private IDs, chat, paths and arbitrary provider text are excluded. Unsupported provider/profile state stays unavailable.");
         if (Button("Export Sentinel Diagnostics")) export();

@@ -3,6 +3,14 @@ public enum AntiAfkState { Off, WaitingForLogin, LegacyHudInstalled, WaitingForH
 public sealed record AntiAfkView(AntiAfkState State, long Cycles, bool? HudPreference)
 {
     public static AntiAfkView Off => new(AntiAfkState.Off, 0, null);
+    public string ControlLabel(bool enabled) => !enabled ? "Anti-AFK: Off" : State switch
+    {
+        AntiAfkState.Active => "Anti-AFK: Active",
+        AntiAfkState.WaitingForLogin => "Anti-AFK: Waiting for login",
+        AntiAfkState.LegacyHudInstalled or AntiAfkState.WaitingForHud => "Anti-AFK: Blocked by older HUD",
+        AntiAfkState.TimerUnavailable or AntiAfkState.Faulted => "Anti-AFK: Unavailable",
+        _ => "Anti-AFK: Starting",
+    };
     public string Description => State switch
     {
         AntiAfkState.Off => "Off",

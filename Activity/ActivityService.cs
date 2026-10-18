@@ -1,21 +1,12 @@
-using System.Text;
 using SentinelHub.Health;
 using SentinelHub.Compatibility;
-using SentinelHub.Storage;
 namespace SentinelHub.Activity;
-public sealed class ActivityService : IDisposable
+public sealed class ActivityService
 {
-    private readonly string path;
     private readonly Dictionary<string,HealthState> healthStates=[];
     private HashSet<string> overlaps=[];
     private bool? healthAvailable;
-    private long next;
     public ActivityJournal Journal {get;}=new();
-    public ActivityService(string directory)
-    {
-        path=Path.Combine(directory,"recent-activity.json");
-        try{if(File.Exists(path)&&new FileInfo(path).Length<=256*1024)Journal.Load(File.ReadAllText(path),DateTimeOffset.UtcNow);}catch{}
-    }
     public void Add(ActivityCode code,string source="SentinelHub")=>Journal.Add(source,code,DateTimeOffset.UtcNow);
     public void Observe(HealthView health,CompatibilityView compatibility)
     {
@@ -32,8 +23,5 @@ public sealed class ActivityService : IDisposable
         foreach(var id in current.Except(overlaps))Add(ActivityCode.CompatibilitySuspended,id);
         foreach(var id in overlaps.Except(current))Add(ActivityCode.CompatibilityRecovered,id);
         overlaps=current;
-        if(Environment.TickCount64>=next){next=Environment.TickCount64+10000;Flush();}
     }
-    private void Flush(){if(!Journal.Dirty)return;try{AtomicFile.Write(path,Encoding.UTF8.GetBytes(Journal.Serialize(DateTimeOffset.UtcNow)));Journal.MarkSaved();}catch{}}
-    public void Dispose()=>Flush();
 }

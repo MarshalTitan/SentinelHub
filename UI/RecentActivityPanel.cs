@@ -7,7 +7,7 @@ public sealed class RecentActivityPanel(Func<ActivityEntry[]> entries,Action cle
     private int page;
     public void Draw()
     {
-        ImGui.TextWrapped("Recent Sentinel activity — up to 200 events / seven days. Repeated matching events within a minute are grouped.");
+        ImGui.TextWrapped("Current Hub session only — up to 200 events held in memory. Clears on Hub reload or game restart. Repeated events are grouped.");
         ImGui.SetNextItemWidth(-1);if(ImGui.Combo("##ActivitySeverity",ref severity,new[]{"All severities","Info","Success","Warning","Error"},5))page=0;
         var all=entries().Where(e=>severity==0||(int)ActivityCatalog.Severity(e.Code)==severity-1).ToArray();
         page=Math.Clamp(page,0,Math.Max(0,(all.Length-1)/20));

@@ -133,13 +133,36 @@ internal static class OperationsTests
             check(!journal.Add("SentinelRelay",ActivityCode.HuntCredited,now));
             check(!journal.Add("SentinelHub",(ActivityCode)9999,now));
         });
-        test("Activity persistence rejects corrupt/oversized/unknown data and does not retain arbitrary payloads",()=>{
-            var journal=new ActivityJournal();var now=DateTimeOffset.UtcNow;
-            journal.Add("SentinelHub",ActivityCode.DiagnosticsSaved,now);var json=journal.Serialize(now);
-            var restored=new ActivityJournal();restored.Load(json,now);check(restored.Snapshot(now).Length==1);
-            restored.Load("[{\"Source\":\"SECRET_TOKEN\",\"Code\":1,\"Count\":1}]",now);check(restored.Snapshot(now).Length==0&&!restored.Serialize(now).Contains("SECRET_TOKEN"));
-            restored.Load("{",now);check(restored.Snapshot(now).Length==0);
-            restored.Load(new string('x',256*1024+1),now);check(restored.Snapshot(now).Length==0);
+        test("Recent Activity is session-only and a new Hub service has no previous observations",()=>{
+            var now=DateTimeOffset.UtcNow;var session=new ActivityService();
+            session.Add(ActivityCode.DiagnosticsSaved);check(session.Journal.Snapshot(now.AddSeconds(1)).Length==1);
+            var reloaded=new ActivityService();check(reloaded.Journal.Snapshot(now.AddSeconds(1)).Length==0);
+            session.Journal.Clear();check(session.Journal.Snapshot(now.AddSeconds(1)).Length==0);
+        });
+        test("Legacy activity cleanup removes only the known history file and leaves settings/exports alone",()=>{
+            var folder=Path.Combine(Path.GetTempPath(),"sentinel-history-tests-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(folder);
+            try{
+                var old=Path.Combine(folder,"recent-activity.json");var settings=Path.Combine(folder,"SentinelHub.json");var export=Path.Combine(folder,"my-export.zip");
+                File.WriteAllText(old,"old history");File.WriteAllText(settings,"settings");File.WriteAllText(export,"manual export");
+                check(LegacyActivityCleanup.TryRemove(folder)&&!File.Exists(old));
+                check(File.ReadAllText(settings)=="settings"&&File.ReadAllText(export)=="manual export");
+                check(LegacyActivityCleanup.TryRemove(folder)&&Directory.GetFiles(folder).Length==2);
+            }finally{Directory.Delete(folder,true);}
+        });
+        test("Explicit diagnostics exports replace one file instead of accumulating session archives",()=>{
+            var folder=Path.Combine(Path.GetTempPath(),"sentinel-export-tests-"+Guid.NewGuid().ToString("N"));
+            try{
+                check(!Directory.Exists(folder));DiagnosticsFile.Save(folder,Encoding.UTF8.GetBytes("first export"));
+                DiagnosticsFile.Save(folder,Encoding.UTF8.GetBytes("latest export"));
+                check(Directory.GetFiles(folder).Length==1&&File.ReadAllText(Path.Combine(folder,DiagnosticsFile.FileName))=="latest export");
+            }finally{if(Directory.Exists(folder))Directory.Delete(folder,true);}
+        });
+        test("Anti-AFK compact control reports actual readiness and never labels a blocked/disabled writer active",()=>{
+            foreach(var state in Enum.GetValues<SentinelHub.Utilities.AntiAfkState>()){
+                var view=new SentinelHub.Utilities.AntiAfkView(state,47,null);
+                check(view.ControlLabel(false)=="Anti-AFK: Off");
+                check((view.ControlLabel(true)=="Anti-AFK: Active")== (state==SentinelHub.Utilities.AntiAfkState.Active));
+            }
         });
         test("Atomic storage injected replacement failure preserves original bytes and removes temporary files",()=>{
             var folder=Path.Combine(Path.GetTempPath(),"sentinel-tests-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(folder);
@@ -156,8 +179,7 @@ internal static class OperationsTests
             var journal=new ActivityJournal();var now=DateTimeOffset.UtcNow;
             foreach(var code in new[]{5,6,7,10,11,12,13})check(!journal.Add("SentinelHub",(ActivityCode)code,now));
             check((int)ActivityCode.DiagnosticsSaved==8&&(int)ActivityCode.ProfileApplied==14&&(int)ActivityCode.HuntCredited==17);
-            var old=JsonSerializer.Serialize(new[]{new ActivityEntry(now,now,"SentinelHub",(ActivityCode)10,1),new ActivityEntry(now,now,"SentinelHub",ActivityCode.DiagnosticsSaved,1)});
-            journal.Load(old,now);check(journal.Snapshot(now).Length==1&&journal.Snapshot(now)[0].Code==ActivityCode.DiagnosticsSaved);
+
         });
     }
 }

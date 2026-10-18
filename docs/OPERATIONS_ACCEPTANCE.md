@@ -2,7 +2,9 @@
 
 Status: **pending on the latest candidate**. [PR #15](https://github.com/MarshalTitan/SentinelHub/pull/15) links its exact successful CI artifact. Public Hub/catalog remain 0.6.0.0; earlier dev artifacts are superseded.
 
-Observed on the earlier candidate: the user confirmed Quest Convenience Off persisted when switching dev 0.7 to live 0.6. Screenshots showed the obsolete HUD waits and prompted the current cleanup. This is scoped preference evidence, not a PASS for the full gate. Barding, settings backups and global pause are now removed; they need no acceptance tests.
+Observed on earlier candidates: Quest Convenience Off persisted across dev→live; pause removal and responsive plugin actions passed; Health looked good. On the e046cde proving build, Anti-AFK reached 46 checks (screenshot 47) and stopped after Off; Inspector Off removed the menu action, On showed accessory and emote; Activity recorded changes. These checks retain that scope; names/icons/own unlock/source and every stale-target case were not separately reported. Barding, backups and global pause are removed.
+
+The latest change simplifies Anti-AFK presentation and makes Activity session-only. The new build needs the two focused checks below; already reported behavior does not require a full repeated gameplay test.
 
 ## Install
 
@@ -10,13 +12,12 @@ Download the latest `SentinelHub-0.7.0.0` Actions artifact linked in the PR, ext
 
 ## Checklist
 
-1. Dashboard/Utilities: global pause is gone; Backups navigation and Inspector barding are gone. Resize Plugins narrow → wide → narrow: actions move right when space allows and stack below when narrow, with readable text/buttons. Minimize/restore still works.
-2. With current HUD 0.8.5.2, enable Anti-AFK: it becomes Active without a HUD acknowledgment wait and its successful-check counter advances after roughly 10 seconds. Off stops increments; repeat after a Hub reload. Quest Convenience also has no HUD wait. Confirm its saved Off switch remains Off after reload; exercise only your normally used options.
-3. Health: compare installed/live/dev versions with Dalamud; fetch dated public versions. Check SRank ready/enabled status while your character is loaded. Unsupported endpoints remain Unknown/Unavailable. If practical, stop dependent automation and disable/re-enable a safe dependency; verify recovery/activity without spam.
-4. Export via Diagnostics or `/shub export`: ZIP has report.json, hub-state.json, summary.txt, useful versions/states and no credentials, names/IDs, chat or config documents. If an overlapping reviewed plugin is already installed, check Compatibility's clearly scoped Hub suspension/recovery; extra installations are not required.
-5. With Inspector off, identify a mounted player and a player with an active fashion accessory. Correct name/icon and collection entry must still resolve. Check none-active case, own unlock and existing acquisition/source details.
-6. Enable shared Player Inspector. With Hub closed/minimized, inspect a loaded player performing a supported loop such as `/lean`: verify name/icon/command, your own unlock and attributed source/Unknown fields. When they stop/move, show None; unloading/zoning/Off clears the observation. Idle/pose/combat must not invent an emote.
-7. Recent Activity: verify health/compatibility/export results, grouped repeats, filters and persistence across a reload. Absent provider contracts need not generate events. Other Hub utilities and consumer windows remain usable.
+1. Utilities shows only the Anti-AFK heading and switch, with Active/Off (or an honest unavailable/waiting state) in the label. No counter or explanatory paragraphs remain underneath. Switch behavior/settings remain as already tested.
+2. Recent Activity records changes during the session, then starts fresh after a Hub reload/game restart. Existing settings remain saved. The old candidate's exact recent-activity.json is removed automatically; no replacement history file is written.
+
+Optional troubleshooting check: Diagnostics explains that normal history is RAM-only. If you choose Export, it saves diagnostics/sentinel-diagnostics.zip with report.json, hub-state.json and summary.txt. A second export replaces that one file; exports are deliberate saved files and remain after closing the game. No export is needed for normal operation. Previously created manual ZIPs are not automatically deleted.
+
+Remaining unreported scenarios stay explicit: Quest's refreshed no-HUD-wait behavior, broader collection/Inspector own-unlock/source/stale-target cases, and optional provider recovery/compatibility. Use these when available; do not install extra providers solely for acceptance. Prior scoped Mount/Fashion/utility acceptance remains recorded.
 
 Report PASS/FAIL plus untested cases. Automated checks do not establish live game replication. Keep the PR held until required observed checks pass; record unsupported scenarios honestly.
 

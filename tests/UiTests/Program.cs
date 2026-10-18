@@ -144,7 +144,7 @@ internal static class Program
                 foreach (var state in Enum.GetValues<AntiAfkState>())
                 {
                     io.FontGlobalScale = scale;
-                    var config = new HubSettings { Theme = theme, Page = HubPage.Utilities };
+                    var config = new HubSettings { Theme = theme, Page = HubPage.Utilities, AntiAfkEnabled = true };
                     using var utility = new MainWindow(config, () => HubSnapshot.Unknown, new FaultJournal(), () => {}, () => {}, (_,_) => false, () => {}, () => true,
                         () => font, () => new AntiAfkView(state, 42, true));
                     for (var i=0;i<12;i++) Frame(utility, new(480,500), scale);

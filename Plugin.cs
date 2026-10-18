@@ -61,7 +61,8 @@ public sealed class Plugin : IDalamudPlugin
     {
         settings = Pi.GetPluginConfig() as Configuration.Configuration ?? new();
         settings.Normalize();
-        activity=new(Pi.GetPluginConfigDirectory());
+        if(!LegacyActivityCleanup.TryRemove(Pi.GetPluginConfigDirectory()))faults.Record(FaultCode.ActivityHistoryCleanupUnavailable);
+        activity=new();
         operationsIpc=new(Pi,Framework,activity.Journal,faults);
         discovery = new(Pi, faults);
         health=new(Pi,discovery.Capture,()=>discovery.Snapshot,publicCatalog,OwnCharacterKey);
@@ -139,16 +140,13 @@ public sealed class Plugin : IDalamudPlugin
         {
             discovery.Refresh(true);
             var directory = Path.Combine(Pi.GetPluginConfigDirectory(), "diagnostics");
-            Directory.CreateDirectory(directory);
             health.Tick(true);
-            var name = "sentinel-diagnostics-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + ".zip";
             var bundle = DiagnosticsBundle.Create(discovery.Snapshot,health.View,faults.Snapshot(),
                 new ProviderDiagnosticsReader(Pi,OwnCharacterKey).Read(),settings.Version,Client.TerritoryType,Objects.LocalPlayer?.CurrentWorld.RowId??0,
                 antiAfk.View,quest.View,latency.View,compatibility.View,activity.Journal.Snapshot(DateTimeOffset.UtcNow));
-            var path=Path.Combine(directory,name);
-            using(var file=new FileStream(path,FileMode.CreateNew,FileAccess.Write,FileShare.None))file.Write(bundle);
+            DiagnosticsFile.Save(directory,bundle);
             activity.Add(ActivityCode.DiagnosticsSaved);
-            window.Notice = "Saved " + name + " in Hub's configuration diagnostics folder.";
+            window.Notice = "Saved " + DiagnosticsFile.FileName + " in Hub's diagnostics folder (replaces the previous export).";
             Chat.Print("[Sentinel Hub] " + window.Notice);
         }
         catch
@@ -169,7 +167,6 @@ public sealed class Plugin : IDalamudPlugin
         antiAfk.Dispose();
         operationsIpc.Dispose();
         publicCatalog.Dispose();
-        activity.Dispose();
         fashion.Dispose();
         mounts.Dispose();
         Pi.UiBuilder.Draw -= windows.Draw;
