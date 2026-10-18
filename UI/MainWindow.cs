@@ -375,9 +375,14 @@ public sealed class MainWindow : Window, IDisposable
         var actionWidth = Math.Max(140 * scale, actions?.Max(a => ImGui.CalcTextSize(a.Label).X + 24 * scale) ?? 0);
         var sideBySide = actionsOnRight && actions is { Count: > 0 } && width >= actionWidth + 260 * scale + 16 * scale;
         var textWidth = sideBySide ? width - actionWidth - 16 * scale : width;
-        var textHeight = text.Sum(s => ImGui.CalcTextSize(s, false, textWidth).Y + 8 * scale) + (modern ? 26 * scale : 0);
-        var actionsHeight = (actions?.Count ?? 0) * 36 * scale;
-        var height = 48 * scale + (sideBySide ? Math.Max(textHeight, actionsHeight) : textHeight + actionsHeight);
+        var spacing = ImGui.GetStyle().ItemSpacing.Y;
+        var textHeight = text.Sum(s => ImGui.CalcTextSize(s, false, textWidth).Y + 2 * spacing)
+            + (modern ? SentinelModernStatusPill.Measure(new(status, tone), scale).Y + spacing : 0);
+        var actionsHeight = (actions?.Count ?? 0) * (28 * scale + spacing);
+        var padding = modern ? 12 * scale : ImGui.GetStyle().WindowPadding.Y;
+        var height = 2 * padding + 8 * scale + (sideBySide
+            ? Math.Max(textHeight, actionsHeight) + 2 * ImGui.GetStyle().CellPadding.Y
+            : textHeight + actionsHeight);
         if (modern)
         {
             using var card = SentinelModernGlassCard.Begin(id, new() { Size = new(0, height / scale) }, scale);
