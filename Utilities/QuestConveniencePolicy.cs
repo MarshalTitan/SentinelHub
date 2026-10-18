@@ -1,12 +1,13 @@
 using SentinelHub.Utilities.Quest;
 namespace SentinelHub.Utilities;
-public enum QuestConvenienceState { Off, WaitingForLogin, LegacyHudInstalled, WaitingForHud, Active, Faulted }
+public enum QuestConvenienceState { Off, WaitingForLogin, LegacyHudInstalled, WaitingForHud, Active, Faulted, Paused }
 public sealed record QuestConvenienceView(QuestConvenienceState State, int? HudPreferences, string Dialogue, string Cutscene, string Reward)
 {
     public static QuestConvenienceView Off => new(QuestConvenienceState.Off, null, "Disabled", "Disabled", "Manual");
     public string Description => State switch
     {
         QuestConvenienceState.Off => "Off",
+        QuestConvenienceState.Paused => "Paused by Sentinel safety controls; saved preferences retained.",
         QuestConvenienceState.WaitingForLogin => "Waiting for login",
         QuestConvenienceState.LegacyHudInstalled => "Update Sentinel HUD to 0.8.4.7 or later before enabling Hub Quest Convenience.",
         QuestConvenienceState.WaitingForHud => "Waiting for HUD to hand over Quest Convenience. Hub is paused.",
@@ -55,3 +56,4 @@ public sealed class QuestExecutionSession(Action<QuestConvenienceOptions> update
         running = false; fingerprint = -1; retryAfter = 0; State = state;
     }
 }
+

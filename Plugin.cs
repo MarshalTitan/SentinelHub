@@ -13,6 +13,7 @@ using SentinelHub.Mounts;
 using SentinelHub.Fashion;
 using SentinelHub.Identification;
 using SentinelHub.Health;
+using SentinelHub.Compatibility;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 namespace SentinelHub;
@@ -46,6 +47,7 @@ public sealed class Plugin : IDalamudPlugin
     private readonly QuickOpen quickOpen;
     private readonly PublicCatalog publicCatalog=new();
     private readonly HealthService health;
+    private readonly CompatibilityScanner compatibility;
     private bool disposed;
     public Plugin()
     {
@@ -53,9 +55,12 @@ public sealed class Plugin : IDalamudPlugin
         settings.Normalize();
         discovery = new(Pi, faults);
         health=new(Pi,discovery.Capture,()=>discovery.Snapshot,publicCatalog);
-        antiAfk = new(Pi, Client, settings, faults);
-        quest = new(Pi, Client, GameGui, Condition, Objects, Data, settings, faults);
-        latency = new(Pi, Interop, Data, Client, Condition, Objects, settings, faults);
+        compatibility=new(Pi);
+        compatibility.Tick(true);
+        antiAfk = new(Pi, Client, settings, faults,()=>compatibility.View.Blocks(CompatibilityFeature.AntiAfk));
+        quest = new(Pi, Client, GameGui, Condition, Objects, Data, settings, faults,
+            ()=>false,o=>compatibility.View.Effective(o));
+        latency = new(Pi, Interop, Data, Client, Condition, Objects, settings, faults,()=>compatibility.View.Blocks(CompatibilityFeature.Latency));
         mounts = new(Data, Unlocks, Client, Player, Objects, Condition, faults);
         fashion = new(Data, Unlocks, Client, Player, Objects, Condition, faults);
         quickOpen = new(discovery.Capture, Commands.ProcessCommand, faults);
@@ -63,7 +68,8 @@ public sealed class Plugin : IDalamudPlugin
             (id, diagnostics) => quickOpen.Open(id, diagnostics), Export,
             () => Pi.UiBuilder.ShouldUseReducedMotion, antiAfkView: () => antiAfk.View, questView: () => quest.View, latencyView: () => latency.View,
             mountView: () => mounts.View, refreshMounts: mounts.RequestRefresh, retryMounts: mounts.Retry, mountIcon: DrawCollectionIcon, fashionView: () => fashion.View, refreshFashion: fashion.RequestRefresh, retryFashion: fashion.Retry,
-            healthView:()=>health.View,refreshHealth:()=>{discovery.Refresh(true);health.Tick(true);},publicVersions:publicCatalog.Request);
+            healthView:()=>health.View,refreshHealth:()=>{discovery.Refresh(true);health.Tick(true);},publicVersions:publicCatalog.Request,
+            compatibilityView:()=>compatibility.View);
         identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, window.ClearIdentification, faults);
         windows.AddWindow(window);
         Commands.AddHandler("/shub", new CommandInfo(OnCommand) { HelpMessage = "Open Sentinel Hub. /shub export saves a sanitized Sentinel diagnostics ZIP." });
@@ -73,7 +79,7 @@ public sealed class Plugin : IDalamudPlugin
         Framework.Update += Update;
         discovery.Refresh(true);
     }
-    private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); health.Tick(); antiAfk.Tick(); quest.Tick(); latency.Tick(); mounts.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Mounts); fashion.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Fashion); identifyMenu.Tick(); } }
+    private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); health.Tick(); compatibility.Tick(); antiAfk.Tick(); quest.Tick(); latency.Tick(); mounts.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Mounts); fashion.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Fashion); identifyMenu.Tick(); } }
     private void DrawCollectionIcon(uint id, Vector2 size)
     {
         Dalamud.Interface.Textures.TextureWraps.IDalamudTextureWrap? wrap = null;

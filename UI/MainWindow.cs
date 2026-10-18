@@ -32,6 +32,7 @@ public sealed class MainWindow : Window, IDisposable
     private readonly MountCollectionPanel mounts;
     private readonly FashionAccessoriesPanel fashion;
     private readonly HealthPanel health;
+    private readonly CompatibilityPanel compatibility;
     private PlayerIdentification? identification;
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
@@ -46,12 +47,14 @@ public sealed class MainWindow : Window, IDisposable
         Action save, Action refresh, Func<string, bool, bool> open, Action export,
         Func<bool> systemReducedMotion, Func<ImFontPtr>? iconFont = null, Func<AntiAfkView>? antiAfkView = null, Func<QuestConvenienceView>? questView = null, Func<LatencyView>? latencyView = null, Func<MountCollectionView>? mountView = null,
         Action? refreshMounts = null, Action? retryMounts = null, Action<uint, Vector2>? mountIcon = null, Func<FashionView>? fashionView = null, Action? refreshFashion = null, Action? retryFashion = null,
-        Func<SentinelHub.Health.HealthView>? healthView=null, Action? refreshHealth=null, Action? publicVersions=null) : base(WindowId)
+        Func<SentinelHub.Health.HealthView>? healthView=null, Action? refreshHealth=null, Action? publicVersions=null,
+        Func<SentinelHub.Compatibility.CompatibilityView>? compatibilityView=null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.questView = questView ?? (() => QuestConvenienceView.Off);
         this.latencyView = latencyView ?? (() => LatencyView.Off);
         health=new(healthView??(()=>SentinelHub.Health.HealthView.Empty),refreshHealth??(()=>{}),publicVersions??(()=>{}));
+        compatibility=new(compatibilityView??(()=>SentinelHub.Compatibility.CompatibilityView.Empty));
         mounts = new(config, mountView ?? (() => MountCollectionView.Empty), save,
             refreshMounts ?? (() => {}), retryMounts ?? (() => {}), mountIcon);
         fashion = new(config, fashionView ?? (() => FashionView.Empty), save, refreshFashion ?? (() => {}), retryFashion ?? (() => {}), mountIcon);
@@ -245,6 +248,7 @@ public sealed class MainWindow : Window, IDisposable
     }
     private void DrawUtilities()
     {
+        compatibility.Draw();
         var view = antiAfkView();
         ImGui.TextWrapped("Prevent AFK Disconnect");
         var enabled = config.AntiAfkEnabled;

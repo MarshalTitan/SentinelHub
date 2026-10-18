@@ -15,21 +15,24 @@ public sealed class QuestConvenienceController : IDisposable
     private readonly QuestExecutionSession session;
     private readonly ICallGateProvider<bool> requested;
     private readonly string token = Guid.NewGuid().ToString("N");
+    private readonly Func<bool> suspended;
+    private readonly Func<QuestConvenienceOptions,QuestConvenienceOptions> effective;
     private bool claimed;
     private bool disposed;
     public QuestConvenienceView View { get; private set; } = QuestConvenienceView.Off;
     public QuestConvenienceController(IDalamudPluginInterface pi, IClientState client, IGameGui gui, ICondition condition,
-        IObjectTable objects, IDataManager data, HubSettings settings, FaultJournal faults)
+        IObjectTable objects, IDataManager data, HubSettings settings, FaultJournal faults, Func<bool>? suspended=null, Func<QuestConvenienceOptions,QuestConvenienceOptions>? effective=null)
     {
-        this.pi = pi; this.client = client; this.settings = settings; this.faults = faults;
+        this.pi = pi; this.client = client; this.settings = settings; this.faults = faults; this.suspended=suspended??(()=>false);this.effective=effective??(o=>o);
         engine = new(gui, condition, objects, data, new DiagnosticBuffer(64));
         session = new(options => engine.Update(options, true, client.TerritoryType), engine.Dispose);
         requested = pi.GetIpcProvider<bool>("SentinelHub.Quest.Enabled");
-        requested.RegisterFunc(() => !disposed && settings.QuestConvenienceEnabled);
+        requested.RegisterFunc(() => !disposed && settings.QuestConvenienceEnabled && !this.suspended());
     }
     public void Tick()
     {
         if (disposed) return;
+        if(suspended()){session.Stop(QuestConvenienceState.Paused);Release();View=new(QuestConvenienceState.Paused,null,"Paused","Pending actions cleared","Paused");return;}
         int? saved = null;
         try
         {
@@ -58,7 +61,7 @@ public sealed class QuestConvenienceController : IDisposable
             }
             var state = QuestConvenienceOwnershipPolicy.Resolve(settings.QuestConvenienceEnabled, client.IsLoggedIn,
                 hud is not null, hud?.IsLoaded == true, hud?.Manifest.AssemblyVersion.ToString(), acknowledged);
-            session.Tick(state, QuestPreferenceCodec.Encode(settings.QuestOptions()), Environment.TickCount64);
+            session.Tick(state, QuestPreferenceCodec.Encode(effective(settings.QuestOptions())), Environment.TickCount64);
             if (session.State != QuestConvenienceState.Active) Release();
             if (session.State == QuestConvenienceState.Faulted) faults.Record(FaultCode.QuestConvenienceOwnershipUnavailable);
             View = new(session.State, saved, engine.DialogueState, engine.CutsceneState, engine.RewardState);
@@ -88,3 +91,4 @@ public sealed class QuestConvenienceController : IDisposable
         View = QuestConvenienceView.Off;
     }
 }
+

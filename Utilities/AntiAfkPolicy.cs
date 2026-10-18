@@ -1,11 +1,12 @@
 namespace SentinelHub.Utilities;
-public enum AntiAfkState { Off, WaitingForLogin, LegacyHudInstalled, WaitingForHud, Active, TimerUnavailable, Faulted }
+public enum AntiAfkState { Off, WaitingForLogin, LegacyHudInstalled, WaitingForHud, Active, TimerUnavailable, Faulted, Paused }
 public sealed record AntiAfkView(AntiAfkState State, long Cycles, bool? HudPreference)
 {
     public static AntiAfkView Off => new(AntiAfkState.Off, 0, null);
     public string Description => State switch
     {
         AntiAfkState.Off => "Off",
+        AntiAfkState.Paused => "Paused by Sentinel safety controls; saved preference retained.",
         AntiAfkState.WaitingForLogin => "Waiting for login",
         AntiAfkState.LegacyHudInstalled => "Blocked: update Sentinel HUD to 0.8.4.6 or later before enabling Hub Anti-AFK.",
         AntiAfkState.WaitingForHud => "Waiting for a compatible HUD ownership acknowledgment. Hub is not resetting timers.",
@@ -48,3 +49,4 @@ public sealed class AntiAfkEngine(Func<bool> resetTimers)
     }
     public void Suspend(AntiAfkState state = AntiAfkState.Off) { State = state; next = 0; }
 }
+

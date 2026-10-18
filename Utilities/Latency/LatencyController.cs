@@ -16,11 +16,12 @@ public sealed class LatencyController : IDisposable
     private uint? territory;
     private HashSet<uint>? instantActions;
     private bool disposed;
+    private readonly Func<bool> suspended;
     public LatencyView View => lifecycle.View;
     public LatencyController(IDalamudPluginInterface pi, IGameInteropProvider interop, IDataManager data, IClientState client,
-        ICondition condition, IObjectTable objects, HubSettings settings, FaultJournal faults)
+        ICondition condition, IObjectTable objects, HubSettings settings, FaultJournal faults, Func<bool>? suspended=null)
     {
-        this.client = client; this.condition = condition; this.objects = objects; this.settings = settings; this.faults = faults;
+        this.client = client; this.condition = condition; this.objects = objects; this.settings = settings; this.faults = faults;this.suspended=suspended??(()=>false);
         conflicts = new(pi);
         lifecycle = new(mode =>
         {
@@ -37,6 +38,7 @@ public sealed class LatencyController : IDisposable
     private LatencyState Readiness(bool force)
     {
         if (disposed || settings.LatencyMode == LatencyMode.Off) return LatencyState.Off;
+        if (suspended()) return LatencyState.Paused;
         if (!client.IsLoggedIn || objects.LocalPlayer is null) return LatencyState.WaitingForLogin;
         if (objects.LocalPlayer.IsDead || condition[ConditionFlag.BetweenAreas] || condition[ConditionFlag.BetweenAreas51]
             || condition[ConditionFlag.OccupiedInCutSceneEvent] || condition[ConditionFlag.WatchingCutscene] || condition[ConditionFlag.WatchingCutscene78])
@@ -67,3 +69,4 @@ public sealed class LatencyController : IDisposable
         try { lifecycle.Dispose(); } catch { faults.Record(FaultCode.LatencyUnavailable); }
     }
 }
+

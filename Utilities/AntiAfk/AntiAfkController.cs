@@ -13,18 +13,20 @@ public sealed class AntiAfkController : IDisposable
     private readonly AntiAfkEngine engine = new(NativeInactivityTimers.TryReset);
     private readonly ICallGateProvider<bool> requested;
     private readonly string token = Guid.NewGuid().ToString("N"); // In-memory lease identity; never exported.
+    private readonly Func<bool> suspended;
     private bool claimed;
     private bool disposed;
     public AntiAfkView View { get; private set; } = AntiAfkView.Off;
-    public AntiAfkController(IDalamudPluginInterface pi, IClientState client, HubSettings settings, FaultJournal faults)
+    public AntiAfkController(IDalamudPluginInterface pi, IClientState client, HubSettings settings, FaultJournal faults, Func<bool>? suspended=null)
     {
-        this.pi = pi; this.client = client; this.settings = settings; this.faults = faults;
+        this.pi = pi; this.client = client; this.settings = settings; this.faults = faults; this.suspended=suspended??(()=>false);
         requested = pi.GetIpcProvider<bool>("SentinelHub.AntiAfk.Enabled");
-        requested.RegisterFunc(() => !disposed && settings.AntiAfkEnabled);
+        requested.RegisterFunc(() => !disposed && settings.AntiAfkEnabled && !this.suspended());
     }
     public void Tick()
     {
         if (disposed) return;
+        if(suspended()){engine.Suspend(AntiAfkState.Paused);Release();View=new(AntiAfkState.Paused,engine.Cycles,null);return;}
         try
         {
             var hud = pi.InstalledPlugins.FirstOrDefault(p => p.InternalName == "SentinelHUD");
@@ -80,3 +82,4 @@ public sealed class AntiAfkController : IDisposable
         View = new(AntiAfkState.Off, engine.Cycles, null);
     }
 }
+

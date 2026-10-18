@@ -3,6 +3,8 @@ using SentinelHub.Health;
 using System.Text;
 using System.IO.Compression;
 using SentinelHub.Diagnostics;
+using SentinelHub.Compatibility;
+using SentinelHub.Utilities.Quest;
 internal static class OperationsTests
 {
     public static void Run(Action<string,Action> test,Action<bool> check)
@@ -51,6 +53,23 @@ internal static class OperationsTests
             foreach(var json in new string?[]{null,"{","{}","{\"Schema\":2,\"State\":1,\"Warnings\":0,\"Errors\":0}","{\"Schema\":1,\"State\":999,\"Warnings\":0,\"Errors\":0}",new string('x',16385)})
                 check(DiagnosticProviderPolicy.Parse("SentinelRelay",json).State==ProviderState.Unavailable);
             var failed=false;try{DiagnosticProviderPolicy.Parse("arbitrary",null);}catch{failed=true;}check(failed);
+        });
+        test("Compatibility distinguishes definite/possible/inactive and suspends only Hub's overlapping features",()=>{
+            var saved=new QuestConvenienceOptions{SkipDialogue=true,SkipCutscenes=true,QuestRewardSelection=QuestRewardSelectionMode.FirstReward};
+            var view=new CompatibilityView(CompatibilityPolicy.TextAdvance(true,true,false,true,false,true));
+            check(view.Findings.Count(x=>x.Kind==OverlapKind.Definite)==2);
+            var effective=view.Effective(saved);check(!effective.SkipDialogue&&effective.SkipCutscenes&&effective.QuestRewardSelection==QuestRewardSelectionMode.Manual);
+            check(saved.SkipDialogue&&saved.SkipCutscenes&&saved.QuestRewardSelection==QuestRewardSelectionMode.FirstReward);
+            check(!new CompatibilityView(CompatibilityPolicy.TextAdvance(true,false,false,true,true,true)).Blocks(CompatibilityFeature.Dialogue));
+            check(!new CompatibilityView(CompatibilityPolicy.TextAdvance(true,true,true,true,true,true)).Blocks(CompatibilityFeature.Dialogue));
+            check(CompatibilityPolicy.TextAdvance(false,null,null,null,null,null).Length==0);
+        });
+        test("Compatibility unknown active state protects Hub and recovery restores effective saved preferences",()=>{
+            var unknown=new CompatibilityView(CompatibilityPolicy.TextAdvance(true,null,null,null,null,null));
+            check(unknown.Findings.All(f=>f.Kind==OverlapKind.Possible&&f.SuspendHub));
+            var saved=new QuestConvenienceOptions{SkipDialogue=true};check(!unknown.Effective(saved).SkipDialogue);
+            var recovered=new CompatibilityView(CompatibilityPolicy.TextAdvance(true,true,false,false,false,false));
+            check(recovered.Effective(saved).SkipDialogue);
         });
     }
 }
