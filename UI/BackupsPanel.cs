@@ -17,7 +17,8 @@ public sealed class BackupsPanel(Func<BackupView> view,Action<string> create,Act
         if(ImGui.Button("Refresh backup list"))refresh();
         ImGui.TextWrapped(v.Status);
         foreach(var b in v.Items){
-            ImGui.PushID(b.Id);if(ImGui.Selectable(b.Name+"##Backup",selected==b.Id))Select(b.Id);
+            ImGui.PushID(b.Id);if(ImGui.Selectable((selected==b.Id?"Selected backup":"Select backup")+"##Backup",selected==b.Id))Select(b.Id);
+            ImGui.TextWrapped(b.Name);
             ImGui.TextWrapped(b.Valid?b.At.ToLocalTime().ToString("g")+" — "+string.Join(", ",b.Owners):"Invalid format/checksum/schema; restore unavailable.");ImGui.PopID();
         }
         var item=v.Items.FirstOrDefault(i=>i.Id==selected);

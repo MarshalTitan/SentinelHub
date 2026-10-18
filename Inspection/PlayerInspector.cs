@@ -23,6 +23,12 @@ public sealed class PlayerInspector(IObjectTable objects,IPlayerState own,IClien
             var actor=LiveOrnamentReader.Capture(player,framework);
             if(!actor.Valid||!actor.DrawLoaded||actor.Transformed){View=InspectorView.Empty;return;}
             var emote=LiveEmoteReader.Capture(player,framework);
+            var barding=LiveBardingReader.Capture(player,objects,framework);
+            var slots=data.Loaded?BardingPolicy.Resolve(barding,data.FindBarding):[];
+            var bardingPart=!data.Loaded?new InspectionPart(InspectionState.Unavailable,null,"Loading local barding data."):
+                !barding.Valid?new(InspectionState.Unavailable,null,"Owned chocobo appearance unavailable/loading/transformed/ambiguous."):
+                !barding.Present?new(InspectionState.None,null,"No loaded owned chocobo companion or Company Chocobo mount."):
+                new(slots.Any(s=>s.State==InspectionState.UnknownId)?InspectionState.UnknownId:InspectionState.Found,null,"Exact local model matching; ambiguous aliases remain unknown.");
             var mount=InspectionPolicy.Resolve(InspectionKind.Mount,player.CurrentMount?.RowId??0,data.Find);
             var fashion=InspectionPolicy.Resolve(InspectionKind.Fashion,actor.OrnamentId,data.Find);
             var current=objects.SearchById(t.ObjectId) as IPlayerCharacter;
@@ -30,7 +36,7 @@ public sealed class PlayerInspector(IObjectTable objects,IPlayerState own,IClien
             View=new(true,DateTimeOffset.UtcNow,mount,fashion,
                 data.Failed?new(InspectionState.Unavailable,null,"Local inspection catalog unavailable."):
                 !data.Loaded?new(InspectionState.Unavailable,null,"Loading local Emote/BuddyEquip data…"):
-                InspectionPolicy.Emote(emote,id=>data.Find(InspectionKind.Emote,id),data.EmoteMode),InspectorView.Empty.Barding);
+                InspectionPolicy.Emote(emote,id=>data.Find(InspectionKind.Emote,id),data.EmoteMode),bardingPart){BardingSlots=slots};
         }catch{Clear();}
     }
 }

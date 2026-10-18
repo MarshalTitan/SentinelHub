@@ -18,15 +18,17 @@ public sealed class PlayerInspectorPanel(HubSettings settings,Action save,Func<I
         Part("Fashion accessory",v.Fashion);
         if(v.Fashion.Entry is {} f&&ImGui.Button("Open Fashion Accessories entry"))fashion(f.Id);
         Part("Current emote",v.Emote);
-        ImGui.Separator();ImGui.TextWrapped(v.Barding.Detail);
-        ImGui.TextWrapped("Barding ownership/names exist in local sheets, but remote appearance IDs are not resolved until their live mapping is verified. One-shot emotes and pose states are intentionally not guessed.");
+        ImGui.Separator();ImGui.TextWrapped("Chocobo barding: "+v.Barding.State);ImGui.TextWrapped(v.Barding.Detail);
+        var labels=new[]{"Head barding","Body barding","Leg barding"};
+        for(var i=0;i<v.BardingSlots.Length&&i<labels.Length;i++)Part(labels[i],v.BardingSlots[i]);
+        ImGui.TextWrapped("Only a currently loaded owned chocobo or Company Chocobo mount is examined. Other mounts and ambiguous model matches are not treated as barding. One-shot emotes and pose states are intentionally not guessed.");
     }
     private void Part(string title,InspectionPart p)
     {
         ImGui.Separator();ImGui.TextWrapped(title+": "+(p.State==InspectionState.None?"None identifiable currently active":p.State.ToString()));
         if(p.Entry is {} e){
             icon?.Invoke(e.Icon,new Vector2(32*ImGuiHelpers.GlobalScale));ImGui.TextWrapped(e.Name+(e.Command.Length>0?" ("+e.Command+")":""));
-            if(e.Kind==InspectionKind.Emote){
+            if(e.Kind is InspectionKind.Emote or InspectionKind.Barding){
                 ImGui.TextWrapped("Your unlock: "+(e.Owned is true?"Unlocked":e.Owned is false?"Locked":"Unknown"));
                 ImGui.TextWrapped("Source category: "+e.Category);
                 if(e.Sources.Length==0)ImGui.TextWrapped("Acquisition source: Unknown");

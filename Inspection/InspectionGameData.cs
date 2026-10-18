@@ -7,6 +7,7 @@ public sealed class InspectionGameData(IDataManager data,IUnlockState unlocks,Fu
 {
     private readonly Dictionary<(InspectionKind,uint),InspectionEntry> entries=new();
     private readonly Dictionary<uint,uint> modes=new();
+    private readonly List<BardingModel> bardingModels=[];
     private IEnumerator<int>? build;
     private bool attempted;
     public bool Loaded {get;private set;}
@@ -30,6 +31,14 @@ public sealed class InspectionGameData(IDataManager data,IUnlockState unlocks,Fu
         return entry with{Owned=owned};
     }
     public uint? EmoteMode(uint id)=>modes.TryGetValue(id,out var mode)?mode:null;
+    public InspectionEntry? FindBarding(BardingSlot slot,ulong model)
+    {
+        var id=BardingPolicy.Match(bardingModels,slot,model);if(id is null or 0)return null;
+        var entry=Find(InspectionKind.Barding,id.Value);if(entry is null)return null;
+        var row=data.GetExcelSheet<BuddyEquip>().GetRowOrDefault(id.Value);if(row is null)return null;
+        var icon=slot switch{BardingSlot.Head=>row.Value.IconHead,BardingSlot.Body=>row.Value.IconBody,_=>row.Value.IconLegs};
+        return entry with{Icon=icon};
+    }
     private IEnumerator<int> Build()
     {
         var links=new Dictionary<uint,List<(InspectionKind,uint)>>();
@@ -47,6 +56,7 @@ public sealed class InspectionGameData(IDataManager data,IUnlockState unlocks,Fu
         foreach(var b in data.GetExcelSheet<BuddyEquip>()){
             if(b.RowId>0&&b.RowId<=byte.MaxValue&&!string.IsNullOrWhiteSpace(b.Name.ToString())){
                 var key=(InspectionKind.Barding,b.RowId);entries.Add(key,new(key.Item1,key.RowId,b.Name.ToString(),b.IconHead!=0?b.IconHead:b.IconBody,"",null,[],"Unknown"));sources[key]=[];
+                bardingModels.Add(new(b.RowId,(ulong)b.ModelTop,(ulong)b.ModelBody,(ulong)b.ModelLegs));
             }
             if(++work%128==0)yield return 1;
         }

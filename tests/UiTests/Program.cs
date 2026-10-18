@@ -268,6 +268,23 @@ internal static class Program
                 actor.GameObject.EntityId=43;
                 Check(!LiveEmoteReader.ObserveFields((nint)(&actor),42,5,true,emoteGuard).Valid,"Reused emote actor identity was accepted");
                 Console.WriteLine("PASS typed emote reader active/ended/thread/identity fixtures.");
+                actor.GameObject.EntityId=84;actor.GameObject.ObjectIndex=7;actor.GameObject.OwnerId=42;
+                actor.GameObject.ObjectKind=FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind.BattleNpc;
+                actor.GameObject.BattleNpcSubKind=FFXIVClientStructs.FFXIV.Client.Game.Object.BattleNpcSubKind.Buddy;
+                actor.DrawData.Equipment(FFXIVClientStructs.FFXIV.Client.Game.Character.DrawDataContainer.EquipmentSlot.Head).Value=0x10001;
+                actor.DrawData.Equipment(FFXIVClientStructs.FFXIV.Client.Game.Character.DrawDataContainer.EquipmentSlot.Body).Value=0x10002;
+                actor.DrawData.Equipment(FFXIVClientStructs.FFXIV.Client.Game.Character.DrawDataContainer.EquipmentSlot.Feet).Value=0x10003;
+                var barding=LiveBardingReader.ObserveFields((nint)(&actor),84,7,42,true,true,false);
+                Check(barding==new BardingObservation(true,true,0x10001,0x10002,0x10003),"Typed barding models were not read by their supported slots");
+                Check(!LiveBardingReader.ObserveFields((nint)(&actor),84,7,99,true,true,false).Valid,"Another owner's companion was accepted");
+                Check(!LiveBardingReader.ObserveFields(1,84,7,42,false,true,false).Valid,"Wrong-thread barding reader dereferenced a pointer");
+                actor.GameObject.ObjectKind=FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind.Mount;
+                Check(LiveBardingReader.ObserveFields((nint)(&actor),84,7,42,true,true,true).Valid,"Validated Company Chocobo mount wrapper was rejected");
+                actor.CharacterData.TransformationId=1;
+                Check(!LiveBardingReader.ObserveFields((nint)(&actor),84,7,42,true,true,true).Valid,"Transformed chocobo model was accepted");
+                actor.CharacterData.TransformationId=0;actor.GameObject.DrawObject=null;
+                Check(!LiveBardingReader.ObserveFields((nint)(&actor),84,7,42,true,true,true).Valid,"Unloaded chocobo model was accepted");
+                Console.WriteLine("PASS typed barding model/thread/owner/kind/transformation/unloaded fixtures.");
                 var fashionRows=new[]{
                     new FashionEntry(16,"An extremely long localized fashion accessory title that wraps in a narrow window","Red Moon Parasol",0,3288,15,"5.55",3,
                         [new("Seasonal / event","The Rising 2021, a historical source with a lengthy explanation of eligibility and current uncertainty","Community snapshot 2026-10-18","https://ffxivcollect.com/fashions/16"),

@@ -99,7 +99,7 @@ internal static class OperationsTests
             check(!InspectionPolicy.SessionMatches(t,1,2,3,4,5,200,true,false));
             check(InspectionPolicy.Resolve(InspectionKind.Mount,0,(_,_)=>throw new Exception()).State==InspectionState.None);
             check(InspectionPolicy.Resolve(InspectionKind.Fashion,999,(_,_)=>null).State==InspectionState.UnknownId);
-            check(InspectorView.Empty.Barding.State==InspectionState.Unsupported);
+            check(InspectorView.Empty.Barding.State==InspectionState.Unavailable);
         });
         test("Pause requires acknowledgement, respects unsupported/missing/rejecting participants and resumes only its own lease",()=>{
             var paused=false;var writes=0;
@@ -113,6 +113,19 @@ internal static class OperationsTests
             check(PausePolicy.Resolve("owner",true,true,true,()=>1,_=>true,()=>false).State==PauseState.Pending);
             check(PausePolicy.Resolve("owner",false,true,true,()=>1,_=>true,()=>true,true).State==PauseState.RemainsPaused);
             check(!new PauseView(true,[new("owner",PauseState.Unsupported,"")]).FullyAcknowledged);
+        });
+        test("Barding model mapping requires a unique exact encoded model and handles missing/invalid metadata",()=>{
+            var rows=new[]{new BardingModel(1,0x10001,0x10002,0x10003),new BardingModel(2,0x20001,0x20002,0x20003)};
+            check(BardingPolicy.Match(rows,BardingSlot.Head,0x10001)==1);
+            check(BardingPolicy.Match(rows,BardingSlot.Body,0x20002)==2);
+            check(BardingPolicy.Match(rows,BardingSlot.Legs,0x10003)==1);
+            check(BardingPolicy.Match(rows,BardingSlot.Head,0)==0&&BardingPolicy.Match(rows,BardingSlot.Head,9999) is null);
+            check(BardingPolicy.Match([..rows,new(3,0x10001,0,0)],BardingSlot.Head,0x10001) is null);
+            check(BardingPolicy.Match([new(0,0x10001,0,0),new(999,0x10001,0,0)],BardingSlot.Head,0x10001) is null);
+            check(BardingPolicy.Resolve(new(true,false,0,0,0),(_,_)=>throw new Exception()).Length==0);
+            check(BardingPolicy.Resolve(default,(_,_)=>throw new Exception()).Length==0);
+            var parts=BardingPolicy.Resolve(new(true,true,0x10001,0,999),(_,_)=>null);
+            check(parts.Length==3&&parts[0].State==InspectionState.UnknownId&&parts[1].State==InspectionState.None&&parts[2].State==InspectionState.UnknownId);
         });
         test("Activity retention, grouping and severity are bounded and typed",()=>{
             var journal=new ActivityJournal();var now=DateTimeOffset.UtcNow;
