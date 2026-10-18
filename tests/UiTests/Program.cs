@@ -339,8 +339,8 @@ internal static class Program
                 Console.WriteLine($"PASS {identifyCases} shared mount/fashion identification result cases.");
 
                 Console.WriteLine("PASS 198 native Latency mode/state/theme/scale cases.");
-                Console.WriteLine("PASS 288 native Quest state/import/mode/theme/scale cases.");
-                Console.WriteLine("PASS 42 native Anti-AFK state/theme/scale cases.");
+                Console.WriteLine("PASS "+(Enum.GetValues<QuestConvenienceState>().Length*48)+" native Quest state/import/mode/theme/scale cases.");
+                Console.WriteLine("PASS "+(Enum.GetValues<AntiAfkState>().Length*6)+" native Anti-AFK state/theme/scale cases.");
                 Console.WriteLine($"PASS {pages} native rendered page/state/width/theme/scale cases; collapse/restore and balanced stacks.");
                 // Exercise actual Hub appearance switch via native keyboard/gamepad activation.
                 foreach (var key in new[] { ImGuiKey.Space, ImGuiKey.GamepadFaceDown })

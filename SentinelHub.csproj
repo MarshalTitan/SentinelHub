@@ -13,5 +13,5 @@
 <ItemGroup><EmbeddedResource Include="Mounts/Data/Acquisition.json" LogicalName="SentinelHub.MountSources.json"/><EmbeddedResource Include="Mounts/Data/StoreLinks.json" LogicalName="SentinelHub.MountStoreLinks.json"/></ItemGroup>
 <ItemGroup><EmbeddedResource Include="Fashion/Data/Acquisition.json" LogicalName="SentinelHub.FashionSources.json"/><EmbeddedResource Include="Fashion/Data/Corrections.json" LogicalName="SentinelHub.FashionCorrections.json"/></ItemGroup>
 <ItemGroup><AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute"><_Parameter1>SentinelHub.UiTests</_Parameter1></AssemblyAttribute></ItemGroup>
-</Project>
+<ItemGroup><EmbeddedResource Include="Inspection/Data/Emotes.json" LogicalName="SentinelHub.InspectionEmotes.json"/><EmbeddedResource Include="Inspection/Data/Bardings.json" LogicalName="SentinelHub.InspectionBardings.json"/></ItemGroup></Project>
 

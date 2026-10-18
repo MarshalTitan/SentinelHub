@@ -1,4 +1,5 @@
 using Dalamud.Plugin.Services;
+using Dalamud.Game;
 using Lumina.Excel.Sheets;
 namespace SentinelHub.Inspection;
 
@@ -45,11 +46,15 @@ public sealed class InspectionGameData(IDataManager data,IUnlockState unlocks,Fu
         var itemLinks=new Dictionary<uint,List<(InspectionKind,uint)>>();
         var sources=new Dictionary<(InspectionKind,uint),List<string>>();int work=0;
         void AddLink(uint key,(InspectionKind,uint) value){if(key==0)return;if(!links.TryGetValue(key,out var list))links[key]=list=[];list.Add(value);}
+        var englishEmotes=data.GetExcelSheet<Emote>(ClientLanguage.English);
+        var englishBardings=data.GetExcelSheet<BuddyEquip>(ClientLanguage.English);
         foreach(var e in data.GetExcelSheet<Emote>()){
             var name=e.Name.ToString();var command=e.TextCommand.IsValid?e.TextCommand.Value.Command.ToString():"";
             if(e.RowId>0&&e.RowId<=ushort.MaxValue&&!string.IsNullOrWhiteSpace(name)&&e.Icon>0&&command.StartsWith('/')&&command.Length<=80){
                 var key=(InspectionKind.Emote,e.RowId);entries.Add(key,new(key.Item1,key.RowId,name,e.Icon,command,null,[],"Unknown"));
-                modes.Add(e.RowId,e.EmoteMode.RowId);sources[key]=[];AddLink(e.UnlockLink,key);
+                var fact=InspectionMetadata.Find(InspectionKind.Emote,e.RowId,englishEmotes.GetRowOrDefault(e.RowId)?.Name.ToString()??"");
+                entries[key]=entries[key] with{Patch=InspectionMetadata.Patch(fact?.Patch),Expansion=InspectionMetadata.Expansion(fact?.Patch),Category=fact is not null&&fact.Sources.Length>0?string.Join(", ",fact.Sources.Select(InspectionMetadata.Category).Distinct().Take(6)):"Unknown"};
+                modes.Add(e.RowId,e.EmoteMode.RowId);sources[key]=fact is null?[]:[..InspectionMetadata.Sources(InspectionKind.Emote,fact)];AddLink(e.UnlockLink,key);
             }
             if(++work%128==0)yield return 1;
         }
@@ -57,6 +62,9 @@ public sealed class InspectionGameData(IDataManager data,IUnlockState unlocks,Fu
             if(b.RowId>0&&b.RowId<=byte.MaxValue&&!string.IsNullOrWhiteSpace(b.Name.ToString())){
                 var key=(InspectionKind.Barding,b.RowId);entries.Add(key,new(key.Item1,key.RowId,b.Name.ToString(),b.IconHead!=0?b.IconHead:b.IconBody,"",null,[],"Unknown"));sources[key]=[];
                 bardingModels.Add(new(b.RowId,(ulong)b.ModelTop,(ulong)b.ModelBody,(ulong)b.ModelLegs));
+                var fact=InspectionMetadata.Find(InspectionKind.Barding,b.RowId,englishBardings.GetRowOrDefault(b.RowId)?.Name.ToString()??"");
+                entries[key]=entries[key] with{Patch=InspectionMetadata.Patch(fact?.Patch),Expansion=InspectionMetadata.Expansion(fact?.Patch),Category=fact is not null&&fact.Sources.Length>0?string.Join(", ",fact.Sources.Select(InspectionMetadata.Category).Distinct().Take(6)):"Unknown"};
+                if(fact is not null)sources[key].AddRange(InspectionMetadata.Sources(InspectionKind.Barding,fact));
             }
             if(++work%128==0)yield return 1;
         }
@@ -89,7 +97,7 @@ public sealed class InspectionGameData(IDataManager data,IUnlockState unlocks,Fu
         }
         foreach(var key in entries.Keys.ToArray()){
             var s=sources[key].Distinct(StringComparer.Ordinal).Take(16).ToArray();
-            entries[key]=entries[key] with{Sources=s,Category=s.Length==0?"Unknown":"Game reward/shop evidence"};
+            entries[key]=entries[key] with{Sources=s,Category=entries[key].Category=="Unknown"&&s.Length>0?"Game reward/shop evidence":entries[key].Category};
         }
     }
 }

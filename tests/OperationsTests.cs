@@ -127,6 +127,18 @@ internal static class OperationsTests
             var parts=BardingPolicy.Resolve(new(true,true,0x10001,0,999),(_,_)=>null);
             check(parts.Length==3&&parts[0].State==InspectionState.UnknownId&&parts[1].State==InspectionState.None&&parts[2].State==InspectionState.UnknownId);
         });
+        test("Inspection acquisition snapshot covers all 107 barding and 201 emote identities with exact ID/name gates",()=>{
+            check(InspectionMetadata.Bardings.Rows.Length==107&&InspectionMetadata.Emotes.Rows.Length==201);
+            foreach(var kind in new[]{InspectionKind.Barding,InspectionKind.Emote}){
+                var snapshot=kind==InspectionKind.Barding?InspectionMetadata.Bardings:InspectionMetadata.Emotes;
+                foreach(var fact in snapshot.Rows){check(InspectionMetadata.Find(kind,fact.Id,fact.EnglishName)==fact);check(InspectionMetadata.Find(kind,fact.Id,fact.EnglishName+" changed") is null);}
+            }
+            check(InspectionMetadata.Patch("7.55")=="7.55"&&InspectionMetadata.Expansion("3.55a")=="Heavensward");
+            check(InspectionMetadata.Patch("unknown") is null&&InspectionMetadata.Expansion("8.0") is null);
+            check(InspectionMetadata.Category(new("Premium","Online Store"))=="Online Store (recorded source)");
+            var snapshotBad=InspectionMetadata.Emotes with{Rows=[InspectionMetadata.Emotes.Rows[0],InspectionMetadata.Emotes.Rows[0]]};
+            var rejected=false;try{InspectionMetadata.Validate(snapshotBad,"Emote","emotes");}catch{rejected=true;}check(rejected);
+        });
         test("Activity retention, grouping and severity are bounded and typed",()=>{
             var journal=new ActivityJournal();var now=DateTimeOffset.UtcNow;
             for(var i=0;i<1000;i++)journal.Add("SentinelHub",ActivityCode.DiagnosticsSaved,now);
