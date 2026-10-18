@@ -33,12 +33,13 @@ public sealed class MainWindow : Window, IDisposable
     private readonly FashionAccessoriesPanel fashion;
     private readonly HealthPanel health;
     private readonly CompatibilityPanel compatibility;
+    private readonly PlayerInspectorPanel inspector;
     private PlayerIdentification? identification;
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
     private readonly SentinelModernNavItem[] navigation;
     private static readonly HubPage[] PageOrder = [HubPage.Dashboard, HubPage.Plugins, HubPage.Profiles, HubPage.Dependencies,
-        HubPage.Utilities, HubPage.Mounts, HubPage.Fashion, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
+        HubPage.Utilities, HubPage.Mounts, HubPage.Fashion, HubPage.PlayerInspector, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
     private Vector2 frameSize;
     private Vector2? pendingSize;
     private bool modern;
@@ -48,13 +49,15 @@ public sealed class MainWindow : Window, IDisposable
         Func<bool> systemReducedMotion, Func<ImFontPtr>? iconFont = null, Func<AntiAfkView>? antiAfkView = null, Func<QuestConvenienceView>? questView = null, Func<LatencyView>? latencyView = null, Func<MountCollectionView>? mountView = null,
         Action? refreshMounts = null, Action? retryMounts = null, Action<uint, Vector2>? mountIcon = null, Func<FashionView>? fashionView = null, Action? refreshFashion = null, Action? retryFashion = null,
         Func<SentinelHub.Health.HealthView>? healthView=null, Action? refreshHealth=null, Action? publicVersions=null,
-        Func<SentinelHub.Compatibility.CompatibilityView>? compatibilityView=null) : base(WindowId)
+        Func<SentinelHub.Compatibility.CompatibilityView>? compatibilityView=null,
+        Func<SentinelHub.Inspection.InspectorView>? inspectorView=null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.questView = questView ?? (() => QuestConvenienceView.Off);
         this.latencyView = latencyView ?? (() => LatencyView.Off);
         health=new(healthView??(()=>SentinelHub.Health.HealthView.Empty),refreshHealth??(()=>{}),publicVersions??(()=>{}));
         compatibility=new(compatibilityView??(()=>SentinelHub.Compatibility.CompatibilityView.Empty));
+        inspector=new(config,save,inspectorView??(()=>SentinelHub.Inspection.InspectorView.Empty),OpenMount,OpenFashion,mountIcon);
         mounts = new(config, mountView ?? (() => MountCollectionView.Empty), save,
             refreshMounts ?? (() => {}), retryMounts ?? (() => {}), mountIcon);
         fashion = new(config, fashionView ?? (() => FashionView.Empty), save, refreshFashion ?? (() => {}), retryFashion ?? (() => {}), mountIcon);
@@ -72,11 +75,11 @@ public sealed class MainWindow : Window, IDisposable
     private static FontAwesomeIcon Icon(HubPage p) => p switch
     {
         HubPage.Dashboard => FontAwesomeIcon.Home, HubPage.Plugins => FontAwesomeIcon.Cubes,
-        HubPage.Profiles => FontAwesomeIcon.Users, HubPage.Dependencies => FontAwesomeIcon.Link,
+        HubPage.Profiles => FontAwesomeIcon.Users, HubPage.Dependencies => FontAwesomeIcon.Link, HubPage.PlayerInspector=>FontAwesomeIcon.Search,
         HubPage.Utilities => FontAwesomeIcon.Tools, HubPage.Diagnostics => FontAwesomeIcon.Heartbeat,
         HubPage.Appearance => FontAwesomeIcon.Palette, HubPage.Mounts => FontAwesomeIcon.Horse, HubPage.Fashion => FontAwesomeIcon.Umbrella, _ => FontAwesomeIcon.InfoCircle,
     };
-    public static string PageTitle(HubPage p) => p == HubPage.Mounts ? "Mount Collection" : p == HubPage.Fashion ? "Fashion Accessories" : p == HubPage.Dependencies ? "Health" : p.ToString();
+    public static string PageTitle(HubPage p) => p == HubPage.Mounts ? "Mount Collection" : p == HubPage.Fashion ? "Fashion Accessories" : p == HubPage.Dependencies ? "Health" : p==HubPage.PlayerInspector?"Player Inspector":p.ToString();
     public override void PreDraw()
     {
         style.Pop();
@@ -102,7 +105,7 @@ public sealed class MainWindow : Window, IDisposable
             SentinelModernAppShell.Draw(new("SentinelHub.Modern", "Sentinel Hub", config.Page.ToString())
             {
                 Scale = ImGuiHelpers.GlobalScale, DeltaTime = ImGui.GetIO().DeltaTime,
-                Layout = SentinelModernAppLayoutOptions.Default with { RailButtonSize = frameSize.Y / ImGuiHelpers.GlobalScale < 620 ? 32 : SentinelModernAppLayoutOptions.Default.RailButtonSize },
+                Layout = SentinelModernAppLayoutOptions.Default with { RailButtonSize = Math.Clamp((frameSize.Y / ImGuiHelpers.GlobalScale - 108) / PageOrder.Length - 8,22,42) },
                 ReducedMotion = config.ReducedMotion || systemReducedMotion(),
                 EnableWindowDragging = true,
                 RequestCollapse = ToggleCollapse, CollapseTooltip = config.Collapsed ? "Expand" : "Minimize",
@@ -129,6 +132,7 @@ public sealed class MainWindow : Window, IDisposable
         config.Page = HubPage.Fashion; fashion.Select(id); OpenAndExpand(); save();
     }
     public void ClearIdentification() => identification = null;
+    public void OpenPlayerInspector(){config.Page=HubPage.PlayerInspector;OpenAndExpand();save();}
     public void OpenIdentification(PlayerIdentification result)
     {
         identification = result;
@@ -193,6 +197,7 @@ public sealed class MainWindow : Window, IDisposable
             case HubPage.About: DrawAbout(); break;
             case HubPage.Mounts: mounts.Draw(); break;
             case HubPage.Fashion: fashion.Draw(); break;
+            case HubPage.PlayerInspector: inspector.Draw(); break;
         }
         if (Notice.Length > 0) { ImGui.Spacing(); ImGui.TextWrapped(Notice); }
     }

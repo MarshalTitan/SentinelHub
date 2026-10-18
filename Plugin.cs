@@ -14,6 +14,7 @@ using SentinelHub.Fashion;
 using SentinelHub.Identification;
 using SentinelHub.Health;
 using SentinelHub.Compatibility;
+using SentinelHub.Inspection;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 namespace SentinelHub;
@@ -48,6 +49,7 @@ public sealed class Plugin : IDalamudPlugin
     private readonly PublicCatalog publicCatalog=new();
     private readonly HealthService health;
     private readonly CompatibilityScanner compatibility;
+    private readonly PlayerInspector inspector;
     private bool disposed;
     public Plugin()
     {
@@ -63,14 +65,17 @@ public sealed class Plugin : IDalamudPlugin
         latency = new(Pi, Interop, Data, Client, Condition, Objects, settings, faults,()=>compatibility.View.Blocks(CompatibilityFeature.Latency));
         mounts = new(Data, Unlocks, Client, Player, Objects, Condition, faults);
         fashion = new(Data, Unlocks, Client, Player, Objects, Condition, faults);
+        inspector=new(Objects,Player,Client,Framework,settings,()=>mounts.Ready&&fashion.Ready,
+            new InspectionGameData(Data,Unlocks,()=>mounts.Ready&&fashion.Ready));
         quickOpen = new(discovery.Capture, Commands.ProcessCommand, faults);
         window = new(settings, () => discovery.Snapshot, faults, Save, () => discovery.Refresh(true),
             (id, diagnostics) => quickOpen.Open(id, diagnostics), Export,
             () => Pi.UiBuilder.ShouldUseReducedMotion, antiAfkView: () => antiAfk.View, questView: () => quest.View, latencyView: () => latency.View,
             mountView: () => mounts.View, refreshMounts: mounts.RequestRefresh, retryMounts: mounts.Retry, mountIcon: DrawCollectionIcon, fashionView: () => fashion.View, refreshFashion: fashion.RequestRefresh, retryFashion: fashion.Retry,
             healthView:()=>health.View,refreshHealth:()=>{discovery.Refresh(true);health.Tick(true);},publicVersions:publicCatalog.Request,
-            compatibilityView:()=>compatibility.View);
-        identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, window.ClearIdentification, faults);
+            compatibilityView:()=>compatibility.View,inspectorView:()=>inspector.View);
+        identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, window.ClearIdentification, faults,
+            ticket=>{inspector.Select(ticket);window.OpenPlayerInspector();});
         windows.AddWindow(window);
         Commands.AddHandler("/shub", new CommandInfo(OnCommand) { HelpMessage = "Open Sentinel Hub. /shub export saves a sanitized Sentinel diagnostics ZIP." });
         Pi.UiBuilder.Draw += windows.Draw;
@@ -79,7 +84,7 @@ public sealed class Plugin : IDalamudPlugin
         Framework.Update += Update;
         discovery.Refresh(true);
     }
-    private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); health.Tick(); compatibility.Tick(); antiAfk.Tick(); quest.Tick(); latency.Tick(); mounts.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Mounts); fashion.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Fashion); identifyMenu.Tick(); } }
+    private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); health.Tick(); compatibility.Tick(); antiAfk.Tick(); quest.Tick(); latency.Tick(); mounts.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Mounts); fashion.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Fashion); identifyMenu.Tick(); inspector.Tick(window.IsOpen&&!settings.Collapsed&&settings.Page==Configuration.HubPage.PlayerInspector); } }
     private void DrawCollectionIcon(uint id, Vector2 size)
     {
         Dalamud.Interface.Textures.TextureWraps.IDalamudTextureWrap? wrap = null;
@@ -128,6 +133,7 @@ public sealed class Plugin : IDalamudPlugin
         publicCatalog.Dispose();
         Framework.Update -= Update;
         identifyMenu.Dispose();
+        inspector.Clear();
         fashion.Dispose();
         mounts.Dispose();
         latency.Dispose();

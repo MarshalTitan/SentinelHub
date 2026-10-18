@@ -12,6 +12,7 @@ using SentinelHub.Utilities;
 using SentinelHub.Mounts;
 using SentinelHub.Fashion;
 using SentinelHub.Identification;
+using SentinelHub.Inspection;
 using CSCharacter=FFXIVClientStructs.FFXIV.Client.Game.Character.Character;
 internal static class Program
 {
@@ -140,6 +141,23 @@ internal static class Program
                     Check(JsonSerializer.Serialize(settings)==saved,"Latency drawing changed opt-ins");
                 }
 
+                var inspectorCases=0;
+                foreach(var theme in new[]{0,1})
+                foreach(var scale in new[]{1f,1.5f,2f})
+                foreach(var state in Enum.GetValues<InspectionState>())
+                foreach(var width in new[]{480f,860f}){
+                    var settings=new HubSettings{Theme=theme,Page=HubPage.PlayerInspector,PlayerInspectorEnabled=true};
+                    var entry=new InspectionEntry(InspectionKind.Emote,123,"A long localized explicitly identified emote display name",0,"/lean",true,
+                        ["A lengthy local quest/vendor source with requirements that must wrap at minimum width"],"Game reward/shop evidence");
+                    var view=InspectorView.Empty with{Tracking=true,At=DateTimeOffset.UtcNow,Emote=new(state,state==InspectionState.Found?entry:null,"No animation or pose inference")};
+                    using var inspector=new MainWindow(settings,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>false,()=>{},()=>true,
+                        ()=>font,inspectorView:()=>view);
+                    var saved=JsonSerializer.Serialize(settings);for(var i=0;i<12;i++)Frame(inspector,new(width,500),scale);
+                    var page=theme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
+                    Check(page.ContentSize.X<=page.Size.X+1&&!page.ScrollbarX,"Inspector content overflows");
+                    Check(JsonSerializer.Serialize(settings)==saved,"Inspector rendering mutated settings");inspectorCases++;
+                }
+                Console.WriteLine("PASS "+inspectorCases+" live Inspector state/theme/scale/width cases.");
                 // Exercise populated mount browser and details using the production renderer.
                 var mountRows = new[] {
                     new MountEntry(1,"A very long localized mount name that must wrap at the smallest supported width","Firebird",0,8,
@@ -312,3 +330,4 @@ internal static class Program
         ImGui.Render();
     }
 }
+

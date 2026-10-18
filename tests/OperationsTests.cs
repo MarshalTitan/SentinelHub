@@ -5,6 +5,8 @@ using System.IO.Compression;
 using SentinelHub.Diagnostics;
 using SentinelHub.Compatibility;
 using SentinelHub.Utilities.Quest;
+using SentinelHub.Inspection;
+using SentinelHub.Identification;
 internal static class OperationsTests
 {
     public static void Run(Action<string,Action> test,Action<bool> check)
@@ -70,6 +72,29 @@ internal static class OperationsTests
             var saved=new QuestConvenienceOptions{SkipDialogue=true};check(!unknown.Effective(saved).SkipDialogue);
             var recovered=new CompatibilityView(CompatibilityPolicy.TextAdvance(true,true,false,false,false,false));
             check(recovered.Effective(saved).SkipDialogue);
+        });
+        test("Inspector identifies only explicit supported emote IDs and rejects combat/pose/timeline stand-ins",()=>{
+            InspectionEntry? Find(uint id)=>id==123?new(InspectionKind.Emote,id,"Lean",1,"/lean",true,[],"Unknown"):null;
+            uint? Mode(uint id)=>id==123?25u:null;
+            check(InspectionPolicy.Emote(new(true,true,false,123,3,25),Find,Mode).State==InspectionState.Found);
+            foreach(var mode in new byte[]{0,1,2,4,8,11,16})check(InspectionPolicy.Emote(new(true,true,false,123,mode,25),Find,Mode).State==InspectionState.None);
+            check(InspectionPolicy.Emote(new(true,true,false,123,3,26),Find,Mode).State==InspectionState.None);
+            check(InspectionPolicy.Emote(new(true,true,false,0,3,25),Find,Mode).State==InspectionState.None);
+            check(InspectionPolicy.Emote(new(true,true,false,999,3,25),Find,Mode).State==InspectionState.UnknownId);
+            check(InspectionPolicy.Emote(new(true,false,false,123,3,25),Find,Mode).State==InspectionState.Unavailable);
+            check(InspectionPolicy.Emote(new(true,true,true,123,3,25),Find,Mode).State==InspectionState.Unavailable);
+        });
+        test("Inspector session clears on stale/unloaded/reused actors, session/zone changes and time expiry",()=>{
+            var t=new IdentificationTicket(1,2,3,4,5,100);
+            check(InspectionPolicy.SessionMatches(t,1,2,3,4,5,200,true,true));
+            check(!InspectionPolicy.SessionMatches(t,1,9,3,4,5,200,true,true));
+            check(!InspectionPolicy.SessionMatches(t,1,2,3,9,5,200,true,true));
+            check(!InspectionPolicy.SessionMatches(t,1,2,3,4,9,200,true,true));
+            check(!InspectionPolicy.SessionMatches(t,1,2,3,4,5,300101,true,true));
+            check(!InspectionPolicy.SessionMatches(t,1,2,3,4,5,200,true,false));
+            check(InspectionPolicy.Resolve(InspectionKind.Mount,0,(_,_)=>throw new Exception()).State==InspectionState.None);
+            check(InspectionPolicy.Resolve(InspectionKind.Fashion,999,(_,_)=>null).State==InspectionState.UnknownId);
+            check(InspectorView.Empty.Barding.State==InspectionState.Unsupported);
         });
     }
 }
