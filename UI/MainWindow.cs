@@ -308,9 +308,9 @@ public sealed class MainWindow : Window, IDisposable
         : ImGui.Checkbox(label, ref value);
     private void DrawDiagnostics()
     {
-        ImGui.TextWrapped("Exports contain only known component IDs, numeric versions, installation/load observations, dependency responses and bounded Hub fault codes.");
-        ImGui.TextWrapped("Consumer faults, private chat and consumer configuration are not collected. Profiles runtime state remains unknown.");
-        if (Button("Export sanitized diagnostics")) export();
+        ImGui.TextWrapped("The ZIP contains structured JSON and a readable summary: known Sentinel versions, health, dependency responses, bounded Hub faults and compatible provider counters.");
+        ImGui.TextWrapped("Credentials, configuration contents, names, private IDs, chat, paths and arbitrary provider text are excluded. Unsupported provider/profile state stays unavailable.");
+        if (Button("Export Sentinel Diagnostics")) export();
         if (Button("Refresh observations")) refresh();
         var entries = faults.Snapshot();
         if (entries.Length == 0) ImGui.TextWrapped("No recent Hub faults.");

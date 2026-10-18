@@ -1,6 +1,8 @@
 using SentinelHub.Ecosystem;
 using SentinelHub.Health;
 using System.Text;
+using System.IO.Compression;
+using SentinelHub.Diagnostics;
 internal static class OperationsTests
 {
     public static void Run(Action<string,Action> test,Action<bool> check)
@@ -33,6 +35,22 @@ internal static class OperationsTests
             foreach(var bad in new[]{"{}","[]","[{\"InternalName\":\"SRankSentinel\",\"AssemblyVersion\":\"secret\"}]","[{\"InternalName\":\"SRankSentinel\",\"AssemblyVersion\":\"1.0\"},{\"InternalName\":\"SRankSentinel\",\"AssemblyVersion\":\"2.0\"}]"}){
                 var rejected=false;try{PublicCatalog.Parse(Encoding.UTF8.GetBytes(bad));}catch{rejected=true;}check(rejected);
             }
+        });
+        test("Diagnostics ZIP composition projects fields and excludes known secrets and arbitrary provider text",()=>{
+            const string secret="PRIVATE_CANARY_DISCORD_TOKEN_https://discord.com/api/webhooks/ACCOUNT_COOKIE";
+            var h=new HealthView(DateTimeOffset.UtcNow,true,[new("SRankSentinel",HealthState.Ready,secret,secret,false,secret),new(secret,HealthState.Ready,secret,secret,true,secret)],null,secret);
+            var state=StatusPolicy.Build([new("SRankSentinel",true,secret),new(secret,true,secret)],true,_=>Response.Ready);
+            var provider=DiagnosticProviderPolicy.Parse("SRankSentinel","{\"Schema\":1,\"State\":1,\"Warnings\":2,\"Errors\":0,\"Token\":\""+secret+"\",\"Password\":\""+secret+"\",\"WebhookUrl\":\""+secret+"\",\"Cookie\":\""+secret+"\"}");
+            var bytes=DiagnosticsBundle.Create(state,h,[],[provider,new(secret,ProviderState.Ready,1,0,0)],1,uint.MaxValue,uint.MaxValue);
+            using var zip=new ZipArchive(new MemoryStream(bytes),ZipArchiveMode.Read);
+            check(zip.Entries.Select(e=>e.FullName).SequenceEqual(new[]{"report.json","hub-state.json","summary.txt"}));
+            foreach(var entry in zip.Entries){using var reader=new StreamReader(entry.Open());var text=reader.ReadToEnd();check(!text.Contains(secret)&&!text.Contains("PRIVATE_CANARY")&&!text.Contains("webhooks/"));}
+            check(bytes.Length<65536&&provider.State==ProviderState.Ready&&provider.Warnings==2);
+        });
+        test("Diagnostic provider corruption, missing fields and unknown schemas fail closed",()=>{
+            foreach(var json in new string?[]{null,"{","{}","{\"Schema\":2,\"State\":1,\"Warnings\":0,\"Errors\":0}","{\"Schema\":1,\"State\":999,\"Warnings\":0,\"Errors\":0}",new string('x',16385)})
+                check(DiagnosticProviderPolicy.Parse("SentinelRelay",json).State==ProviderState.Unavailable);
+            var failed=false;try{DiagnosticProviderPolicy.Parse("arbitrary",null);}catch{failed=true;}check(failed);
         });
     }
 }

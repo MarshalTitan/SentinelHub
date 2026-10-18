@@ -66,7 +66,7 @@ public sealed class Plugin : IDalamudPlugin
             healthView:()=>health.View,refreshHealth:()=>{discovery.Refresh(true);health.Tick(true);},publicVersions:publicCatalog.Request);
         identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, window.ClearIdentification, faults);
         windows.AddWindow(window);
-        Commands.AddHandler("/shub", new CommandInfo(OnCommand) { HelpMessage = "Open Sentinel Hub. /shub export saves sanitized Hub diagnostics." });
+        Commands.AddHandler("/shub", new CommandInfo(OnCommand) { HelpMessage = "Open Sentinel Hub. /shub export saves a sanitized Sentinel diagnostics ZIP." });
         Pi.UiBuilder.Draw += windows.Draw;
         Pi.UiBuilder.OpenConfigUi += Open;
         Pi.UiBuilder.OpenMainUi += Open;
@@ -100,8 +100,13 @@ public sealed class Plugin : IDalamudPlugin
             discovery.Refresh(true);
             var directory = Path.Combine(Pi.GetPluginConfigDirectory(), "diagnostics");
             Directory.CreateDirectory(directory);
-            var name = "sentinel-hub-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + ".json";
-            File.WriteAllText(Path.Combine(directory, name), DiagnosticExport.Serialize(discovery.Snapshot, faults.Snapshot(), antiAfk.View, quest.View, latency.View));
+            health.Tick(true);
+            var name = "sentinel-diagnostics-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + ".zip";
+            var bundle = DiagnosticsBundle.Create(discovery.Snapshot,health.View,faults.Snapshot(),
+                new ProviderDiagnosticsReader(Pi).Read(),settings.Version,Client.TerritoryType,Objects.LocalPlayer?.CurrentWorld.RowId??0,
+                antiAfk.View,quest.View,latency.View);
+            var path=Path.Combine(directory,name);
+            using(var file=new FileStream(path,FileMode.CreateNew,FileAccess.Write,FileShare.None))file.Write(bundle);
             window.Notice = "Saved " + name + " in Hub's configuration diagnostics folder.";
             Chat.Print("[Sentinel Hub] " + window.Notice);
         }
