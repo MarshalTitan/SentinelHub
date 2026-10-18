@@ -12,6 +12,11 @@ using SentinelHub.Utilities.Latency;
 using SentinelHub.Mounts;
 using SentinelHub.Fashion;
 using SentinelHub.Identification;
+using SentinelHub.Health;
+using SentinelHub.Compatibility;
+using SentinelHub.Inspection;
+using SentinelHub.Coordination;
+using SentinelHub.Activity;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 namespace SentinelHub;
@@ -43,32 +48,71 @@ public sealed class Plugin : IDalamudPlugin
     private readonly PluginDiscovery discovery;
     private readonly MainWindow window;
     private readonly QuickOpen quickOpen;
+    private readonly PublicCatalog publicCatalog=new();
+    private readonly HealthService health;
+    private readonly CompatibilityScanner compatibility;
+    private readonly PlayerInspector inspector;
+    private readonly ActivityService activity;
+    private readonly HubOperationsIpc operationsIpc;
     private bool disposed;
+    private volatile bool exportRequested;
+    private volatile bool healthRefreshRequested;
     public Plugin()
     {
         settings = Pi.GetPluginConfig() as Configuration.Configuration ?? new();
         settings.Normalize();
+        if(!LegacyActivityCleanup.TryRemove(Pi.GetPluginConfigDirectory()))faults.Record(FaultCode.ActivityHistoryCleanupUnavailable);
+        activity=new();
+        operationsIpc=new(Pi,Framework,activity.Journal,faults);
         discovery = new(Pi, faults);
+        health=new(Pi,discovery.Capture,()=>discovery.Snapshot,publicCatalog,OwnCharacterKey);
+        compatibility=new(Pi);
+        compatibility.Tick(true);
         antiAfk = new(Pi, Client, settings, faults);
-        quest = new(Pi, Client, GameGui, Condition, Objects, Data, settings, faults);
-        latency = new(Pi, Interop, Data, Client, Condition, Objects, settings, faults);
+        quest = new(Pi, Client, GameGui, Condition, Objects, Data, settings, faults,
+            o=>compatibility.View.Effective(o));
+        latency = new(Pi, Interop, Data, Client, Condition, Objects, settings, faults,()=>compatibility.View.Blocks(CompatibilityFeature.Latency));
         mounts = new(Data, Unlocks, Client, Player, Objects, Condition, faults);
         fashion = new(Data, Unlocks, Client, Player, Objects, Condition, faults);
+        inspector=new(Objects,Player,Client,Framework,settings,()=>mounts.Ready&&fashion.Ready,
+            new InspectionGameData(Data,Unlocks,()=>mounts.Ready&&fashion.Ready));
         quickOpen = new(discovery.Capture, Commands.ProcessCommand, faults);
         window = new(settings, () => discovery.Snapshot, faults, Save, () => discovery.Refresh(true),
             (id, diagnostics) => quickOpen.Open(id, diagnostics), Export,
             () => Pi.UiBuilder.ShouldUseReducedMotion, antiAfkView: () => antiAfk.View, questView: () => quest.View, latencyView: () => latency.View,
-            mountView: () => mounts.View, refreshMounts: mounts.RequestRefresh, retryMounts: mounts.Retry, mountIcon: DrawCollectionIcon, fashionView: () => fashion.View, refreshFashion: fashion.RequestRefresh, retryFashion: fashion.Retry);
-        identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, window.ClearIdentification, faults);
+            mountView: () => mounts.View, refreshMounts: mounts.RequestRefresh, retryMounts: mounts.Retry, mountIcon: DrawCollectionIcon, fashionView: () => fashion.View, refreshFashion: fashion.RequestRefresh, retryFashion: fashion.Retry,
+            healthView:()=>health.View,refreshHealth:()=>healthRefreshRequested=true,publicVersions:publicCatalog.Request,
+            compatibilityView:()=>compatibility.View,inspectorView:()=>inspector.View,
+            activityEntries:()=>activity.Journal.Snapshot(DateTimeOffset.UtcNow),clearActivity:activity.Journal.Clear);
+        identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, ()=>{window.ClearIdentification();inspector.Clear();}, faults,
+            ticket=>{inspector.Select(ticket);window.OpenPlayerInspector();});
         windows.AddWindow(window);
-        Commands.AddHandler("/shub", new CommandInfo(OnCommand) { HelpMessage = "Open Sentinel Hub. /shub export saves sanitized Hub diagnostics." });
+        Commands.AddHandler("/shub", new CommandInfo(OnCommand) { HelpMessage = "Open Sentinel Hub. /shub export saves a sanitized Sentinel diagnostics ZIP." });
         Pi.UiBuilder.Draw += windows.Draw;
         Pi.UiBuilder.OpenConfigUi += Open;
         Pi.UiBuilder.OpenMainUi += Open;
         Framework.Update += Update;
         discovery.Refresh(true);
     }
-    private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); antiAfk.Tick(); quest.Tick(); latency.Tick(); mounts.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Mounts); fashion.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Fashion); identifyMenu.Tick(); } }
+    private void Update(IFramework _)
+    {
+        if(disposed)return;
+        var forceHealth=healthRefreshRequested;healthRefreshRequested=false;
+        discovery.Refresh(forceHealth);
+        health.Tick(forceHealth);
+        compatibility.Tick();
+        antiAfk.Tick();
+        quest.Tick();
+        latency.Tick();
+        activity.Observe(health.View,compatibility.View);
+        var expanded=window.IsOpen&&!settings.Collapsed;
+        mounts.Tick(expanded&&settings.Page==Configuration.HubPage.Mounts);
+        fashion.Tick(expanded&&settings.Page==Configuration.HubPage.Fashion);
+        identifyMenu.Tick();
+        // The menu may have opened/restored Hub during this tick; evaluate visibility after consuming it.
+        inspector.Tick(window.IsOpen&&!settings.Collapsed&&settings.Page==Configuration.HubPage.PlayerInspector);
+        if(exportRequested){exportRequested=false;WriteExport();}
+    }
     private void DrawCollectionIcon(uint id, Vector2 size)
     {
         Dalamud.Interface.Textures.TextureWraps.IDalamudTextureWrap? wrap = null;
@@ -78,6 +122,7 @@ public sealed class Plugin : IDalamudPlugin
         else ImGui.Dummy(size);
     }
     private void Open() => window.OpenAndExpand();
+    private static string OwnCharacterKey()=>Player.IsLoaded&&Player.ContentId!=0?$"cid:{Player.ContentId:X16}":"";
     private void OnCommand(string _, string arguments)
     {
         if (arguments.Trim().Equals("export", StringComparison.OrdinalIgnoreCase)) Export();
@@ -88,21 +133,26 @@ public sealed class Plugin : IDalamudPlugin
         try { Pi.SavePluginConfig(settings); }
         catch { faults.Record(FaultCode.ConfigurationSaveUnavailable); }
     }
-    private void Export()
+    private void Export(){exportRequested=true;window.Notice="Sentinel diagnostics export queued.";}
+    private void WriteExport()
     {
         try
         {
             discovery.Refresh(true);
             var directory = Path.Combine(Pi.GetPluginConfigDirectory(), "diagnostics");
-            Directory.CreateDirectory(directory);
-            var name = "sentinel-hub-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + ".json";
-            File.WriteAllText(Path.Combine(directory, name), DiagnosticExport.Serialize(discovery.Snapshot, faults.Snapshot(), antiAfk.View, quest.View, latency.View));
-            window.Notice = "Saved " + name + " in Hub's configuration diagnostics folder.";
+            health.Tick(true);
+            var bundle = DiagnosticsBundle.Create(discovery.Snapshot,health.View,faults.Snapshot(),
+                new ProviderDiagnosticsReader(Pi,OwnCharacterKey).Read(),settings.Version,Client.TerritoryType,Objects.LocalPlayer?.CurrentWorld.RowId??0,
+                antiAfk.View,quest.View,latency.View,compatibility.View,activity.Journal.Snapshot(DateTimeOffset.UtcNow));
+            DiagnosticsFile.Save(directory,bundle);
+            activity.Add(ActivityCode.DiagnosticsSaved);
+            window.Notice = "Saved " + DiagnosticsFile.FileName + " in Hub's diagnostics folder (replaces the previous export).";
             Chat.Print("[Sentinel Hub] " + window.Notice);
         }
         catch
         {
             faults.Record(FaultCode.ExportUnavailable);
+            activity.Add(ActivityCode.DiagnosticsFailed);
             window.Notice = "Export could not be saved. Check configuration-folder access.";
         }
     }
@@ -111,11 +161,14 @@ public sealed class Plugin : IDalamudPlugin
         disposed = true;
         Framework.Update -= Update;
         identifyMenu.Dispose();
-        fashion.Dispose();
-        mounts.Dispose();
+        inspector.Clear();
         latency.Dispose();
         quest.Dispose();
         antiAfk.Dispose();
+        operationsIpc.Dispose();
+        publicCatalog.Dispose();
+        fashion.Dispose();
+        mounts.Dispose();
         Pi.UiBuilder.Draw -= windows.Draw;
         Pi.UiBuilder.OpenConfigUi -= Open;
         Pi.UiBuilder.OpenMainUi -= Open;
@@ -125,3 +178,4 @@ public sealed class Plugin : IDalamudPlugin
         window.Dispose();
     }
 }
+

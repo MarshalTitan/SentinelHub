@@ -15,13 +15,14 @@ public sealed class QuestConvenienceController : IDisposable
     private readonly QuestExecutionSession session;
     private readonly ICallGateProvider<bool> requested;
     private readonly string token = Guid.NewGuid().ToString("N");
+    private readonly Func<QuestConvenienceOptions,QuestConvenienceOptions> effective;
     private bool claimed;
     private bool disposed;
     public QuestConvenienceView View { get; private set; } = QuestConvenienceView.Off;
     public QuestConvenienceController(IDalamudPluginInterface pi, IClientState client, IGameGui gui, ICondition condition,
-        IObjectTable objects, IDataManager data, HubSettings settings, FaultJournal faults)
+        IObjectTable objects, IDataManager data, HubSettings settings, FaultJournal faults, Func<QuestConvenienceOptions,QuestConvenienceOptions>? effective=null)
     {
-        this.pi = pi; this.client = client; this.settings = settings; this.faults = faults;
+        this.pi = pi; this.client = client; this.settings = settings; this.faults = faults;this.effective=effective??(o=>o);
         engine = new(gui, condition, objects, data, new DiagnosticBuffer(64));
         session = new(options => engine.Update(options, true, client.TerritoryType), engine.Dispose);
         requested = pi.GetIpcProvider<bool>("SentinelHub.Quest.Enabled");
@@ -33,10 +34,12 @@ public sealed class QuestConvenienceController : IDisposable
         int? saved = null;
         try
         {
-            var hud = pi.InstalledPlugins.FirstOrDefault(p => p.InternalName == "SentinelHUD");
+            var hud = HudUtilityOwnership.Select(pi.InstalledPlugins.Where(p=>p.InternalName=="SentinelHUD")
+                .Select(p=>new SentinelHub.Ecosystem.InstalledPlugin(p.InternalName,p.IsLoaded,p.Manifest.AssemblyVersion.ToString())),new Version(0,8,4,7));
             var compatible = false;
             var acknowledged = false;
-            if (hud?.IsLoaded == true)
+            var needsHandoff=HudUtilityOwnership.RequiresLease(hud?.Version);
+            if (hud?.Loaded == true && needsHandoff)
             {
                 try
                 {
@@ -50,15 +53,15 @@ public sealed class QuestConvenienceController : IDisposable
                 }
                 catch { compatible = false; }
             }
-            if (settings.QuestConvenienceEnabled && client.IsLoggedIn && hud?.IsLoaded == true && compatible)
+            if (settings.QuestConvenienceEnabled && client.IsLoggedIn && hud?.Loaded == true && needsHandoff && compatible)
             {
                 try { acknowledged = pi.GetIpcSubscriber<string,bool>("SentinelHUD.Quest.TryClaim").InvokeFunc(token); }
                 catch { faults.Record(FaultCode.QuestConvenienceOwnershipUnavailable); }
                 claimed = claimed || acknowledged;
             }
             var state = QuestConvenienceOwnershipPolicy.Resolve(settings.QuestConvenienceEnabled, client.IsLoggedIn,
-                hud is not null, hud?.IsLoaded == true, hud?.Manifest.AssemblyVersion.ToString(), acknowledged);
-            session.Tick(state, QuestPreferenceCodec.Encode(settings.QuestOptions()), Environment.TickCount64);
+                hud is not null, hud?.Loaded == true, hud?.Version, acknowledged);
+            session.Tick(state, QuestPreferenceCodec.Encode(effective(settings.QuestOptions())), Environment.TickCount64);
             if (session.State != QuestConvenienceState.Active) Release();
             if (session.State == QuestConvenienceState.Faulted) faults.Record(FaultCode.QuestConvenienceOwnershipUnavailable);
             View = new(session.State, saved, engine.DialogueState, engine.CutsceneState, engine.RewardState);
@@ -88,3 +91,4 @@ public sealed class QuestConvenienceController : IDisposable
         View = QuestConvenienceView.Off;
     }
 }
+

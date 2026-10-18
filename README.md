@@ -6,11 +6,11 @@ HUD visuals and camera, SRankSentinel, PvPSentinel, ClassySentinel, SentinelProf
 
 ## Control center and utilities
 
-Dashboard, Plugins, Dependencies, Profiles, Utilities, Mount Collection, Diagnostics, Appearance and About. Inventory comes from public Dalamud installed-plugin interfaces. Loaded means enabled in Dalamud, not gameplay-ready or automation-enabled. Verified read-only dependency IPC covers vnavmesh, Lifestream, RotationSolverReborn and Splatoon.
+Dashboard, Plugins, Health, Profiles, Utilities, Mount Collection, Fashion Accessories, Player Inspector, Recent Activity, Diagnostics, Appearance and About (new operations pages are part of the held 0.7 candidate). Inventory comes from public Dalamud installed-plugin interfaces. Loaded means enabled in Dalamud, not gameplay-ready or automation-enabled. Verified read-only dependency IPC covers vnavmesh, Lifestream, RotationSolverReborn and Splatoon.
 
-Consumer settings use a fixed source-verified command allowlist; some consumers toggle their windows. Disabled/missing/restricted components have unavailable actions. No reflection, private configuration reads or consumer assembly references.
+Consumer settings use a fixed source-verified command allowlist; some consumers toggle their windows. Disabled/missing/restricted components have unavailable actions. No consumer assembly dependency or private reflection.
 
-Profiles selected/last-applied/drift status, Relay connectivity, consumer faults and update availability remain **unknown/not queried**. Consumers remain authoritative.
+Profiles selected/last-applied/drift and Relay runtime connectivity remain **unknown unless a compatible optional provider responds**. Public versions are a dated explicit catalog fetch in the held candidate. Consumers remain authoritative.
 
 **0.2.0.0 adds default-OFF Anti-AFK.** Hub uses the existing HUD timer behavior: one synchronous check every 10 seconds, resetting finite inactivity timers above 30 seconds. It generates no input, movement or chat. Compatible loaded HUD 0.8.4.6+ must acknowledge ownership before Hub writes; installed legacy/unknown HUD blocks Hub. Optional versioned primitive IPC prevents duplicate owners and preserves HUD's original preference. Import copies that single preference only on explicit click. HUD 0.8.4.6/0.8.4.7 can resume their saved preferences when Hub stops; HUD 0.8.5.0 has no fallback engine and leaves actions off.
 
@@ -51,3 +51,16 @@ Independent passive local-game database with search/sort, current-character unlo
 Independent passive ornament catalog and own unlocks, with source/patch metadata, source/expansion/market/store/availability filters, explicit unknowns and retired Facewear handling. One opted-in player-identification action opens Mount or Fashion details; the current typed actor field is read on the framework thread without a hook. No API calls during collection browsing or character data persistence.
 
 [Data/API/rights audit](docs/FASHION_ACCESSORIES_AUDIT.md) · [Supervised acceptance](docs/FASHION_ACCESSORIES.md). Current availability has separately dated evidence and remains Unknown for most entries. Existing utility/Core behavior and Mount preference remain intact.
+
+
+## Coordinated operations — 0.7.0.0
+
+This release adds Health/Dependency Doctor, sanitized diagnostics ZIPs, compatibility self-protection, Player Inspector with supported explicit loop-emote observation, and bounded Recent Activity. Barding, settings backup/restore and global pause were removed following supervised feedback. Existing Mount/Fashion page layouts/data and saved utility preferences remain intact. Core/UI stay 0.4.1.
+
+The attributed identity-gated acquisition snapshot covers 201 unlockable emotes under the audited FFXIV Collect API reuse permission. Current availability stays Unknown. Emote identification requires matching live loop state, never arbitrary animations/poses. Plugins actions move right at roomy widths and stack below when narrow; the window remains resizable. Current HUD no longer needs utility handoff acknowledgments because it contains no native utility engines. Anti-AFK keeps lightweight 10-second timer checks, with ownership polling reduced to once per second.
+
+See [audit and source boundaries](docs/OPERATIONS_EXPANSION.md), [supervised acceptance](docs/OPERATIONS_ACCEPTANCE.md) and [release PR](https://github.com/MarshalTitan/SentinelHub/pull/15). The focused native release gate passed on 2026-10-18 at 16:13 America/Toronto; publication and exact catalog reconciliation are tracked in the release PR.
+
+Anti-AFK is kept to a heading and state-labeled switch, with no text/counter below it. Activity and live diagnostics are RAM-only, clear on Hub reload/game close and do not create automatic history files. Startup retires only the earlier candidate's exact recent-activity.json. Optional manual export atomically replaces one diagnostics/sentinel-diagnostics.zip; exported files intentionally survive game close. Earlier manually saved timestamp ZIPs are not deleted. Saved user preferences remain on disk normally. See the latest [scoped results and focused checks](docs/OPERATIONS_ACCEPTANCE.md).
+
+Plugin cards on Dashboard, Plugins and Profiles now measure the real inner wrap width and omit trailing row gaps/extra height allowance. Standard Core card padding, responsive action placement and resize behavior are retained. Native regression checks bound unused bottom space and reject clipping in both themes at 1×/1.5×/2× scale, including narrow→wide→narrow resizing, action dispatch/disabled gating and the Profiles status card. This is layout-only; compact Anti-AFK and session-only activity/manual-export changes remain included.

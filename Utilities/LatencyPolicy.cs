@@ -9,7 +9,7 @@ public sealed record LatencyView(LatencyState State, long Samples = 0, long Adju
     {
         LatencyState.Off => "Off; no latency hooks are active.",
         LatencyState.WaitingForLogin => "Waiting for a logged-in character.",
-        LatencyState.Paused => "Paused during a transition, cutscene or death.",
+        LatencyState.Paused => "Paused by character readiness or a detected compatibility overlap.",
         LatencyState.NoClippyConflict => "Blocked: NoClippy is loaded. Keep only one compensation engine active.",
         LatencyState.XivAlexanderConflict => "Blocked: XivAlexander runtime or loader detected.",
         LatencyState.ConflictCheckUnavailable => "Paused: conflict detection is unavailable.",
@@ -174,3 +174,4 @@ public sealed class LatencyLifecycle(Func<LatencyMode, ILatencyRuntime> create) 
         try { Stop(); } finally { View = View with { State = LatencyState.Off }; }
     }
 }
+

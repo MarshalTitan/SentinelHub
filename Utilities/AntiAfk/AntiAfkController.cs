@@ -13,6 +13,9 @@ public sealed class AntiAfkController : IDisposable
     private readonly AntiAfkEngine engine = new(NativeInactivityTimers.TryReset);
     private readonly ICallGateProvider<bool> requested;
     private readonly string token = Guid.NewGuid().ToString("N"); // In-memory lease identity; never exported.
+    private long nextOwnershipCheck;
+    private bool? previousEnabled;
+    private bool? previousLogin;
     private bool claimed;
     private bool disposed;
     public AntiAfkView View { get; private set; } = AntiAfkView.Off;
@@ -27,11 +30,19 @@ public sealed class AntiAfkController : IDisposable
         if (disposed) return;
         try
         {
-            var hud = pi.InstalledPlugins.FirstOrDefault(p => p.InternalName == "SentinelHUD");
+            var now=Environment.TickCount64;
+            // Ownership changes need a prompt response, not an inventory/IPC scan on every frame.
+            // Off and login changes bypass the one-second poll delay.
+            var enabled=settings.AntiAfkEnabled;var loggedIn=client.IsLoggedIn;
+            if(previousEnabled==enabled&&previousLogin==loggedIn&&now<nextOwnershipCheck)return;
+            previousEnabled=enabled;previousLogin=loggedIn;nextOwnershipCheck=now+1000;
+            var hud = HudUtilityOwnership.Select(pi.InstalledPlugins.Where(p=>p.InternalName=="SentinelHUD")
+                .Select(p=>new SentinelHub.Ecosystem.InstalledPlugin(p.InternalName,p.IsLoaded,p.Manifest.AssemblyVersion.ToString())),new Version(0,8,4,6));
             bool? saved = null;
             var acknowledged = false;
             var compatible = false;
-            if (hud?.IsLoaded == true)
+            var needsHandoff=HudUtilityOwnership.RequiresLease(hud?.Version);
+            if (hud?.Loaded == true && needsHandoff)
             {
                 try
                 {
@@ -40,14 +51,14 @@ public sealed class AntiAfkController : IDisposable
                 }
                 catch { compatible = false; }
             }
-            if (settings.AntiAfkEnabled && client.IsLoggedIn && hud?.IsLoaded == true && compatible)
+            if (settings.AntiAfkEnabled && client.IsLoggedIn && hud?.Loaded == true && needsHandoff && compatible)
             {
                 try { acknowledged = pi.GetIpcSubscriber<string, bool>("SentinelHUD.AntiAfk.TryClaim").InvokeFunc(token); }
                 catch { faults.Record(FaultCode.AntiAfkOwnershipUnavailable); }
                 claimed = acknowledged || claimed;
             }
             var state = AntiAfkOwnershipPolicy.Resolve(settings.AntiAfkEnabled, client.IsLoggedIn,
-                hud is not null, hud?.IsLoaded == true, hud?.Manifest.AssemblyVersion.ToString(), acknowledged);
+                hud is not null, hud?.Loaded == true, hud?.Version, acknowledged);
             if (state != AntiAfkState.Active)
             {
                 engine.Suspend(state); // Stop the writer before returning a lease.
@@ -80,3 +91,4 @@ public sealed class AntiAfkController : IDisposable
         View = new(AntiAfkState.Off, engine.Cycles, null);
     }
 }
+

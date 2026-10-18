@@ -5,7 +5,7 @@
     "InternalName": "SentinelHub",
     "AssemblyVersion": "0.6.0.0",
     "TestingAssemblyVersion": "0.6.0.0",
-    "Description": "Sentinel ecosystem control center with passive Mount and Fashion Accessories collections, shared player identification, opt-in Anti-AFK, Quest Convenience and bounded instant-action latency compensation. HUD visuals and other Sentinel plugins remain independent.",
+    "Description": "Sentinel ecosystem control center with health/dependency checks, sanitized diagnostics, compatibility protection, passive player inspection and collections and recent activity. Other Sentinel plugins remain independent.",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/MarshalTitan/SentinelHub",
     "Tags": [

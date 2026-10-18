@@ -9,7 +9,7 @@ public sealed record QuestConvenienceView(QuestConvenienceState State, int? HudP
         QuestConvenienceState.Off => "Off",
         QuestConvenienceState.WaitingForLogin => "Waiting for login",
         QuestConvenienceState.LegacyHudInstalled => "Update Sentinel HUD to 0.8.4.7 or later before enabling Hub Quest Convenience.",
-        QuestConvenienceState.WaitingForHud => "Waiting for HUD to hand over Quest Convenience. Hub is paused.",
+        QuestConvenienceState.WaitingForHud => "An older HUD utility engine has not handed over Quest Convenience. Update HUD or disable its old copy.",
         QuestConvenienceState.Active => "Active; Hub owns Quest Convenience.",
         _ => "Quest Convenience paused after an error; pending actions cleared. Retrying shortly.",
     };
@@ -22,7 +22,7 @@ public static class QuestConvenienceOwnershipPolicy
         if (!loggedIn) return QuestConvenienceState.WaitingForLogin;
         if (hudInstalled && (!Version.TryParse(hudVersion, out var version) || version < new Version(0,8,4,7)))
             return QuestConvenienceState.LegacyHudInstalled;
-        return hudLoaded && !acknowledged ? QuestConvenienceState.WaitingForHud : QuestConvenienceState.Active;
+        return hudLoaded && HudUtilityOwnership.RequiresLease(hudVersion) && !acknowledged ? QuestConvenienceState.WaitingForHud : QuestConvenienceState.Active;
     }
 }
 // All actions are synchronous. Clearing a session revokes its pending cutscene/reward work.
@@ -55,3 +55,4 @@ public sealed class QuestExecutionSession(Action<QuestConvenienceOptions> update
         running = false; fingerprint = -1; retryAfter = 0; State = state;
     }
 }
+

@@ -12,6 +12,10 @@ using SentinelHub.Utilities;
 using SentinelHub.Mounts;
 using SentinelHub.Fashion;
 using SentinelHub.Identification;
+using SentinelHub.Inspection;
+using SentinelHub.Health;
+using SentinelHub.Activity;
+using SentinelHub.Compatibility;
 using CSCharacter=FFXIVClientStructs.FFXIV.Client.Game.Character.Character;
 internal static class Program
 {
@@ -96,12 +100,67 @@ internal static class Program
                         Check(!settings.Collapsed && Find(MainWindow.WindowId).Size.Y >= 800 * scale - 1, "Restore lost expanded size");
                     }
                 }
+                var pluginResizeCases=0;
+                foreach(var theme in new[]{0,1})
+                foreach(var scale in new[]{1f,1.5f,2f})
+                foreach(var pluginPage in new[]{HubPage.Dashboard,HubPage.Plugins,HubPage.Profiles})
+                {
+                    io.FontGlobalScale=scale;
+                    var settings=new HubSettings{Theme=theme,Page=pluginPage};
+                    var cardId=pluginPage==HubPage.Profiles?"SentinelProfiles":"SRankSentinel";
+                    var pluginData=fixtures[1];var opened=new List<(string Id,bool Diagnostics)>();
+                    using var plugins=new MainWindow(settings,()=>pluginData,new FaultJournal(),()=>{},()=>{},(id,diagnostics)=>{opened.Add((id,diagnostics));return true;},()=>{},()=>true,()=>font);
+                    var saved=JsonSerializer.Serialize(settings);float narrowHeight=0;
+                    foreach(var width in new[]{480f,860f,480f})
+                    {
+                        for(var i=0;i<12;i++)Frame(plugins,new(width,680),scale);
+                        var root=Find(MainWindow.WindowId);
+                        var card=Find(MainWindow.WindowId,cardId);
+                        Check((root.Flags&ImGuiWindowFlags.NoResize)==0,"Hub cannot be resized");
+                        Check(card.ContentSize.X<=card.Size.X+1&&!card.ScrollbarX,"Plugin card overflows horizontally after resize");
+                        Check(card.ContentSize.Y+2*card.WindowPadding.Y<=card.Size.Y+1,$"Plugin actions are clipped after resize: theme={theme} scale={scale} width={width} content={card.ContentSize} padding={card.WindowPadding} size={card.Size} scroll={root.Scroll}");
+                        var unusedHeight=card.Size.Y-card.ContentSize.Y-2*card.WindowPadding.Y;
+                        // Fractional font scaling rounds each row separately; keep only a small rounding allowance.
+                        Check(unusedHeight<=6*scale+1,$"Excess plugin card bottom space: theme={theme} page={pluginPage} scale={scale} width={width} unused={unusedHeight}");
+                        if(width==480){if(narrowHeight>0)Check(Math.Abs(narrowHeight-card.Size.Y)<1,"Narrow fallback changed after resize");narrowHeight=card.Size.Y;}
+                        else
+                        {
+                            // Classic can already fit side actions at the minimum width.
+                            Check(card.Size.Y<=narrowHeight+1,"Wider plugin card increased its height");
+                            if(theme==1)Check(card.Size.Y<narrowHeight,"Wide Modern actions did not reduce card height");
+                        }
+                        Check(JsonSerializer.Serialize(settings)==saved,"Resizing changed saved feature settings");
+                    }
+                    void ClickSettings()
+                    {
+                        for(var i=0;i<12;i++)Frame(plugins,new(860,680),scale);
+                        var card=Find(MainWindow.WindowId,cardId);
+                        if(pluginPage==HubPage.Profiles)
+                        {
+                            var status=Find(MainWindow.WindowId,"profiles-contract");
+                            var spare=status.Size.Y-status.ContentSize.Y-2*status.WindowPadding.Y;
+                            Check(spare>=-1&&spare<=6*scale+1,$"Profile status card clipping/excess bottom space: theme={theme} scale={scale} spare={spare}");
+                        }
+                        io.AddMousePosEvent(card.Pos.X+card.Size.X-card.WindowPadding.X-70*scale,
+                            card.Pos.Y+card.WindowPadding.Y+ImGui.GetStyle().CellPadding.Y+14*scale);
+                        io.AddMouseButtonEvent(0,true);Frame(plugins,new(860,680),scale);
+                        io.AddMouseButtonEvent(0,false);Frame(plugins,new(860,680),scale);
+                        io.AddMousePosEvent(-100,-100);Frame(plugins,new(860,680),scale);
+                    }
+                    ClickSettings();
+                    Check(opened.SequenceEqual(new[]{(cardId,false)}),"Right-side settings action did not open its owning plugin");
+                    pluginData=fixtures[0];ClickSettings();
+                    Check(opened.Count==1,"Unavailable right-side action was clickable");
+                    Check(JsonSerializer.Serialize(settings)==saved,"Plugin action changed feature preferences");
+                    pluginResizeCases++;
+                }
+                Console.WriteLine("PASS "+pluginResizeCases+" plugin narrow/wide/narrow resize, clipping, mouse actions/disabled gating and preference cases.");
                 foreach (var scale in new[] { 1f, 1.5f, 2f })
                 foreach (var theme in new[] { 0, 1 })
                 foreach (var state in Enum.GetValues<AntiAfkState>())
                 {
                     io.FontGlobalScale = scale;
-                    var config = new HubSettings { Theme = theme, Page = HubPage.Utilities };
+                    var config = new HubSettings { Theme = theme, Page = HubPage.Utilities, AntiAfkEnabled = true };
                     using var utility = new MainWindow(config, () => HubSnapshot.Unknown, new FaultJournal(), () => {}, () => {}, (_,_) => false, () => {}, () => true,
                         () => font, () => new AntiAfkView(state, 42, true));
                     for (var i=0;i<12;i++) Frame(utility, new(480,500), scale);
@@ -129,6 +188,7 @@ internal static class Program
                 foreach(var state in Enum.GetValues<LatencyState>())
                 foreach(var mode in Enum.GetValues<LatencyMode>())
                 {
+                    io.FontGlobalScale=scale;
                     var settings=new HubSettings{Theme=theme,Page=HubPage.Utilities,LatencyMode=mode};
                     using var latency=new MainWindow(settings,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>true,()=>{},()=>true,
                         ()=>font,latencyView:()=>new(state,123,100,170,160,130,13000));
@@ -140,6 +200,43 @@ internal static class Program
                     Check(JsonSerializer.Serialize(settings)==saved,"Latency drawing changed opt-ins");
                 }
 
+                var operationsCases=0;
+                foreach(var theme in new[]{0,1})
+                foreach(var scale in new[]{1f,1.5f,2f})
+                foreach(var width in new[]{480f,860f})
+                foreach(var populated in new[]{false,true})
+                foreach(var operationPage in new[]{HubPage.Dependencies,HubPage.Utilities,HubPage.Dashboard,HubPage.RecentActivity}){
+                    io.FontGlobalScale=scale;
+                    var settings=new HubSettings{Theme=theme,Page=operationPage};
+                    var health=populated?new HealthView(DateTimeOffset.UtcNow,true,Enum.GetValues<HealthState>().Select(s=>new HealthCheck("SRankSentinel",s,"0.7.99.0","0.7.62.0",true,"A long explanation distinguishes installation/load/internal enable/IPC response/readiness and development override without declaring a DLL healthy.")).ToArray(),DateTimeOffset.UtcNow,"Dated public catalog; feature readiness remains separate"):HealthView.Empty;
+                    var compatibility=populated?new CompatibilityView([new(OverlapProvider.TextAdvance,CompatibilityFeature.Cutscene,OverlapKind.Definite,true,"Enabled and responding; Hub self-suspends and preserves saved preferences."),new(OverlapProvider.NoClippy,CompatibilityFeature.Latency,OverlapKind.Possible,true,"Loaded; module activity unknown.")]):CompatibilityView.Empty;
+                    var events=populated?Enumerable.Range(0,200).Select(i=>new ActivityEntry(DateTimeOffset.UtcNow,DateTimeOffset.UtcNow,"SentinelHub",ActivityCode.DiagnosticsSaved,9999)).ToArray():[];
+                    using var operations=new MainWindow(settings,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>false,()=>{},()=>true,
+                        ()=>font,healthView:()=>health,compatibilityView:()=>compatibility,activityEntries:()=>events);
+                    var saved=JsonSerializer.Serialize(settings);for(var i=0;i<12;i++)Frame(operations,new(width,500),scale);
+                    var content=theme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
+                    Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Operations content overflows: "+operationPage+"/"+theme+"/"+scale);
+                    Check(JsonSerializer.Serialize(settings)==saved,"Operations rendering mutated configuration");operationsCases++;
+                }
+                Console.WriteLine("PASS "+operationsCases+" populated/empty operations page/theme/scale/width cases.");
+                var inspectorCases=0;
+                foreach(var theme in new[]{0,1})
+                foreach(var scale in new[]{1f,1.5f,2f})
+                foreach(var state in Enum.GetValues<InspectionState>())
+                foreach(var width in new[]{480f,860f}){
+                    io.FontGlobalScale=scale;
+                    var settings=new HubSettings{Theme=theme,Page=HubPage.PlayerInspector,PlayerInspectorEnabled=true};
+                    var entry=new InspectionEntry(InspectionKind.Emote,123,"A long localized explicitly identified emote display name",0,"/lean",true,
+                        ["A lengthy local quest/vendor source with requirements that must wrap at minimum width"],"Game reward/shop evidence");
+                    var view=InspectorView.Empty with{Tracking=true,At=DateTimeOffset.UtcNow,Emote=new(state,state==InspectionState.Found?entry:null,"No animation or pose inference")};
+                    using var inspector=new MainWindow(settings,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>false,()=>{},()=>true,
+                        ()=>font,inspectorView:()=>view);
+                    var saved=JsonSerializer.Serialize(settings);for(var i=0;i<12;i++)Frame(inspector,new(width,500),scale);
+                    var page=theme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
+                    Check(page.ContentSize.X<=page.Size.X+1&&!page.ScrollbarX,"Inspector content overflows");
+                    Check(JsonSerializer.Serialize(settings)==saved,"Inspector rendering mutated settings");inspectorCases++;
+                }
+                Console.WriteLine("PASS "+inspectorCases+" live Inspector state/theme/scale/width cases.");
                 // Exercise populated mount browser and details using the production renderer.
                 var mountRows = new[] {
                     new MountEntry(1,"A very long localized mount name that must wrap at the smallest supported width","Firebird",0,8,
@@ -210,6 +307,17 @@ internal static class Program
                 Check(!LiveOrnamentReader.ObserveFields(1,42,5,true,false,true).Valid,"Invalid wrapper read was not blocked before dereference");
                 actor.GameObject.EntityId=43;Check(!Read(&actor).Valid,"Reused entity identity was accepted");
                 Console.WriteLine("PASS typed ornament reader memory/auto-umbrella/transformation/unloaded/thread/identity fixtures; binding "+typeof(CSCharacter).Assembly.GetName().Version);
+                actor.GameObject.EntityId=42;actor.GameObject.DrawObject=(FFXIVClientStructs.FFXIV.Client.Graphics.Scene.DrawObject*)1;
+                actor.EmoteController.EmoteId=123;actor.Mode=FFXIVClientStructs.FFXIV.Client.Game.Character.CharacterModes.EmoteLoop;actor.ModeParam=25;
+                var emoteGuard=new ActorObservation(true,true,false,0);
+                Check(LiveEmoteReader.ObserveFields((nint)(&actor),42,5,true,emoteGuard).EmoteId==123,"Explicit typed emote ID was not read");
+                actor.EmoteController.EmoteId=0;
+                Check(LiveEmoteReader.ObserveFields((nint)(&actor),42,5,true,emoteGuard).EmoteId==0,"Ended emote was retained");
+                Check(!LiveEmoteReader.ObserveFields(1,42,5,false,emoteGuard).Valid,"Wrong-thread emote reader dereferenced a pointer");
+                Check(!LiveEmoteReader.ObserveFields(1,42,5,true,new(false,false,false,0)).Valid,"Invalid emote actor was read");
+                actor.GameObject.EntityId=43;
+                Check(!LiveEmoteReader.ObserveFields((nint)(&actor),42,5,true,emoteGuard).Valid,"Reused emote actor identity was accepted");
+                Console.WriteLine("PASS typed emote reader active/ended/thread/identity fixtures.");
                 var fashionRows=new[]{
                     new FashionEntry(16,"An extremely long localized fashion accessory title that wraps in a narrow window","Red Moon Parasol",0,3288,15,"5.55",3,
                         [new("Seasonal / event","The Rising 2021, a historical source with a lengthy explanation of eligibility and current uncertainty","Community snapshot 2026-10-18","https://ffxivcollect.com/fashions/16"),
@@ -264,8 +372,8 @@ internal static class Program
                 Console.WriteLine($"PASS {identifyCases} shared mount/fashion identification result cases.");
 
                 Console.WriteLine("PASS 198 native Latency mode/state/theme/scale cases.");
-                Console.WriteLine("PASS 288 native Quest state/import/mode/theme/scale cases.");
-                Console.WriteLine("PASS 42 native Anti-AFK state/theme/scale cases.");
+                Console.WriteLine("PASS "+(Enum.GetValues<QuestConvenienceState>().Length*48)+" native Quest state/import/mode/theme/scale cases.");
+                Console.WriteLine("PASS "+(Enum.GetValues<AntiAfkState>().Length*6)+" native Anti-AFK state/theme/scale cases.");
                 Console.WriteLine($"PASS {pages} native rendered page/state/width/theme/scale cases; collapse/restore and balanced stacks.");
                 // Exercise actual Hub appearance switch via native keyboard/gamepad activation.
                 foreach (var key in new[] { ImGuiKey.Space, ImGuiKey.GamepadFaceDown })
@@ -312,3 +420,4 @@ internal static class Program
         ImGui.Render();
     }
 }
+

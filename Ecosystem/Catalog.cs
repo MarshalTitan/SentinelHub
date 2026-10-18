@@ -20,8 +20,9 @@ public static class Catalog
         new("Lifestream", "Lifestream", ["Lifestream"], "S Rank Sentinel", "Optional SRank travel companion alongside native world travel.", "Lifestream.IsBusy"),
         new("RotationSolver", "RotationSolverReborn", ["RotationSolver", "RotationSolverReborn"], "PvP Sentinel", "External combat provider when selected in PvP settings.", "RotationSolverReborn.AutorotationActive"),
         new("Splatoon", "Splatoon", ["Splatoon"], "Sentinel HUD", "Optional visual danger integration; response does not prove geometry availability.", "Splatoon.IsLoaded"),
-        new("HuntAlerts", "HuntAlerts", ["HuntAlerts"], "S Rank Sentinel", "Optional report provider; SRank also has direct Faloop."),
+        new("HuntAlerts", "HuntAlerts", ["HuntAlerts"], "S Rank Sentinel", "Optional report provider. Current public SRank keeps direct Faloop dormant."),
         new("SonarPlugin", "Sonar", ["SonarPlugin", "Sonar"], "S Rank Sentinel", "Optional hunt report provider."),
     ];
     public static Component? Find(string id) => Components.FirstOrDefault(c => c.Id == id);
 }
+

@@ -1,8 +1,8 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
-    <Version>0.6.0.0</Version><Author>MTitan</Author><Name>Sentinel Hub</Name>
+    <Version>0.7.0.0</Version><Author>MTitan</Author><Name>Sentinel Hub</Name>
     <Punchline>Optional Sentinel ecosystem control center.</Punchline>
-    <Description>Sentinel ecosystem control center with passive Mount and Fashion Accessories collections, shared player identification, opt-in Anti-AFK, Quest Convenience and bounded instant-action latency compensation. HUD visuals and other Sentinel plugins remain independent.</Description>
+    <Description>Sentinel ecosystem control center with health/dependency checks, sanitized diagnostics, compatibility protection, passive player inspection and collections and recent activity. Other Sentinel plugins remain independent.</Description>
     <RepoUrl>https://github.com/MarshalTitan/SentinelHub</RepoUrl>
     <IconUrl>https://raw.githubusercontent.com/MarshalTitan/SentinelHub/main/assets/icon.png</IconUrl>
     <Tags>sentinel;utility;diagnostics</Tags><AllowUnsafeBlocks>true</AllowUnsafeBlocks><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
@@ -13,4 +13,5 @@
 <ItemGroup><EmbeddedResource Include="Mounts/Data/Acquisition.json" LogicalName="SentinelHub.MountSources.json"/><EmbeddedResource Include="Mounts/Data/StoreLinks.json" LogicalName="SentinelHub.MountStoreLinks.json"/></ItemGroup>
 <ItemGroup><EmbeddedResource Include="Fashion/Data/Acquisition.json" LogicalName="SentinelHub.FashionSources.json"/><EmbeddedResource Include="Fashion/Data/Corrections.json" LogicalName="SentinelHub.FashionCorrections.json"/></ItemGroup>
 <ItemGroup><AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute"><_Parameter1>SentinelHub.UiTests</_Parameter1></AssemblyAttribute></ItemGroup>
-</Project>
+<ItemGroup><EmbeddedResource Include="Inspection/Data/Emotes.json" LogicalName="SentinelHub.InspectionEmotes.json"/></ItemGroup></Project>
+

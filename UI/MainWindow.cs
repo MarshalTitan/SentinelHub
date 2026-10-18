@@ -31,12 +31,16 @@ public sealed class MainWindow : Window, IDisposable
     private readonly Func<LatencyView> latencyView;
     private readonly MountCollectionPanel mounts;
     private readonly FashionAccessoriesPanel fashion;
+    private readonly HealthPanel health;
+    private readonly CompatibilityPanel compatibility;
+    private readonly PlayerInspectorPanel inspector;
+    private readonly RecentActivityPanel activity;
     private PlayerIdentification? identification;
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
     private readonly SentinelModernNavItem[] navigation;
     private static readonly HubPage[] PageOrder = [HubPage.Dashboard, HubPage.Plugins, HubPage.Profiles, HubPage.Dependencies,
-        HubPage.Utilities, HubPage.Mounts, HubPage.Fashion, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
+        HubPage.Utilities, HubPage.Mounts, HubPage.Fashion, HubPage.PlayerInspector, HubPage.RecentActivity, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
     private Vector2 frameSize;
     private Vector2? pendingSize;
     private bool modern;
@@ -44,11 +48,19 @@ public sealed class MainWindow : Window, IDisposable
     public MainWindow(HubSettings config, Func<HubSnapshot> snapshot, FaultJournal faults,
         Action save, Action refresh, Func<string, bool, bool> open, Action export,
         Func<bool> systemReducedMotion, Func<ImFontPtr>? iconFont = null, Func<AntiAfkView>? antiAfkView = null, Func<QuestConvenienceView>? questView = null, Func<LatencyView>? latencyView = null, Func<MountCollectionView>? mountView = null,
-        Action? refreshMounts = null, Action? retryMounts = null, Action<uint, Vector2>? mountIcon = null, Func<FashionView>? fashionView = null, Action? refreshFashion = null, Action? retryFashion = null) : base(WindowId)
+        Action? refreshMounts = null, Action? retryMounts = null, Action<uint, Vector2>? mountIcon = null, Func<FashionView>? fashionView = null, Action? refreshFashion = null, Action? retryFashion = null,
+        Func<SentinelHub.Health.HealthView>? healthView=null, Action? refreshHealth=null, Action? publicVersions=null,
+        Func<SentinelHub.Compatibility.CompatibilityView>? compatibilityView=null,
+        Func<SentinelHub.Inspection.InspectorView>? inspectorView=null,
+        Func<SentinelHub.Activity.ActivityEntry[]>? activityEntries=null, Action? clearActivity=null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.questView = questView ?? (() => QuestConvenienceView.Off);
         this.latencyView = latencyView ?? (() => LatencyView.Off);
+        health=new(healthView??(()=>SentinelHub.Health.HealthView.Empty),refreshHealth??(()=>{}),publicVersions??(()=>{}));
+        activity=new(activityEntries??(()=>[]),clearActivity??(()=>{}));
+        compatibility=new(compatibilityView??(()=>SentinelHub.Compatibility.CompatibilityView.Empty));
+        inspector=new(config,save,inspectorView??(()=>SentinelHub.Inspection.InspectorView.Empty),OpenMount,OpenFashion,mountIcon);
         mounts = new(config, mountView ?? (() => MountCollectionView.Empty), save,
             refreshMounts ?? (() => {}), retryMounts ?? (() => {}), mountIcon);
         fashion = new(config, fashionView ?? (() => FashionView.Empty), save, refreshFashion ?? (() => {}), retryFashion ?? (() => {}), mountIcon);
@@ -66,11 +78,11 @@ public sealed class MainWindow : Window, IDisposable
     private static FontAwesomeIcon Icon(HubPage p) => p switch
     {
         HubPage.Dashboard => FontAwesomeIcon.Home, HubPage.Plugins => FontAwesomeIcon.Cubes,
-        HubPage.Profiles => FontAwesomeIcon.Users, HubPage.Dependencies => FontAwesomeIcon.Link,
+        HubPage.Profiles => FontAwesomeIcon.Users, HubPage.Dependencies => FontAwesomeIcon.Link, HubPage.PlayerInspector=>FontAwesomeIcon.Search, HubPage.RecentActivity=>FontAwesomeIcon.Bell,
         HubPage.Utilities => FontAwesomeIcon.Tools, HubPage.Diagnostics => FontAwesomeIcon.Heartbeat,
         HubPage.Appearance => FontAwesomeIcon.Palette, HubPage.Mounts => FontAwesomeIcon.Horse, HubPage.Fashion => FontAwesomeIcon.Umbrella, _ => FontAwesomeIcon.InfoCircle,
     };
-    public static string PageTitle(HubPage p) => p == HubPage.Mounts ? "Mount Collection" : p == HubPage.Fashion ? "Fashion Accessories" : p.ToString();
+    public static string PageTitle(HubPage p) => p == HubPage.Mounts ? "Mount Collection" : p == HubPage.Fashion ? "Fashion Accessories" : p == HubPage.Dependencies ? "Health" : p==HubPage.PlayerInspector?"Player Inspector":p==HubPage.RecentActivity?"Recent Activity":p.ToString();
     public override void PreDraw()
     {
         style.Pop();
@@ -96,7 +108,7 @@ public sealed class MainWindow : Window, IDisposable
             SentinelModernAppShell.Draw(new("SentinelHub.Modern", "Sentinel Hub", config.Page.ToString())
             {
                 Scale = ImGuiHelpers.GlobalScale, DeltaTime = ImGui.GetIO().DeltaTime,
-                Layout = SentinelModernAppLayoutOptions.Default with { RailButtonSize = frameSize.Y / ImGuiHelpers.GlobalScale < 620 ? 32 : SentinelModernAppLayoutOptions.Default.RailButtonSize },
+                Layout = SentinelModernAppLayoutOptions.Default with { RailButtonSize = Math.Clamp((frameSize.Y / ImGuiHelpers.GlobalScale - 108) / PageOrder.Length - 8,22,42) },
                 ReducedMotion = config.ReducedMotion || systemReducedMotion(),
                 EnableWindowDragging = true,
                 RequestCollapse = ToggleCollapse, CollapseTooltip = config.Collapsed ? "Expand" : "Minimize",
@@ -123,6 +135,7 @@ public sealed class MainWindow : Window, IDisposable
         config.Page = HubPage.Fashion; fashion.Select(id); OpenAndExpand(); save();
     }
     public void ClearIdentification() => identification = null;
+    public void OpenPlayerInspector(){config.Page=HubPage.PlayerInspector;OpenAndExpand();save();}
     public void OpenIdentification(PlayerIdentification result)
     {
         identification = result;
@@ -180,13 +193,15 @@ public sealed class MainWindow : Window, IDisposable
             case HubPage.Dashboard: DrawDashboard(); break;
             case HubPage.Plugins: DrawPlugins(); break;
             case HubPage.Profiles: DrawProfiles(); break;
-            case HubPage.Dependencies: DrawDependencies(); break;
+            case HubPage.Dependencies: health.Draw(); break;
             case HubPage.Utilities: DrawUtilities(); break;
             case HubPage.Diagnostics: DrawDiagnostics(); break;
             case HubPage.Appearance: DrawAppearance(); break;
             case HubPage.About: DrawAbout(); break;
             case HubPage.Mounts: mounts.Draw(); break;
             case HubPage.Fashion: fashion.Draw(); break;
+            case HubPage.PlayerInspector: inspector.Draw(); break;
+            case HubPage.RecentActivity: activity.Draw(); break;
         }
         if (Notice.Length > 0) { ImGui.Spacing(); ImGui.TextWrapped(Notice); }
     }
@@ -221,7 +236,7 @@ public sealed class MainWindow : Window, IDisposable
         };
         if (detail && p.Component.DiagnosticsCommand is not null)
             actions.Add(("Open diagnostics", p.State == Presence.Loaded, () => Open(p.Component.Id, true)));
-        Card(p.Component.Id, p.State.ToString().ToUpperInvariant(), Tone(p.State), lines, actions);
+        Card(p.Component.Id, p.State.ToString().ToUpperInvariant(), Tone(p.State), lines, actions, actionsOnRight: true);
     }
     private void DrawDependencies()
     {
@@ -242,16 +257,15 @@ public sealed class MainWindow : Window, IDisposable
     }
     private void DrawUtilities()
     {
+        compatibility.Draw();
         var view = antiAfkView();
         ImGui.TextWrapped("Prevent AFK Disconnect");
         var enabled = config.AntiAfkEnabled;
+        var label = view.ControlLabel(enabled);
         var changed = modern
-            ? SentinelModernSwitch.Draw("anti-afk-enable", "Enable Anti-AFK", ref enabled, shell.Motion, ImGuiHelpers.GlobalScale)
-            : ImGui.Checkbox("Enable Anti-AFK", ref enabled);
+            ? SentinelModernSwitch.Draw("anti-afk-enable", label, ref enabled, shell.Motion, ImGuiHelpers.GlobalScale)
+            : ImGui.Checkbox(label + "###anti-afk-enable", ref enabled);
         if (changed) { config.AntiAfkEnabled = enabled; save(); }
-        ImGui.TextWrapped(view.Description);
-        ImGui.TextWrapped("Checks every 10 seconds and resets inactivity timers above 30 seconds. No keys, movement or chat.");
-        ImGui.TextWrapped("Successful timer checks this session: " + view.Cycles);
         ImGui.Separator(); ImGui.Spacing();
         DrawQuestConvenience();
         ImGui.Separator(); ImGui.Spacing();
@@ -305,9 +319,11 @@ public sealed class MainWindow : Window, IDisposable
         : ImGui.Checkbox(label, ref value);
     private void DrawDiagnostics()
     {
-        ImGui.TextWrapped("Exports contain only known component IDs, numeric versions, installation/load observations, dependency responses and bounded Hub fault codes.");
-        ImGui.TextWrapped("Consumer faults, private chat and consumer configuration are not collected. Profiles runtime state remains unknown.");
-        if (Button("Export sanitized diagnostics")) export();
+        ImGui.TextWrapped("Optional troubleshooting. Live history stays in memory and clears when Hub unloads or the game closes.");
+        ImGui.TextWrapped("Export saves one sentinel-diagnostics.zip, replacing the previous export. Nothing is saved here automatically.");
+        ImGui.TextWrapped("The ZIP contains structured JSON and a readable summary: known Sentinel versions, health, dependency responses, bounded Hub faults and compatible provider counters.");
+        ImGui.TextWrapped("Credentials, configuration contents, names, private IDs, chat, paths and arbitrary provider text are excluded. Unsupported provider/profile state stays unavailable.");
+        if (Button("Export Sentinel Diagnostics")) export();
         if (Button("Refresh observations")) refresh();
         var entries = faults.Snapshot();
         if (entries.Length == 0) ImGui.TextWrapped("No recent Hub faults.");
@@ -351,13 +367,27 @@ public sealed class MainWindow : Window, IDisposable
     };
     private static bool Button(string text) => ImGui.Button(text, new Vector2(-1, 28 * ImGuiHelpers.GlobalScale));
     private void Card(string id, string status, SentinelModernPillTone tone, IEnumerable<string> lines,
-        IReadOnlyList<(string Label, bool Enabled, Action Click)>? actions = null)
+        IReadOnlyList<(string Label, bool Enabled, Action Click)>? actions = null, bool actionsOnRight = false)
     {
         var text = lines.ToArray();
         var scale = ImGuiHelpers.GlobalScale;
-        var width = Math.Max(80, ImGui.GetContentRegionAvail().X - 28 * scale - 16 * scale);
-        var height = 34 * scale + text.Sum(s => ImGui.CalcTextSize(s, false, width).Y + 8 * scale)
-            + (modern ? 26 * scale : 0) + (actions?.Count ?? 0) * (36 * scale) + 14 * scale;
+        var style = ImGui.GetStyle();
+        var padding = modern ? new Vector2(14, 12) * scale : style.WindowPadding;
+        var innerWidth = Math.Max(80, ImGui.GetContentRegionAvail().X - 2 * padding.X);
+        var width = innerWidth - 16 * scale;
+        var actionWidth = Math.Max(140 * scale, actions?.Max(a => ImGui.CalcTextSize(a.Label).X + 24 * scale) ?? 0);
+        var sideBySide = actionsOnRight && actions is { Count: > 0 } && width >= actionWidth + 260 * scale + 16 * scale;
+        var textWidth = sideBySide ? innerWidth - actionWidth - 4 * style.CellPadding.X : innerWidth;
+        var spacing = style.ItemSpacing.Y;
+        var textHeight = text.Sum(s => ImGui.CalcTextSize(s, false, textWidth).Y)
+            + Math.Max(0, text.Length - 1) * 2 * spacing
+            + (modern ? SentinelModernStatusPill.Measure(new(status, tone), scale).Y + (text.Length > 0 ? spacing : 0) : 0);
+        var actionCount = actions?.Count ?? 0;
+        var actionsHeight = actionCount * 28 * scale + Math.Max(0, actionCount - 1) * spacing;
+        // Keep normal card padding, without counting trailing row gaps or spare wrap width.
+        var height = MathF.Ceiling(2 * padding.Y + (sideBySide
+            ? Math.Max(textHeight, actionsHeight) + 2 * style.CellPadding.Y
+            : textHeight + (actionCount > 0 ? spacing + actionsHeight : 0))) + 1;
         if (modern)
         {
             using var card = SentinelModernGlassCard.Begin(id, new() { Size = new(0, height / scale) }, scale);
@@ -371,8 +401,27 @@ public sealed class MainWindow : Window, IDisposable
         ImGui.Spacing();
         void Body()
         {
+            if (sideBySide && ImGui.BeginTable("##PluginActions", 2, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings))
+            {
+                ImGui.TableSetupColumn("Information", ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn("Actions", ImGuiTableColumnFlags.WidthFixed, actionWidth);
+                ImGui.TableNextColumn(); Information();
+                ImGui.TableNextColumn(); Actions();
+                ImGui.EndTable();
+            }
+            else { Information(); Actions(); }
+        }
+        void Information()
+        {
             if (modern) SentinelModernStatusPill.Draw(new(status, tone), shell.Motion, scale);
-            foreach (var line in text) { ImGui.TextWrapped(line); ImGui.Spacing(); }
+            for (var i = 0; i < text.Length; i++)
+            {
+                ImGui.TextWrapped(text[i]);
+                if (i + 1 < text.Length) ImGui.Spacing();
+            }
+        }
+        void Actions()
+        {
             if (actions is not null) foreach (var a in actions)
             {
                 ImGui.BeginDisabled(!a.Enabled);
@@ -394,3 +443,4 @@ public sealed class MainWindow : Window, IDisposable
     }
     public void Dispose() { style.Dispose(); shell.Dispose(); }
 }
+
