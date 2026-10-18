@@ -1,7 +1,7 @@
 using SentinelHub.Utilities.Quest;
 using SentinelHub.Utilities;
 namespace SentinelHub.Configuration;
-public enum HubPage { Dashboard, Plugins, Profiles, Dependencies, Utilities, Diagnostics, Appearance, About, Mounts }
+public enum HubPage { Dashboard, Plugins, Profiles, Dependencies, Utilities, Diagnostics, Appearance, About, Mounts, Fashion }
 public class HubSettings
 {
     public int Version { get; set; } = 1;
@@ -24,6 +24,7 @@ public class HubSettings
         QuestPreferenceImported = true;
     }
     public bool MountContextMenuEnabled { get; set; } // Optional passive lookup; new installs/upgrades leave it off.
+    public bool FashionContextMenuEnabled { get; set; } // Independent passive identification opt-in, default OFF.
     public bool ReducedMotion { get; set; }
     public bool Collapsed { get; set; }
     public float ExpandedWidth { get; set; } = 860;

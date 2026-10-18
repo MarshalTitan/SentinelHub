@@ -1,7 +1,7 @@
-# Sentinel Hub 0.5.1.0
+# Sentinel Hub 0.6.0.0
 
-Improve Mount Collection's Where to obtain information: attributed acquisition source/release-patch metadata for 356 mounts, including 46 Online Store entries; 45 reviewed official store product links; missing local gil-shop detection with NQ base prices and explicit requirements; richer direct-item exchange costs. Add separately authored Edelina vendor/location/50,000,000-gil records for Chrysomallos, Gilded Mikoshi and Magitek Avenger G1.
+Add the independent passive Fashion Accessories page: local ornament catalog/icons/names, own unlocks, search/sort, source/category, patch/expansion, trade/market eligibility and explicit current-availability/recorded-store distinctions. Dated permitted acquisition metadata covers 52 identities (51 known sources); unknowns remain visible. Four retired Facewear ornament rows are excluded.
 
-Category filters distinguish in-game sources, Online Store, other premium/promotional rewards and historical events. Source links open only on a click. Snapshot date, local source coverage and unmatched identities are displayed. No in-game API requests; no inference that an event, vendor or store purchase is currently accessible. FFXIV Collect reuse permission/provenance and attribution are documented.
+One Sentinel Hub: Identify player context action handles opted-in Mount and Fashion lookups. Existing Mount preference is preserved; new Fashion preference defaults OFF. A queued framework-thread read validates fresh player identity/session/territory/age/readiness. Active ornament scalar is read through current typed structures; auto-umbrella is excluded. None/unknown/unavailable are distinct. No hook, target tooltip change, equip/use action or acquisition downloader.
 
-Eight additional policy groups and expanded existing native mount fixtures cover the enrichment. Supervised in-game acceptance is pending under docs/MOUNT_COLLECTION.md. Existing utilities, native behavior, saved opt-ins/layout and Core/UI 0.4.1 are unchanged. No WhichMount code/CSV/data or target hook is included.
+Source/rights/API audit, maintenance and supervised acceptance are documented. Native in-game acceptance remains pending. Other utilities, stored preferences/window sizes, Mount data/runtime and Core/UI 0.4.1 remain unchanged.

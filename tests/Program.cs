@@ -1,3 +1,5 @@
+using SentinelHub.Fashion;
+using SentinelHub.Identification;
 using SentinelHub.Utilities.Quest;
 using SentinelHub.Mounts;
 using System.Text.Json;
@@ -674,6 +676,124 @@ Test("Mount enriched sources are searchable and independently filterable without
  Check(MountPolicy.Filter(cat,O(),new MountFilter{Category=MountCategory.GilVendor}).Single().Id==317);
  Check(MountPolicy.Filter(cat,O(),new MountFilter{Category=MountCategory.Premium}).Single().Id==8);
  Check(MountPolicy.Filter(cat,O(),new MountFilter{Obtainable=1}).Length==0);
+});
+
+
+FashionEntry F(uint id,string name,int? expansion=null,FashionSource[]? sources=null,
+    FashionKnowledge market=FashionKnowledge.Unknown,FashionKnowledge obtainable=FashionKnowledge.Unknown,FashionKnowledge cash=FashionKnowledge.Unknown) =>
+    new(id,name,name,8001,3000,(int)id,null,expansion,sources??[],[],FashionKnowledge.Unknown,market,cash,obtainable,"Not verified");
+FashionCatalog FC(params FashionEntry[] entries)=>new(entries,new Dictionary<int,string>{{3,"Shadowbringers"},{4,"Endwalker"},{5,"Dawntrail"}},0,0,null);
+FashionCharacter FO(params (uint Id,bool Owned)[] values)=>new(true,values.ToDictionary(v=>v.Id,v=>v.Owned));
+Test("Fashion preserves prior pages and independent default-off identification settings",()=>{
+ Check((int)HubPage.Mounts==8&&(int)HubPage.Fashion==9);
+ var old=JsonSerializer.Deserialize<HubSettings>("{\"Page\":8,\"MountContextMenuEnabled\":true}")!;old.Normalize();
+ Check(old.Page==HubPage.Mounts&&old.MountContextMenuEnabled&&!old.FashionContextMenuEnabled);
+});
+Test("All 52 independently audited current ornament IDs load, including unknown acquisition",()=>{
+ uint[] known=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,23,24,27,28,30,31,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58];
+ var data=FashionMetadata.Snapshot;
+ Check(data.Accessories.Select(x=>x.Id).SequenceEqual(known));
+ var rows=data.Accessories.Select(m=>F(m.Id,m.EnglishName,FashionMetadata.Expansion(m.Patch),FashionMetadata.Sources(m))).ToArray();
+ Check(FashionPolicy.Validate(rows).Length==52&&data.Accessories.Count(x=>x.Sources.Length>0)==51);
+ Check(rows.Single(x=>x.Id==42).Sources.Length==0&&rows.Single(x=>x.Id==58).Name=="Antique Lantern");
+ foreach(var row in rows)Check(FashionMetadata.Find(row.Id,row.EnglishName)!=null);
+});
+Test("Fashion rejects blank/zero/duplicate/invalid and migrated Facewear rows",()=>{
+ Check(FashionPolicy.Candidate(1,"Parasol",8001,2939,0));
+ foreach(uint id in new uint[]{22,25,26,32})Check(!FashionPolicy.Candidate(id,"Old spectacles",786,3431,1));
+ Check(!FashionPolicy.Candidate(0,"x",1,1,0)&&!FashionPolicy.Candidate(65536,"x",1,1,0));
+ Check(!FashionPolicy.Candidate(1,"",1,1,0)&&!FashionPolicy.Candidate(1,"x",0,1,0)&&!FashionPolicy.Candidate(1,"x",1,0,0)&&!FashionPolicy.Candidate(1,"x",1,1,-1));
+ bool Reject(FashionEntry[] rows){try{FashionPolicy.Validate(rows);return false;}catch(InvalidDataException){return true;}}
+ Check(Reject([F(1,"a"),F(1,"b")])&&Reject([F(0,"invalid")]));
+ var snapshot=FashionMetadata.Snapshot;
+ bool RejectSnapshot(FashionSnapshot value){try{FashionMetadata.ValidateSnapshot(value);return false;}catch(InvalidDataException){return true;}}
+ Check(RejectSnapshot(snapshot with{Accessories=[snapshot.Accessories[0],snapshot.Accessories[0]]}));
+ Check(RejectSnapshot(snapshot with{Accessories=[snapshot.Accessories[0] with{Id=0}]}));
+});
+Test("Fashion item mapping verifies action 20086 and preserves trade/market unknowns",()=>{
+ var ids=new HashSet<uint>{1,16};
+ Check(FashionPolicy.Unlock(20086,16,ids)==16&&FashionPolicy.Unlock(1322,16,ids)==null&&FashionPolicy.Unlock(20086,0,ids)==null&&FashionPolicy.Unlock(20086,999,ids)==null);
+ Check(FashionPolicy.ItemStatus([],true)==FashionKnowledge.Unknown);
+ Check(FashionPolicy.ItemStatus([new(1,"a",false,false)],false)==FashionKnowledge.No);
+ Check(FashionPolicy.ItemStatus([new(1,"a",true,false)],false)==FashionKnowledge.Yes&&FashionPolicy.ItemStatus([new(1,"a",true,false)],true)==FashionKnowledge.No);
+ Check(FashionPolicy.ItemStatus([new(1,"a",false,false),new(2,"b",true,true)],true)==FashionKnowledge.Yes);
+});
+Test("Fashion own unlocks distinguish missing keys and clear on session/read failure",()=>{
+ var owner=FO((1,true),(2,false));
+ Check(owner.Ownership(1)==FashionOwnership.Unlocked&&owner.Ownership(2)==FashionOwnership.Locked&&owner.Ownership(3)==FashionOwnership.Unknown);
+ var obs=new FashionObservation();obs.Observe(1,true,()=>owner);Check(obs.Snapshot.Available);
+ obs.Observe(2,true,()=>FO((1,false)));Check(obs.Snapshot.Ownership(1)==FashionOwnership.Locked);
+ obs.Observe(2,true,()=>throw new Exception());Check(!obs.Snapshot.Available);
+ obs.Observe(1,true,()=>owner);obs.Observe(0,true,()=>owner);Check(!obs.Snapshot.Available);
+ obs.Observe(1,true,()=>owner);obs.Observe(1,false,()=>owner);Check(!obs.Snapshot.Available);
+});
+Test("Fashion source identities, historical/store categories and unsupported aliases remain explicit",()=>{
+ Check(FashionMetadata.Find(16,"red moon parasol")!=null&&FashionMetadata.Find(16,"wrong")==null&&FashionMetadata.Find(999,"Parasol")==null);
+ var red=FashionMetadata.Sources(FashionMetadata.Find(16,"Red Moon Parasol")!);
+ Check(red.Any(s=>s.Category=="Online Store")&&red.Any(s=>s.Category=="Seasonal / event"&&s.Description.Contains("2021")));
+ Check(FashionMetadata.Sources(FashionMetadata.Find(42,"Mandragora Parasol")!).Length==0);
+ Check(FashionMetadata.Correction(42,"Mandragora Parasol")!.Note!.Contains("no verified"));
+ foreach(var fact in FashionMetadata.Snapshot.Accessories){
+  Check(FashionMetadata.Expansion(fact.Patch) is >=3 and <=5);
+  foreach(var source in FashionMetadata.Sources(fact))Check(FashionMetadata.SafeUrl(source.Url));
+ }
+ foreach(var patch in new[]{"8.0","","7.","7.a","7.5.1"})Check(FashionMetadata.Expansion(patch)==null);
+ Check(!FashionMetadata.SafeUrl("https://ffxivcollect.com.evil.test/fashions/1")&&!FashionMetadata.SafeUrl("http://ffxivcollect.com/fashions/1")&&!FashionMetadata.SafeUrl("javascript:alert(1)"));
+});
+Test("Fashion current availability requires dated evidence and expires without implying active events",()=>{
+ var current=FashionMetadata.Correction(3,"Vermilion Paper Parasol")!;
+ var now=DateTimeOffset.Parse("2026-10-18T15:00:00Z");
+ Check(FashionMetadata.Availability(current,now)==FashionKnowledge.Yes);
+ Check(FashionMetadata.Availability(current,DateTimeOffset.Parse("2026-11-18T00:00:00Z"))==FashionKnowledge.Unknown);
+ Check(FashionMetadata.Availability(current,DateTimeOffset.Parse("2026-10-17T00:00:00Z"))==FashionKnowledge.Unknown);
+ Check(FashionMetadata.Availability(current with{SourceUrl=null},now)==FashionKnowledge.Unknown);
+ Check(FashionMetadata.Availability(current with{Availability="No"},now)==FashionKnowledge.No);
+ foreach(var id in new uint[]{15,16,41,42,54})Check(FashionMetadata.Availability(FashionMetadata.Corrections.Entries.Single(x=>x.Id==id),now)==FashionKnowledge.Unknown);
+ var stale=F(3,"x",obtainable:FashionKnowledge.Yes) with{AvailabilityExpiresUtc=now.AddSeconds(-1)};
+ Check(FashionPolicy.CurrentAvailability(stale,now)==FashionKnowledge.Unknown);
+});
+Test("Fashion search, sorting and ownership never turn unknown into missing",()=>{
+ var cat=FC(F(2,"Beta",sources:[new("Quest","The Coming Dawn","game")]) with{EnglishName="English alias",Items=[new(99,"Knapsack item",true,true)]},F(1,"alpha"),F(3,"Alpha"));
+ var own=FO((1,true),(2,false));
+ foreach(var term in new[]{"beta","English alias","knapsack","coming dawn","2"})Check(FashionPolicy.Filter(cat,own,new(){Search=term}).Single().Id==2);
+ Check(FashionPolicy.Filter(cat,own,new(){Ownership=1}).Single().Id==2);
+ Check(FashionPolicy.Filter(cat,FashionCharacter.Unknown,new(){Ownership=1}).Length==0);
+ Check(FashionPolicy.Filter(cat,own,new(){Ownership=3}).Single().Id==3);
+ Check(FashionPolicy.Filter(cat,own,new()).Select(x=>x.Id).SequenceEqual(new uint[]{1,3,2}));
+ Check(FashionPolicy.Filter(cat,own,new(){Sort=FashionSort.Id}).First().Id==1);
+ Check(FashionPolicy.Filter(cat,own,new(){Sort=FashionSort.NameDescending}).First().Id==2);
+ Check(FashionPolicy.Completion(cat.Entries,own)==(1,1,1));
+});
+Test("Fashion market/category/expansion/cash/availability filters respect independent tri-state fields",()=>{
+ var cat=FC(F(1,"a",3,[new("Online Store","Store","community")],FashionKnowledge.No,FashionKnowledge.Yes,FashionKnowledge.Yes),
+    F(2,"b",4,[new("Quest","Story","game")],FashionKnowledge.Yes,FashionKnowledge.No),F(3,"c"));
+ Check(FashionPolicy.Filter(cat,FO(),new(){Marketable=1}).Single().Id==2);
+ Check(FashionPolicy.Filter(cat,FO(),new(){Category="Online Store"}).Single().Id==1);
+ Check(FashionPolicy.Filter(cat,FO(),new(){Category="Unknown"}).Single().Id==3);
+ Check(FashionPolicy.Filter(cat,FO(),new(){Expansion=4}).Single().Id==2&&FashionPolicy.Filter(cat,FO(),new(){Expansion=-1}).Single().Id==3);
+ Check(FashionPolicy.Filter(cat,FO(),new(){CashShop=1}).Single().Id==1&&FashionPolicy.Filter(cat,FO(),new(){Obtainable=2}).Single().Id==2);
+ foreach(var value in Enum.GetValues<FashionKnowledge>())foreach(var filter in new[]{0,1,2,3})
+  Check(FashionPolicy.Knowledge(value,filter)==(filter==0||filter==1&&value==FashionKnowledge.Yes||filter==2&&value==FashionKnowledge.No||filter==3&&value==FashionKnowledge.Unknown));
+});
+Test("Live ornament resolution handles none, unknown, retired and unloaded/transformed actors",()=>{
+ bool Known(uint id)=>id==16;
+ Check(IdentificationPolicy.Resolve(new(true,true,false,16),true,Known)==new IdentificationPart(IdentificationState.Found,16));
+ Check(IdentificationPolicy.Resolve(new(true,true,false,0),true,Known).State==IdentificationState.None);
+ Check(IdentificationPolicy.Resolve(new(true,true,false,22),true,Known).State==IdentificationState.UnknownId);
+ Check(IdentificationPolicy.Resolve(new(true,true,false,999),true,Known).State==IdentificationState.UnknownId);
+ Check(IdentificationPolicy.Resolve(new(false,true,false,16),true,Known).State==IdentificationState.Unavailable);
+ Check(IdentificationPolicy.Resolve(new(true,false,false,16),true,Known).State==IdentificationState.Unavailable);
+ Check(IdentificationPolicy.Resolve(new(true,true,true,16),true,Known).State==IdentificationState.Unavailable);
+ Check(IdentificationPolicy.Resolve(new(true,true,false,16),false,_=>throw new Exception()).State==IdentificationState.Off);
+});
+Test("Shared identification rejects stale tickets, identity reuse, zoning, logout, option Off and disposal",()=>{
+ var t=new IdentificationTicket(10,20,3,40,50,100);
+ bool Allowed(ulong obj=10,uint entity=20,ushort index=3,ulong session=40,uint zone=50,long now=101,bool enabled=true,bool ready=true,bool player=true,bool valid=true,bool disposed=false)=>
+  IdentificationPolicy.TicketMatches(t,obj,entity,index,session,zone,now,enabled,ready,player,valid,disposed);
+ Check(Allowed()&&!Allowed(obj:11)&&!Allowed(entity:21)&&!Allowed(index:4)&&!Allowed(session:41)&&!Allowed(zone:51));
+ Check(!Allowed(now:99)&&!Allowed(now:10101)&&!Allowed(enabled:false)&&!Allowed(ready:false)&&!Allowed(player:false)&&!Allowed(valid:false)&&!Allowed(disposed:true));
+ var queue=new IdentificationQueue();queue.Request(t);queue.Request(t with{ObjectId=11});Check(queue.Take()!.Value.ObjectId==11&&queue.Take()==null);
+ queue.Request(t);queue.Clear();Check(queue.Take()==null);
 });
 
 Console.WriteLine(passed + " policy test groups passed.");

@@ -45,3 +45,9 @@ Publication is a main push containing `[publish-live]` after CI passes. Assets a
 Independent passive local-game database with search/sort, current-character unlocks, names/icons/seats/actions/BGM, an attributed 356-mount acquisition snapshot, gil-shop prices/requirements, detailed exchange costs, official source/store links, market eligibility and six independently authored expansion trial/meta tracks. Release expansions use matched community introduction patches, with coverage/mismatched identities shown. Category filters distinguish Online Store, other paid/promotional sources and in-game methods. Current availability stays separately unverified; historical event text is retained. Totem progress uses simple verified exchanges and four loaded main bags only. Player context-menu lookup is an explicit default-OFF option; no target-info/tooltip hook or game actions.
 
 [Data audit and provenance](docs/MOUNT_COLLECTION_METADATA.md) · [Acceptance and rollback](docs/MOUNT_COLLECTION.md). WhichMount was a behavioral README reference only; no code/CSV/resource dataset was copied. Existing utilities and Core pins are unchanged.
+
+## Fashion Accessories — 0.6.0.0
+
+Independent passive ornament catalog and own unlocks, with source/patch metadata, source/expansion/market/store/availability filters, explicit unknowns and retired Facewear handling. One opted-in player-identification action opens Mount or Fashion details; the current typed actor field is read on the framework thread without a hook. No API calls during collection browsing or character data persistence.
+
+[Data/API/rights audit](docs/FASHION_ACCESSORIES_AUDIT.md) · [Supervised acceptance](docs/FASHION_ACCESSORIES.md). Current availability has separately dated evidence and remains Unknown for most entries. Existing utility/Core behavior and Mount preference remain intact.
