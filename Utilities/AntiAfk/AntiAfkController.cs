@@ -28,14 +28,14 @@ public sealed class AntiAfkController : IDisposable
     public void Tick()
     {
         if (disposed) return;
-        var now=Environment.TickCount64;
-        // Ownership changes need a prompt response, not an inventory/IPC scan on every frame.
-        // Off and login changes bypass the one-second poll delay.
-        var enabled=settings.AntiAfkEnabled;var loggedIn=client.IsLoggedIn;
-        if(previousEnabled==enabled&&previousLogin==loggedIn&&now<nextOwnershipCheck)return;
-        previousEnabled=enabled;previousLogin=loggedIn;nextOwnershipCheck=now+1000;
         try
         {
+            var now=Environment.TickCount64;
+            // Ownership changes need a prompt response, not an inventory/IPC scan on every frame.
+            // Off and login changes bypass the one-second poll delay.
+            var enabled=settings.AntiAfkEnabled;var loggedIn=client.IsLoggedIn;
+            if(previousEnabled==enabled&&previousLogin==loggedIn&&now<nextOwnershipCheck)return;
+            previousEnabled=enabled;previousLogin=loggedIn;nextOwnershipCheck=now+1000;
             var hud = HudUtilityOwnership.Select(pi.InstalledPlugins.Where(p=>p.InternalName=="SentinelHUD")
                 .Select(p=>new SentinelHub.Ecosystem.InstalledPlugin(p.InternalName,p.IsLoaded,p.Manifest.AssemblyVersion.ToString())),new Version(0,8,4,6));
             bool? saved = null;

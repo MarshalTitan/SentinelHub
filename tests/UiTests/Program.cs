@@ -115,7 +115,7 @@ internal static class Program
                         var card=Find(MainWindow.WindowId,"SRankSentinel");
                         Check((root.Flags&ImGuiWindowFlags.NoResize)==0,"Hub cannot be resized");
                         Check(card.ContentSize.X<=card.Size.X+1&&!card.ScrollbarX,"Plugin card overflows horizontally after resize");
-                        Check(card.ContentSize.Y+2*card.WindowPadding.Y<=card.Size.Y+1,"Plugin actions are clipped after resize");
+                        Check(card.ContentSize.Y+2*card.WindowPadding.Y<=card.Size.Y+1,$"Plugin actions are clipped after resize: theme={theme} scale={scale} width={width} content={card.ContentSize} padding={card.WindowPadding} size={card.Size} scroll={root.Scroll}");
                         if(width==480){if(narrowHeight>0)Check(Math.Abs(narrowHeight-card.Size.Y)<1,"Narrow fallback changed after resize");narrowHeight=card.Size.Y;}
                         else Check(card.Size.Y<narrowHeight,"Wide plugin actions did not reduce card height");
                         Check(JsonSerializer.Serialize(settings)==saved,"Resizing changed saved feature settings");
