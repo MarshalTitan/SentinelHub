@@ -8,6 +8,8 @@ using SentinelHub.Utilities.Quest;
 using SentinelHub.Inspection;
 using SentinelHub.Identification;
 using SentinelHub.Coordination;
+using SentinelHub.Activity;
+using SentinelHub.Storage;
 internal static class OperationsTests
 {
     public static void Run(Action<string,Action> test,Action<bool> check)
@@ -109,6 +111,35 @@ internal static class OperationsTests
             check(PausePolicy.Resolve("owner",true,true,true,()=>1,_=>true,()=>false).State==PauseState.Pending);
             check(PausePolicy.Resolve("owner",false,true,true,()=>1,_=>true,()=>true,true).State==PauseState.RemainsPaused);
             check(!new PauseView(true,[new("owner",PauseState.Unsupported,"")]).FullyAcknowledged);
+        });
+        test("Activity retention, grouping and severity are bounded and typed",()=>{
+            var journal=new ActivityJournal();var now=DateTimeOffset.UtcNow;
+            for(var i=0;i<1000;i++)journal.Add("SentinelHub",ActivityCode.DiagnosticsSaved,now);
+            check(journal.Snapshot(now).Length==1&&journal.Snapshot(now)[0].Count==1000);
+            for(var i=0;i<400;i++)journal.Add("SentinelHub",ActivityCode.BackupSaved,now.AddMinutes(i+1));
+            check(journal.Snapshot(now.AddMinutes(401)).Length<=ActivityJournal.Capacity);
+            check(journal.Snapshot(now.AddDays(8)).Length==0);
+            check(ActivityCatalog.Severity(ActivityCode.DiagnosticsFailed)==ActivitySeverity.Error);
+            check(ActivityCatalog.Severity(ActivityCode.HealthRecovered)==ActivitySeverity.Success);
+            check(!journal.Add("PRIVATE_TOKEN",ActivityCode.HuntCredited,now));
+            check(!journal.Add("SentinelRelay",ActivityCode.HuntCredited,now));
+            check(!journal.Add("SentinelHub",(ActivityCode)9999,now));
+        });
+        test("Activity persistence rejects corrupt/oversized/unknown data and does not retain arbitrary payloads",()=>{
+            var journal=new ActivityJournal();var now=DateTimeOffset.UtcNow;
+            journal.Add("SentinelHub",ActivityCode.DiagnosticsSaved,now);var json=journal.Serialize(now);
+            var restored=new ActivityJournal();restored.Load(json,now);check(restored.Snapshot(now).Length==1);
+            restored.Load("[{\"Source\":\"SECRET_TOKEN\",\"Code\":1,\"Count\":1}]",now);check(restored.Snapshot(now).Length==0&&!restored.Serialize(now).Contains("SECRET_TOKEN"));
+            restored.Load("{",now);check(restored.Snapshot(now).Length==0);
+            restored.Load(new string('x',256*1024+1),now);check(restored.Snapshot(now).Length==0);
+        });
+        test("Atomic storage injected replacement failure preserves original bytes and removes temporary files",()=>{
+            var folder=Path.Combine(Path.GetTempPath(),"sentinel-tests-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(folder);
+            try{var path=Path.Combine(folder,"state.json");File.WriteAllText(path,"original");var failed=false;
+                try{AtomicFile.Write(path,Encoding.UTF8.GetBytes("candidate"),(_,_)=>throw new IOException());}catch{failed=true;}
+                check(failed&&File.ReadAllText(path)=="original"&&Directory.GetFiles(folder).Length==1);
+                AtomicFile.Write(path,Encoding.UTF8.GetBytes("replacement"));check(File.ReadAllText(path)=="replacement");
+            }finally{Directory.Delete(folder,true);}
         });
     }
 }

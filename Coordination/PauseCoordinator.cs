@@ -16,7 +16,9 @@ public sealed class PauseCoordinator(IDalamudPluginInterface pi,HubSettings sett
     {
         if(Environment.TickCount64<next)return;next=Environment.TickCount64+500;
         var paused=settings.AutomationPaused;
-        var all=pi.InstalledPlugins.ToArray();
+        Dalamud.Plugin.IExposedPlugin[] all;
+        try{all=pi.InstalledPlugins.ToArray();}
+        catch{View=new(paused,[new("SentinelHub",hubStopped&&paused?PauseState.Acknowledged:PauseState.Pending,"Hub state observed; external discovery unavailable."),new("SRankSentinel",PauseState.Failed,"Discovery unavailable; no stop assumed."),new("PvPSentinel",PauseState.Failed,"Discovery unavailable; no stop assumed.")]);return;}
         var entries=new List<PauseParticipant>{new("SentinelHub",paused?(hubStopped?PauseState.Acknowledged:PauseState.Pending):PauseState.Running,
             paused?(hubStopped?"Hub Anti-AFK, Quest and latency writers are suspended; saved preferences retained.":"Waiting for Hub writers to suspend."):
             "Hub pause released; saved preferences and compatibility/readiness gates still apply.")};

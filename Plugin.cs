@@ -16,6 +16,7 @@ using SentinelHub.Health;
 using SentinelHub.Compatibility;
 using SentinelHub.Inspection;
 using SentinelHub.Coordination;
+using SentinelHub.Activity;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 namespace SentinelHub;
@@ -52,11 +53,15 @@ public sealed class Plugin : IDalamudPlugin
     private readonly CompatibilityScanner compatibility;
     private readonly PlayerInspector inspector;
     private readonly PauseCoordinator pause;
+    private readonly ActivityService activity;
+    private readonly HubOperationsIpc operationsIpc;
     private bool disposed;
     public Plugin()
     {
         settings = Pi.GetPluginConfig() as Configuration.Configuration ?? new();
         settings.Normalize();
+        activity=new(Pi.GetPluginConfigDirectory());
+        operationsIpc=new(Pi,Framework,settings,activity.Journal,faults);
         discovery = new(Pi, faults);
         health=new(Pi,discovery.Capture,()=>discovery.Snapshot,publicCatalog);
         pause=new(Pi,settings,Save);
@@ -76,7 +81,8 @@ public sealed class Plugin : IDalamudPlugin
             () => Pi.UiBuilder.ShouldUseReducedMotion, antiAfkView: () => antiAfk.View, questView: () => quest.View, latencyView: () => latency.View,
             mountView: () => mounts.View, refreshMounts: mounts.RequestRefresh, retryMounts: mounts.Retry, mountIcon: DrawCollectionIcon, fashionView: () => fashion.View, refreshFashion: fashion.RequestRefresh, retryFashion: fashion.Retry,
             healthView:()=>health.View,refreshHealth:()=>{discovery.Refresh(true);health.Tick(true);},publicVersions:publicCatalog.Request,
-            compatibilityView:()=>compatibility.View,inspectorView:()=>inspector.View,pauseView:()=>pause.View,pauseRequest:pause.Request);
+            compatibilityView:()=>compatibility.View,inspectorView:()=>inspector.View,pauseView:()=>pause.View,pauseRequest:pause.Request,
+            activityEntries:()=>activity.Journal.Snapshot(DateTimeOffset.UtcNow),clearActivity:activity.Journal.Clear);
         identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, window.ClearIdentification, faults,
             ticket=>{inspector.Select(ticket);window.OpenPlayerInspector();});
         windows.AddWindow(window);
@@ -87,7 +93,7 @@ public sealed class Plugin : IDalamudPlugin
         Framework.Update += Update;
         discovery.Refresh(true);
     }
-    private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); health.Tick(); compatibility.Tick(); antiAfk.Tick(); quest.Tick(); latency.Tick(); pause.Tick(antiAfk.View.State!=Utilities.AntiAfkState.Active&&quest.View.State!=Utilities.QuestConvenienceState.Active&&latency.View.State is not (Utilities.LatencyState.Compensating or Utilities.LatencyState.Measuring)); mounts.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Mounts); fashion.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Fashion); identifyMenu.Tick(); inspector.Tick(window.IsOpen&&!settings.Collapsed&&settings.Page==Configuration.HubPage.PlayerInspector); } }
+    private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); health.Tick(); compatibility.Tick(); antiAfk.Tick(); quest.Tick(); latency.Tick(); pause.Tick(antiAfk.View.State!=Utilities.AntiAfkState.Active&&quest.View.State!=Utilities.QuestConvenienceState.Active&&latency.View.State is not (Utilities.LatencyState.Compensating or Utilities.LatencyState.Measuring)); activity.Observe(health.View,compatibility.View,pause.View); mounts.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Mounts); fashion.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Fashion); identifyMenu.Tick(); inspector.Tick(window.IsOpen&&!settings.Collapsed&&settings.Page==Configuration.HubPage.PlayerInspector); } }
     private void DrawCollectionIcon(uint id, Vector2 size)
     {
         Dalamud.Interface.Textures.TextureWraps.IDalamudTextureWrap? wrap = null;
@@ -121,18 +127,22 @@ public sealed class Plugin : IDalamudPlugin
                 antiAfk.View,quest.View,latency.View);
             var path=Path.Combine(directory,name);
             using(var file=new FileStream(path,FileMode.CreateNew,FileAccess.Write,FileShare.None))file.Write(bundle);
+            activity.Add(ActivityCode.DiagnosticsSaved);
             window.Notice = "Saved " + name + " in Hub's configuration diagnostics folder.";
             Chat.Print("[Sentinel Hub] " + window.Notice);
         }
         catch
         {
             faults.Record(FaultCode.ExportUnavailable);
+            activity.Add(ActivityCode.DiagnosticsFailed);
             window.Notice = "Export could not be saved. Check configuration-folder access.";
         }
     }
     public void Dispose()
     {
         disposed = true;
+        operationsIpc.Dispose();
+        activity.Dispose();
         publicCatalog.Dispose();
         Framework.Update -= Update;
         identifyMenu.Dispose();

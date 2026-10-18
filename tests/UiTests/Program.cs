@@ -130,6 +130,7 @@ internal static class Program
                 foreach(var state in Enum.GetValues<LatencyState>())
                 foreach(var mode in Enum.GetValues<LatencyMode>())
                 {
+                    io.FontGlobalScale=scale;
                     var settings=new HubSettings{Theme=theme,Page=HubPage.Utilities,LatencyMode=mode};
                     using var latency=new MainWindow(settings,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>true,()=>{},()=>true,
                         ()=>font,latencyView:()=>new(state,123,100,170,160,130,13000));

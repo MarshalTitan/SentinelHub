@@ -1,7 +1,7 @@
 using SentinelHub.Utilities.Quest;
 using SentinelHub.Utilities;
 namespace SentinelHub.Configuration;
-public enum HubPage { Dashboard, Plugins, Profiles, Dependencies, Utilities, Diagnostics, Appearance, About, Mounts, Fashion, PlayerInspector }
+public enum HubPage { Dashboard, Plugins, Profiles, Dependencies, Utilities, Diagnostics, Appearance, About, Mounts, Fashion, PlayerInspector, RecentActivity }
 public class HubSettings
 {
     public int Version { get; set; } = 1;

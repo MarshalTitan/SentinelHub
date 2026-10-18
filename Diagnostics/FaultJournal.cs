@@ -1,5 +1,5 @@
 namespace SentinelHub.Diagnostics;
-public enum FaultCode { DiscoveryUnavailable, DependencyStatusUnavailable, OpenSettingsUnavailable, ExportUnavailable, ConfigurationSaveUnavailable, AntiAfkOwnershipUnavailable, QuestConvenienceOwnershipUnavailable, LatencyUnavailable, MountCollectionUnavailable, FashionCollectionUnavailable, PlayerIdentificationUnavailable, CollectionIconUnavailable }
+public enum FaultCode { DiscoveryUnavailable, DependencyStatusUnavailable, OpenSettingsUnavailable, ExportUnavailable, ConfigurationSaveUnavailable, AntiAfkOwnershipUnavailable, QuestConvenienceOwnershipUnavailable, LatencyUnavailable, MountCollectionUnavailable, FashionCollectionUnavailable, PlayerIdentificationUnavailable, CollectionIconUnavailable, OperationsContractUnavailable }
 public sealed record Fault(DateTimeOffset At, FaultCode Code);
 public sealed class FaultJournal
 {
@@ -16,3 +16,4 @@ public sealed class FaultJournal
     public Fault[] Snapshot() => entries.ToArray();
     public void Clear() { entries.Clear(); last.Clear(); }
 }
+

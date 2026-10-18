@@ -35,12 +35,13 @@ public sealed class MainWindow : Window, IDisposable
     private readonly CompatibilityPanel compatibility;
     private readonly PlayerInspectorPanel inspector;
     private readonly PausePanel pause;
+    private readonly RecentActivityPanel activity;
     private PlayerIdentification? identification;
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
     private readonly SentinelModernNavItem[] navigation;
     private static readonly HubPage[] PageOrder = [HubPage.Dashboard, HubPage.Plugins, HubPage.Profiles, HubPage.Dependencies,
-        HubPage.Utilities, HubPage.Mounts, HubPage.Fashion, HubPage.PlayerInspector, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
+        HubPage.Utilities, HubPage.Mounts, HubPage.Fashion, HubPage.PlayerInspector, HubPage.RecentActivity, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
     private Vector2 frameSize;
     private Vector2? pendingSize;
     private bool modern;
@@ -52,12 +53,14 @@ public sealed class MainWindow : Window, IDisposable
         Func<SentinelHub.Health.HealthView>? healthView=null, Action? refreshHealth=null, Action? publicVersions=null,
         Func<SentinelHub.Compatibility.CompatibilityView>? compatibilityView=null,
         Func<SentinelHub.Inspection.InspectorView>? inspectorView=null,
-        Func<SentinelHub.Coordination.PauseView>? pauseView=null, Action<bool>? pauseRequest=null) : base(WindowId)
+        Func<SentinelHub.Coordination.PauseView>? pauseView=null, Action<bool>? pauseRequest=null,
+        Func<SentinelHub.Activity.ActivityEntry[]>? activityEntries=null, Action? clearActivity=null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.questView = questView ?? (() => QuestConvenienceView.Off);
         this.latencyView = latencyView ?? (() => LatencyView.Off);
         health=new(healthView??(()=>SentinelHub.Health.HealthView.Empty),refreshHealth??(()=>{}),publicVersions??(()=>{}));
+        activity=new(activityEntries??(()=>[]),clearActivity??(()=>{}));
         pause=new(pauseView??(()=>SentinelHub.Coordination.PauseView.Empty),pauseRequest??(_=>{}));
         compatibility=new(compatibilityView??(()=>SentinelHub.Compatibility.CompatibilityView.Empty));
         inspector=new(config,save,inspectorView??(()=>SentinelHub.Inspection.InspectorView.Empty),OpenMount,OpenFashion,mountIcon);
@@ -78,11 +81,11 @@ public sealed class MainWindow : Window, IDisposable
     private static FontAwesomeIcon Icon(HubPage p) => p switch
     {
         HubPage.Dashboard => FontAwesomeIcon.Home, HubPage.Plugins => FontAwesomeIcon.Cubes,
-        HubPage.Profiles => FontAwesomeIcon.Users, HubPage.Dependencies => FontAwesomeIcon.Link, HubPage.PlayerInspector=>FontAwesomeIcon.Search,
+        HubPage.Profiles => FontAwesomeIcon.Users, HubPage.Dependencies => FontAwesomeIcon.Link, HubPage.PlayerInspector=>FontAwesomeIcon.Search, HubPage.RecentActivity=>FontAwesomeIcon.Bell,
         HubPage.Utilities => FontAwesomeIcon.Tools, HubPage.Diagnostics => FontAwesomeIcon.Heartbeat,
         HubPage.Appearance => FontAwesomeIcon.Palette, HubPage.Mounts => FontAwesomeIcon.Horse, HubPage.Fashion => FontAwesomeIcon.Umbrella, _ => FontAwesomeIcon.InfoCircle,
     };
-    public static string PageTitle(HubPage p) => p == HubPage.Mounts ? "Mount Collection" : p == HubPage.Fashion ? "Fashion Accessories" : p == HubPage.Dependencies ? "Health" : p==HubPage.PlayerInspector?"Player Inspector":p.ToString();
+    public static string PageTitle(HubPage p) => p == HubPage.Mounts ? "Mount Collection" : p == HubPage.Fashion ? "Fashion Accessories" : p == HubPage.Dependencies ? "Health" : p==HubPage.PlayerInspector?"Player Inspector":p==HubPage.RecentActivity?"Recent Activity":p.ToString();
     public override void PreDraw()
     {
         style.Pop();
@@ -201,6 +204,7 @@ public sealed class MainWindow : Window, IDisposable
             case HubPage.Mounts: mounts.Draw(); break;
             case HubPage.Fashion: fashion.Draw(); break;
             case HubPage.PlayerInspector: inspector.Draw(); break;
+            case HubPage.RecentActivity: activity.Draw(); break;
         }
         if (Notice.Length > 0) { ImGui.Spacing(); ImGui.TextWrapped(Notice); }
     }
