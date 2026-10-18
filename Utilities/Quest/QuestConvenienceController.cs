@@ -32,7 +32,11 @@ public sealed class QuestConvenienceController : IDisposable
     public void Tick()
     {
         if (disposed) return;
-        if(suspended()){session.Stop(QuestConvenienceState.Paused);Release();View=new(QuestConvenienceState.Paused,null,"Paused","Pending actions cleared","Paused");return;}
+        if(suspended()){
+            try{session.Stop(QuestConvenienceState.Paused);Release();View=new(QuestConvenienceState.Paused,null,"Paused","Pending actions cleared","Paused");}
+            catch{faults.Record(FaultCode.QuestConvenienceOwnershipUnavailable);View=new(QuestConvenienceState.Faulted,null,"Suspension failed","Pending work not confirmed stopped","Unknown");}
+            return;
+        }
         int? saved = null;
         try
         {

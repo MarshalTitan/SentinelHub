@@ -58,6 +58,8 @@ public sealed class Plugin : IDalamudPlugin
     private readonly HubOperationsIpc operationsIpc;
     private readonly BackupService backups;
     private bool disposed;
+    private volatile bool exportRequested;
+    private volatile bool healthRefreshRequested;
     public Plugin()
     {
         settings = Pi.GetPluginConfig() as Configuration.Configuration ?? new();
@@ -83,7 +85,7 @@ public sealed class Plugin : IDalamudPlugin
             (id, diagnostics) => quickOpen.Open(id, diagnostics), Export,
             () => Pi.UiBuilder.ShouldUseReducedMotion, antiAfkView: () => antiAfk.View, questView: () => quest.View, latencyView: () => latency.View,
             mountView: () => mounts.View, refreshMounts: mounts.RequestRefresh, retryMounts: mounts.Retry, mountIcon: DrawCollectionIcon, fashionView: () => fashion.View, refreshFashion: fashion.RequestRefresh, retryFashion: fashion.Retry,
-            healthView:()=>health.View,refreshHealth:()=>{discovery.Refresh(true);health.Tick(true);},publicVersions:publicCatalog.Request,
+            healthView:()=>health.View,refreshHealth:()=>healthRefreshRequested=true,publicVersions:publicCatalog.Request,
             compatibilityView:()=>compatibility.View,inspectorView:()=>inspector.View,pauseView:()=>pause.View,pauseRequest:pause.Request,
             activityEntries:()=>activity.Journal.Snapshot(DateTimeOffset.UtcNow),clearActivity:activity.Journal.Clear,
             backupView:()=>backups.View,createBackup:backups.RequestCreate,refreshBackups:backups.RequestRefresh,restoreBackup:backups.RequestRestore,deleteBackup:backups.RequestDelete);
@@ -100,9 +102,10 @@ public sealed class Plugin : IDalamudPlugin
     private void Update(IFramework _)
     {
         if(disposed)return;
-        discovery.Refresh();
+        var forceHealth=healthRefreshRequested;healthRefreshRequested=false;
+        discovery.Refresh(forceHealth);
         backups.Tick();
-        health.Tick();
+        health.Tick(forceHealth);
         compatibility.Tick();
         antiAfk.Tick();
         quest.Tick();
@@ -118,6 +121,7 @@ public sealed class Plugin : IDalamudPlugin
         identifyMenu.Tick();
         // The menu may have opened/restored Hub during this tick; evaluate visibility after consuming it.
         inspector.Tick(window.IsOpen&&!settings.Collapsed&&settings.Page==Configuration.HubPage.PlayerInspector);
+        if(exportRequested){exportRequested=false;WriteExport();}
     }
     private void DrawCollectionIcon(uint id, Vector2 size)
     {
@@ -139,7 +143,8 @@ public sealed class Plugin : IDalamudPlugin
         try { Pi.SavePluginConfig(settings); }
         catch { faults.Record(FaultCode.ConfigurationSaveUnavailable); }
     }
-    private void Export()
+    private void Export(){exportRequested=true;window.Notice="Sentinel diagnostics export queued.";}
+    private void WriteExport()
     {
         try
         {
@@ -167,17 +172,17 @@ public sealed class Plugin : IDalamudPlugin
     public void Dispose()
     {
         disposed = true;
-        operationsIpc.Dispose();
-        activity.Dispose();
-        publicCatalog.Dispose();
         Framework.Update -= Update;
         identifyMenu.Dispose();
         inspector.Clear();
-        fashion.Dispose();
-        mounts.Dispose();
         latency.Dispose();
         quest.Dispose();
         antiAfk.Dispose();
+        operationsIpc.Dispose();
+        publicCatalog.Dispose();
+        activity.Dispose();
+        fashion.Dispose();
+        mounts.Dispose();
         Pi.UiBuilder.Draw -= windows.Draw;
         Pi.UiBuilder.OpenConfigUi -= Open;
         Pi.UiBuilder.OpenMainUi -= Open;

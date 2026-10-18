@@ -35,10 +35,10 @@ public sealed class BackupService
     public void RequestRestore(string id,string owner)=>Queue(()=>Restore(id,owner));
     public void RequestDelete(string id)=>Queue(()=>Delete(id));
     public void RequestRefresh()=>Queue(()=>Refresh("Backup list refreshed."));
-    private void Queue(Action command){if(pending is not null)return;pending=command;View=View with{Status="Operation queued for the framework thread."};}
+    private void Queue(Action command){if(Interlocked.CompareExchange(ref pending,command,null) is not null)return;View=View with{Status="Operation queued for the framework thread."};}
     public void Tick()
     {
-        View=View with{Paused=settings.AutomationPaused};var command=pending;pending=null;if(command is null)return;
+        View=View with{Paused=settings.AutomationPaused};var command=Interlocked.Exchange(ref pending,null);if(command is null)return;
         try{command();}catch{activity(ActivityCode.BackupFailed);View=View with{Status="Operation rejected or failed. Check owner version/schema, keep external owners unloaded for restore, and check folder access. No partial multi-owner restore is performed."};}
     }
     private string OwnerFile(BackupOwner owner)=>owner.Id=="SentinelHub"?hubConfig:Path.Combine(configRoot,owner.Id+".json");
