@@ -25,9 +25,9 @@ public sealed class PauseCoordinator(IDalamudPluginInterface pi,HubSettings sett
         foreach(var id in new[]{"SRankSentinel","PvPSentinel"}){
             var copies=all.Where(p=>p.InternalName.Equals(id,StringComparison.OrdinalIgnoreCase)).ToArray();
             var result=PausePolicy.Resolve(id,paused,copies.Length>0,copies.Any(p=>p.IsLoaded),
-                ()=>pi.GetIpcSubscriber<int>("Sentinel."+id+".Pause.Protocol.v1").InvokeFunc(),
-                value=>pi.GetIpcSubscriber<string,bool,bool>("Sentinel."+id+".Pause.Set.v1").InvokeFunc(lease,value),
-                ()=>pi.GetIpcSubscriber<bool>("Sentinel."+id+".Pause.IsPaused.v1").InvokeFunc(),owned.Contains(id));
+                ()=>pi.GetIpcSubscriber<int>(SentinelCore.Ipc.SentinelIpcContract.Endpoint(id,"PauseProtocol")).InvokeFunc(),
+                value=>pi.GetIpcSubscriber<string,bool,bool>(SentinelCore.Ipc.SentinelIpcContract.Endpoint(id,"PauseSet")).InvokeFunc(lease,value),
+                ()=>pi.GetIpcSubscriber<bool>(SentinelCore.Ipc.SentinelIpcContract.Endpoint(id,"PauseIsPaused")).InvokeFunc(),owned.Contains(id));
             if(result.Accepted){if(paused)owned.Add(id);else owned.Remove(id);}entries.Add(result);
         }
         View=new(paused,entries.ToArray());
