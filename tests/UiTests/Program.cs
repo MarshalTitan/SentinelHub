@@ -106,7 +106,8 @@ internal static class Program
                 {
                     io.FontGlobalScale=scale;
                     var settings=new HubSettings{Theme=theme,Page=HubPage.Plugins};
-                    using var plugins=new MainWindow(settings,()=>fixtures[1],new FaultJournal(),()=>{},()=>{},(_,_)=>true,()=>{},()=>true,()=>font);
+                    var pluginData=fixtures[1];var opened=new List<(string Id,bool Diagnostics)>();
+                    using var plugins=new MainWindow(settings,()=>pluginData,new FaultJournal(),()=>{},()=>{},(id,diagnostics)=>{opened.Add((id,diagnostics));return true;},()=>{},()=>true,()=>font);
                     var saved=JsonSerializer.Serialize(settings);float narrowHeight=0;
                     foreach(var width in new[]{480f,860f,480f})
                     {
@@ -120,9 +121,24 @@ internal static class Program
                         else Check(card.Size.Y<narrowHeight,"Wide plugin actions did not reduce card height");
                         Check(JsonSerializer.Serialize(settings)==saved,"Resizing changed saved feature settings");
                     }
+                    void ClickSettings()
+                    {
+                        for(var i=0;i<12;i++)Frame(plugins,new(860,680),scale);
+                        var card=Find(MainWindow.WindowId,"SRankSentinel");
+                        io.AddMousePosEvent(card.Pos.X+card.Size.X-card.WindowPadding.X-70*scale,
+                            card.Pos.Y+card.WindowPadding.Y+ImGui.GetStyle().CellPadding.Y+14*scale);
+                        io.AddMouseButtonEvent(0,true);Frame(plugins,new(860,680),scale);
+                        io.AddMouseButtonEvent(0,false);Frame(plugins,new(860,680),scale);
+                        io.AddMousePosEvent(-100,-100);Frame(plugins,new(860,680),scale);
+                    }
+                    ClickSettings();
+                    Check(opened.SequenceEqual(new[]{("SRankSentinel",false)}),"Right-side settings action did not open its owning plugin");
+                    pluginData=fixtures[0];ClickSettings();
+                    Check(opened.Count==1,"Unavailable right-side action was clickable");
+                    Check(JsonSerializer.Serialize(settings)==saved,"Plugin action changed feature preferences");
                     pluginResizeCases++;
                 }
-                Console.WriteLine("PASS "+pluginResizeCases+" plugin narrow/wide/narrow layout resize, clipping and preference cases.");
+                Console.WriteLine("PASS "+pluginResizeCases+" plugin narrow/wide/narrow resize, clipping, mouse actions/disabled gating and preference cases.");
                 foreach (var scale in new[] { 1f, 1.5f, 2f })
                 foreach (var theme in new[] { 0, 1 })
                 foreach (var state in Enum.GetValues<AntiAfkState>())
