@@ -1,0 +1,22 @@
+name: Audit inspection acquisition sources
+on:
+  pull_request:
+    paths:
+      - '.github/scripts/Audit-InspectionSources.py'
+      - '.github/workflows/inspection-source-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python .github/scripts/Audit-InspectionSources.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: inspection-source-review
+          path: inspection-*-review.json
