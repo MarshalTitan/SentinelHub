@@ -371,18 +371,23 @@ public sealed class MainWindow : Window, IDisposable
     {
         var text = lines.ToArray();
         var scale = ImGuiHelpers.GlobalScale;
-        var width = Math.Max(80, ImGui.GetContentRegionAvail().X - 28 * scale - 16 * scale);
+        var style = ImGui.GetStyle();
+        var padding = modern ? new Vector2(14, 12) * scale : style.WindowPadding;
+        var innerWidth = Math.Max(80, ImGui.GetContentRegionAvail().X - 2 * padding.X);
+        var width = innerWidth - 16 * scale;
         var actionWidth = Math.Max(140 * scale, actions?.Max(a => ImGui.CalcTextSize(a.Label).X + 24 * scale) ?? 0);
         var sideBySide = actionsOnRight && actions is { Count: > 0 } && width >= actionWidth + 260 * scale + 16 * scale;
-        var textWidth = sideBySide ? width - actionWidth - 16 * scale : width;
-        var spacing = ImGui.GetStyle().ItemSpacing.Y;
-        var textHeight = text.Sum(s => ImGui.CalcTextSize(s, false, textWidth).Y + 2 * spacing)
-            + (modern ? SentinelModernStatusPill.Measure(new(status, tone), scale).Y + spacing : 0);
-        var actionsHeight = (actions?.Count ?? 0) * (28 * scale + spacing);
-        var padding = modern ? 12 * scale : ImGui.GetStyle().WindowPadding.Y;
-        var height = 2 * padding + 8 * scale + (sideBySide
-            ? Math.Max(textHeight, actionsHeight) + 2 * ImGui.GetStyle().CellPadding.Y
-            : textHeight + actionsHeight);
+        var textWidth = sideBySide ? innerWidth - actionWidth - 4 * style.CellPadding.X : innerWidth;
+        var spacing = style.ItemSpacing.Y;
+        var textHeight = text.Sum(s => ImGui.CalcTextSize(s, false, textWidth).Y)
+            + Math.Max(0, text.Length - 1) * 2 * spacing
+            + (modern ? SentinelModernStatusPill.Measure(new(status, tone), scale).Y + (text.Length > 0 ? spacing : 0) : 0);
+        var actionCount = actions?.Count ?? 0;
+        var actionsHeight = actionCount * 28 * scale + Math.Max(0, actionCount - 1) * spacing;
+        // Keep normal card padding, without counting trailing row gaps or spare wrap width.
+        var height = MathF.Ceiling(2 * padding.Y + (sideBySide
+            ? Math.Max(textHeight, actionsHeight) + 2 * style.CellPadding.Y
+            : textHeight + (actionCount > 0 ? spacing + actionsHeight : 0))) + 1;
         if (modern)
         {
             using var card = SentinelModernGlassCard.Begin(id, new() { Size = new(0, height / scale) }, scale);
@@ -409,7 +414,11 @@ public sealed class MainWindow : Window, IDisposable
         void Information()
         {
             if (modern) SentinelModernStatusPill.Draw(new(status, tone), shell.Motion, scale);
-            foreach (var line in text) { ImGui.TextWrapped(line); ImGui.Spacing(); }
+            for (var i = 0; i < text.Length; i++)
+            {
+                ImGui.TextWrapped(text[i]);
+                if (i + 1 < text.Length) ImGui.Spacing();
+            }
         }
         void Actions()
         {

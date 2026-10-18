@@ -12,7 +12,7 @@ Download the latest `SentinelHub-0.7.0.0` Actions artifact linked in the PR, ext
 
 ## Checklist
 
-1. Utilities shows only the Anti-AFK heading and switch, with Active/Off (or an honest unavailable/waiting state) in the label. No counter or explanatory paragraphs remain underneath. Switch behavior/settings remain as already tested.
+1. Dashboard/Plugins/Profiles cards have reduced unused space beneath their content at both expanded and narrow widths, with all text/buttons reachable. Utilities shows only the Anti-AFK heading and switch, with Active/Off (or an honest unavailable/waiting state) in the label. No counter or explanatory paragraphs remain underneath. Switch behavior/settings remain as already tested.
 2. Recent Activity records changes during the session, then starts fresh after a Hub reload/game restart. Existing settings remain saved. The old candidate's exact recent-activity.json is removed automatically; no replacement history file is written.
 
 Optional troubleshooting check: Diagnostics explains that normal history is RAM-only. If you choose Export, it saves diagnostics/sentinel-diagnostics.zip with report.json, hub-state.json and summary.txt. A second export replaces that one file; exports are deliberate saved files and remain after closing the game. No export is needed for normal operation. Previously created manual ZIPs are not automatically deleted.

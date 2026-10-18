@@ -103,9 +103,11 @@ internal static class Program
                 var pluginResizeCases=0;
                 foreach(var theme in new[]{0,1})
                 foreach(var scale in new[]{1f,1.5f,2f})
+                foreach(var pluginPage in new[]{HubPage.Dashboard,HubPage.Plugins,HubPage.Profiles})
                 {
                     io.FontGlobalScale=scale;
-                    var settings=new HubSettings{Theme=theme,Page=HubPage.Plugins};
+                    var settings=new HubSettings{Theme=theme,Page=pluginPage};
+                    var cardId=pluginPage==HubPage.Profiles?"SentinelProfiles":"SRankSentinel";
                     var pluginData=fixtures[1];var opened=new List<(string Id,bool Diagnostics)>();
                     using var plugins=new MainWindow(settings,()=>pluginData,new FaultJournal(),()=>{},()=>{},(id,diagnostics)=>{opened.Add((id,diagnostics));return true;},()=>{},()=>true,()=>font);
                     var saved=JsonSerializer.Serialize(settings);float narrowHeight=0;
@@ -113,10 +115,12 @@ internal static class Program
                     {
                         for(var i=0;i<12;i++)Frame(plugins,new(width,680),scale);
                         var root=Find(MainWindow.WindowId);
-                        var card=Find(MainWindow.WindowId,"SRankSentinel");
+                        var card=Find(MainWindow.WindowId,cardId);
                         Check((root.Flags&ImGuiWindowFlags.NoResize)==0,"Hub cannot be resized");
                         Check(card.ContentSize.X<=card.Size.X+1&&!card.ScrollbarX,"Plugin card overflows horizontally after resize");
                         Check(card.ContentSize.Y+2*card.WindowPadding.Y<=card.Size.Y+1,$"Plugin actions are clipped after resize: theme={theme} scale={scale} width={width} content={card.ContentSize} padding={card.WindowPadding} size={card.Size} scroll={root.Scroll}");
+                        var unusedHeight=card.Size.Y-card.ContentSize.Y-2*card.WindowPadding.Y;
+                        Check(unusedHeight<=3*scale+1,$"Excess plugin card bottom space: theme={theme} scale={scale} width={width} unused={unusedHeight}");
                         if(width==480){if(narrowHeight>0)Check(Math.Abs(narrowHeight-card.Size.Y)<1,"Narrow fallback changed after resize");narrowHeight=card.Size.Y;}
                         else Check(card.Size.Y<narrowHeight,"Wide plugin actions did not reduce card height");
                         Check(JsonSerializer.Serialize(settings)==saved,"Resizing changed saved feature settings");
@@ -124,7 +128,13 @@ internal static class Program
                     void ClickSettings()
                     {
                         for(var i=0;i<12;i++)Frame(plugins,new(860,680),scale);
-                        var card=Find(MainWindow.WindowId,"SRankSentinel");
+                        var card=Find(MainWindow.WindowId,cardId);
+                        if(pluginPage==HubPage.Profiles)
+                        {
+                            var status=Find(MainWindow.WindowId,"profiles-contract");
+                            var spare=status.Size.Y-status.ContentSize.Y-2*status.WindowPadding.Y;
+                            Check(spare>=-1&&spare<=3*scale+1,$"Profile status card clipping/excess bottom space: theme={theme} scale={scale} spare={spare}");
+                        }
                         io.AddMousePosEvent(card.Pos.X+card.Size.X-card.WindowPadding.X-70*scale,
                             card.Pos.Y+card.WindowPadding.Y+ImGui.GetStyle().CellPadding.Y+14*scale);
                         io.AddMouseButtonEvent(0,true);Frame(plugins,new(860,680),scale);
@@ -132,7 +142,7 @@ internal static class Program
                         io.AddMousePosEvent(-100,-100);Frame(plugins,new(860,680),scale);
                     }
                     ClickSettings();
-                    Check(opened.SequenceEqual(new[]{("SRankSentinel",false)}),"Right-side settings action did not open its owning plugin");
+                    Check(opened.SequenceEqual(new[]{(cardId,false)}),"Right-side settings action did not open its owning plugin");
                     pluginData=fixtures[0];ClickSettings();
                     Check(opened.Count==1,"Unavailable right-side action was clickable");
                     Check(JsonSerializer.Serialize(settings)==saved,"Plugin action changed feature preferences");
