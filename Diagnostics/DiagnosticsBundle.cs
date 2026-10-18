@@ -4,6 +4,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using SentinelHub.Ecosystem;
 using SentinelHub.Health;
+using SentinelHub.Compatibility;
+using SentinelHub.Coordination;
+using SentinelHub.Activity;
 namespace SentinelHub.Diagnostics;
 
 public enum ProviderState { Unavailable, Ready, Disabled, Paused, Degraded }
@@ -27,7 +30,8 @@ public static class DiagnosticsBundle
 {
     public static byte[] Create(HubSnapshot snapshot,HealthView health,IEnumerable<Fault> faults,
         IEnumerable<ProviderDiagnostic> providers,int configSchema,uint territory,uint world,
-        SentinelHub.Utilities.AntiAfkView? antiAfk=null,SentinelHub.Utilities.QuestConvenienceView? quest=null,SentinelHub.Utilities.LatencyView? latency=null)
+        SentinelHub.Utilities.AntiAfkView? antiAfk=null,SentinelHub.Utilities.QuestConvenienceView? quest=null,SentinelHub.Utilities.LatencyView? latency=null,
+        CompatibilityView? compatibility=null,PauseView? pause=null,IEnumerable<ActivityEntry>? activity=null)
     {
         // Everything entering the ZIP is rebuilt from typed, bounded, allowlisted fields.
         // No file enumeration, config serialization, provider strings or exception text.
@@ -40,7 +44,13 @@ public static class DiagnosticsBundle
         var report=JsonSerializer.Serialize(new{Schema="sentinel.diagnostics.v2",CreatedAt=DateTimeOffset.UtcNow,
             HubVersion=StatusPolicy.NumericVersion(typeof(DiagnosticsBundle).Assembly.GetName().Version?.ToString()),
             ConfigurationSchema=Math.Clamp(configSchema,0,1000),Territory=territory<=100000?territory:0,World=world<=10000?world:0,
-            Health=checks,Providers=safeProviders,Profiles=new{State="Unavailable unless supported status provider responds",Name="Excluded"},
+            Health=checks,Providers=safeProviders,
+            Compatibility=(compatibility?.Findings??[]).Where(f=>Enum.IsDefined(f.Provider)&&Enum.IsDefined(f.Feature)&&Enum.IsDefined(f.Kind)).Take(32)
+                .Select(f=>new{f.Provider,f.Feature,f.Kind,f.SuspendHub}),
+            Pause=new{Requested=pause?.Requested??false,FullyAcknowledged=pause?.FullyAcknowledged??false,Participants=(pause?.Participants??[])
+                .Where(p=>(p.Id is "SentinelHub" or "SRankSentinel" or "PvPSentinel")&&Enum.IsDefined(p.State)).Take(3).Select(p=>new{p.Id,p.State,p.Accepted})},
+            RecentActivity=(activity??[]).Where(e=>ActivityCatalog.Allowed(e.Source,e.Code)).Take(50).Select(e=>new{e.At,e.LastAt,e.Source,e.Code,Count=Math.Clamp(e.Count,1,9999)}),
+            Profiles=new{State="Unavailable unless supported status provider responds",Name="Excluded"},
             Privacy="No credentials, configuration documents, player/account/entity IDs, names, chat, paths, arbitrary provider text or exception messages."},options);
         using var output=new MemoryStream();
         using(var zip=new ZipArchive(output,ZipArchiveMode.Create,true)){

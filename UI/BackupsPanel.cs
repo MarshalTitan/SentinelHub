@@ -8,6 +8,7 @@ public sealed class BackupsPanel(Func<BackupView> view,Action<string> create,Act
     private int ownerIndex;
     private bool confirmRestore;
     private bool confirmDelete;
+    public void Select(string? id){selected=id;ownerIndex=0;confirmDelete=false;confirmRestore=false;}
     public void Draw()
     {
         var v=view();ImGui.TextWrapped("Reviewed Sentinel settings backups — local only, up to 30 files. This is a selective settings backup, not a full plugin-directory copy.");
@@ -16,7 +17,7 @@ public sealed class BackupsPanel(Func<BackupView> view,Action<string> create,Act
         if(ImGui.Button("Refresh backup list"))refresh();
         ImGui.TextWrapped(v.Status);
         foreach(var b in v.Items){
-            ImGui.PushID(b.Id);if(ImGui.Selectable(b.Name+"##Backup",selected==b.Id)){selected=b.Id;ownerIndex=0;confirmDelete=false;confirmRestore=false;}
+            ImGui.PushID(b.Id);if(ImGui.Selectable(b.Name+"##Backup",selected==b.Id))Select(b.Id);
             ImGui.TextWrapped(b.Valid?b.At.ToLocalTime().ToString("g")+" — "+string.Join(", ",b.Owners):"Invalid format/checksum/schema; restore unavailable.");ImGui.PopID();
         }
         var item=v.Items.FirstOrDefault(i=>i.Id==selected);

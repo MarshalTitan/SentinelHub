@@ -97,7 +97,27 @@ public sealed class Plugin : IDalamudPlugin
         Framework.Update += Update;
         discovery.Refresh(true);
     }
-    private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); backups.Tick(); health.Tick(); compatibility.Tick(); antiAfk.Tick(); quest.Tick(); latency.Tick(); pause.Tick(antiAfk.View.State!=Utilities.AntiAfkState.Active&&quest.View.State!=Utilities.QuestConvenienceState.Active&&latency.View.State is not (Utilities.LatencyState.Compensating or Utilities.LatencyState.Measuring)); activity.Observe(health.View,compatibility.View,pause.View); mounts.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Mounts); fashion.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Fashion); identifyMenu.Tick(); inspector.Tick(window.IsOpen&&!settings.Collapsed&&settings.Page==Configuration.HubPage.PlayerInspector); } }
+    private void Update(IFramework _)
+    {
+        if(disposed)return;
+        discovery.Refresh();
+        backups.Tick();
+        health.Tick();
+        compatibility.Tick();
+        antiAfk.Tick();
+        quest.Tick();
+        latency.Tick();
+        var hubStopped=(antiAfk.View.State is Utilities.AntiAfkState.Paused or Utilities.AntiAfkState.Off)
+            &&(quest.View.State is Utilities.QuestConvenienceState.Paused or Utilities.QuestConvenienceState.Off)
+            &&(latency.View.State is Utilities.LatencyState.Paused or Utilities.LatencyState.Off);
+        pause.Tick(hubStopped);
+        activity.Observe(health.View,compatibility.View,pause.View);
+        var expanded=window.IsOpen&&!settings.Collapsed;
+        mounts.Tick(expanded&&settings.Page==Configuration.HubPage.Mounts);
+        fashion.Tick(expanded&&settings.Page==Configuration.HubPage.Fashion);
+        identifyMenu.Tick();
+        inspector.Tick(expanded&&settings.Page==Configuration.HubPage.PlayerInspector);
+    }
     private void DrawCollectionIcon(uint id, Vector2 size)
     {
         Dalamud.Interface.Textures.TextureWraps.IDalamudTextureWrap? wrap = null;
@@ -128,7 +148,7 @@ public sealed class Plugin : IDalamudPlugin
             var name = "sentinel-diagnostics-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + ".zip";
             var bundle = DiagnosticsBundle.Create(discovery.Snapshot,health.View,faults.Snapshot(),
                 new ProviderDiagnosticsReader(Pi).Read(),settings.Version,Client.TerritoryType,Objects.LocalPlayer?.CurrentWorld.RowId??0,
-                antiAfk.View,quest.View,latency.View);
+                antiAfk.View,quest.View,latency.View,compatibility.View,pause.View,activity.Journal.Snapshot(DateTimeOffset.UtcNow));
             var path=Path.Combine(directory,name);
             using(var file=new FileStream(path,FileMode.CreateNew,FileAccess.Write,FileShare.None))file.Write(bundle);
             activity.Add(ActivityCode.DiagnosticsSaved);

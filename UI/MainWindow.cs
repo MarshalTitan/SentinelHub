@@ -142,6 +142,7 @@ public sealed class MainWindow : Window, IDisposable
     }
     public void ClearIdentification() => identification = null;
     public void OpenPlayerInspector(){config.Page=HubPage.PlayerInspector;OpenAndExpand();save();}
+    public void OpenBackup(string? id){config.Page=HubPage.Backups;backups.Select(id);OpenAndExpand();save();}
     public void OpenIdentification(PlayerIdentification result)
     {
         identification = result;

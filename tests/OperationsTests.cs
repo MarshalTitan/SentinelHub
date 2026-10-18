@@ -1,6 +1,7 @@
 using SentinelHub.Ecosystem;
 using SentinelHub.Health;
 using System.Text;
+using System.Text.Json;
 using System.IO.Compression;
 using SentinelHub.Diagnostics;
 using SentinelHub.Compatibility;

@@ -13,6 +13,11 @@ using SentinelHub.Mounts;
 using SentinelHub.Fashion;
 using SentinelHub.Identification;
 using SentinelHub.Inspection;
+using SentinelHub.Health;
+using SentinelHub.Activity;
+using SentinelHub.Backups;
+using SentinelHub.Coordination;
+using SentinelHub.Compatibility;
 using CSCharacter=FFXIVClientStructs.FFXIV.Client.Game.Character.Character;
 internal static class Program
 {
@@ -142,6 +147,28 @@ internal static class Program
                     Check(JsonSerializer.Serialize(settings)==saved,"Latency drawing changed opt-ins");
                 }
 
+                var operationsCases=0;
+                foreach(var theme in new[]{0,1})
+                foreach(var scale in new[]{1f,1.5f,2f})
+                foreach(var width in new[]{480f,860f})
+                foreach(var populated in new[]{false,true})
+                foreach(var operationPage in new[]{HubPage.Dependencies,HubPage.Utilities,HubPage.Dashboard,HubPage.RecentActivity,HubPage.Backups}){
+                    io.FontGlobalScale=scale;
+                    var settings=new HubSettings{Theme=theme,Page=operationPage,AutomationPaused=populated};
+                    var health=populated?new HealthView(DateTimeOffset.UtcNow,true,Enum.GetValues<HealthState>().Select(s=>new HealthCheck("SRankSentinel",s,"0.7.99.0","0.7.62.0",true,"A long explanation distinguishes installation/load/internal enable/IPC response/readiness and development override without declaring a DLL healthy.")).ToArray(),DateTimeOffset.UtcNow,"Dated public catalog; feature readiness remains separate"):HealthView.Empty;
+                    var compatibility=populated?new CompatibilityView([new(OverlapProvider.TextAdvance,CompatibilityFeature.Cutscene,OverlapKind.Definite,true,"Enabled and responding; Hub self-suspends and preserves saved preferences."),new(OverlapProvider.NoClippy,CompatibilityFeature.Latency,OverlapKind.Possible,true,"Loaded; module activity unknown.")]):CompatibilityView.Empty;
+                    var pause=populated?new PauseView(true,[new("SentinelHub",PauseState.Acknowledged,"Hub writers suspended."),new("SRankSentinel",PauseState.Unsupported,"Older provider does not implement the optional contract and may still automate."),new("PvPSentinel",PauseState.Pending,"No acknowledgement yet; a complete stop is not assumed.")]):PauseView.Empty;
+                    var events=populated?Enumerable.Range(0,200).Select(i=>new ActivityEntry(DateTimeOffset.UtcNow,DateTimeOffset.UtcNow,"SentinelHub",ActivityCode.BackupSaved,9999)).ToArray():[];
+                    var backup=populated?new BackupView([new("0123456789abcdef0123456789abcdef","A lengthy named backup at the maximum supported responsive width",DateTimeOffset.UtcNow,BackupRegistry.Owners.Select(o=>o.Id).ToArray(),true),new("11111111111111111111111111111111","Invalid backup",DateTimeOffset.MinValue,[],false)],"One owner's settings restored atomically; other current data and pre-restore backup retained.",true):BackupView.Empty;
+                    using var operations=new MainWindow(settings,()=>HubSnapshot.Unknown,new FaultJournal(),()=>{},()=>{},(_,_)=>false,()=>{},()=>true,
+                        ()=>font,healthView:()=>health,compatibilityView:()=>compatibility,pauseView:()=>pause,activityEntries:()=>events,backupView:()=>backup);
+                    if(operationPage==HubPage.Backups&&populated)operations.OpenBackup(backup.Items[0].Id);
+                    var saved=JsonSerializer.Serialize(settings);for(var i=0;i<12;i++)Frame(operations,new(width,500),scale);
+                    var content=theme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
+                    Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Operations content overflows: "+operationPage+"/"+theme+"/"+scale);
+                    Check(JsonSerializer.Serialize(settings)==saved,"Operations rendering mutated configuration");operationsCases++;
+                }
+                Console.WriteLine("PASS "+operationsCases+" populated/empty operations page/theme/scale/width cases.");
                 var inspectorCases=0;
                 foreach(var theme in new[]{0,1})
                 foreach(var scale in new[]{1f,1.5f,2f})
