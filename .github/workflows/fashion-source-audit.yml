@@ -1,0 +1,22 @@
+name: Audit fashion accessory sources
+on:
+  pull_request:
+    paths:
+      - '.github/scripts/Audit-FashionSources.py'
+      - '.github/workflows/fashion-source-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python .github/scripts/Audit-FashionSources.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fashion-source-review
+          path: fashion-source-review.json
