@@ -31,6 +31,7 @@ public sealed class MainWindow : Window, IDisposable
     private readonly Func<LatencyView> latencyView;
     private readonly MountCollectionPanel mounts;
     private readonly FashionAccessoriesPanel fashion;
+    private readonly HealthPanel health;
     private PlayerIdentification? identification;
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
@@ -44,11 +45,13 @@ public sealed class MainWindow : Window, IDisposable
     public MainWindow(HubSettings config, Func<HubSnapshot> snapshot, FaultJournal faults,
         Action save, Action refresh, Func<string, bool, bool> open, Action export,
         Func<bool> systemReducedMotion, Func<ImFontPtr>? iconFont = null, Func<AntiAfkView>? antiAfkView = null, Func<QuestConvenienceView>? questView = null, Func<LatencyView>? latencyView = null, Func<MountCollectionView>? mountView = null,
-        Action? refreshMounts = null, Action? retryMounts = null, Action<uint, Vector2>? mountIcon = null, Func<FashionView>? fashionView = null, Action? refreshFashion = null, Action? retryFashion = null) : base(WindowId)
+        Action? refreshMounts = null, Action? retryMounts = null, Action<uint, Vector2>? mountIcon = null, Func<FashionView>? fashionView = null, Action? refreshFashion = null, Action? retryFashion = null,
+        Func<SentinelHub.Health.HealthView>? healthView=null, Action? refreshHealth=null, Action? publicVersions=null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.questView = questView ?? (() => QuestConvenienceView.Off);
         this.latencyView = latencyView ?? (() => LatencyView.Off);
+        health=new(healthView??(()=>SentinelHub.Health.HealthView.Empty),refreshHealth??(()=>{}),publicVersions??(()=>{}));
         mounts = new(config, mountView ?? (() => MountCollectionView.Empty), save,
             refreshMounts ?? (() => {}), retryMounts ?? (() => {}), mountIcon);
         fashion = new(config, fashionView ?? (() => FashionView.Empty), save, refreshFashion ?? (() => {}), retryFashion ?? (() => {}), mountIcon);
@@ -70,7 +73,7 @@ public sealed class MainWindow : Window, IDisposable
         HubPage.Utilities => FontAwesomeIcon.Tools, HubPage.Diagnostics => FontAwesomeIcon.Heartbeat,
         HubPage.Appearance => FontAwesomeIcon.Palette, HubPage.Mounts => FontAwesomeIcon.Horse, HubPage.Fashion => FontAwesomeIcon.Umbrella, _ => FontAwesomeIcon.InfoCircle,
     };
-    public static string PageTitle(HubPage p) => p == HubPage.Mounts ? "Mount Collection" : p == HubPage.Fashion ? "Fashion Accessories" : p.ToString();
+    public static string PageTitle(HubPage p) => p == HubPage.Mounts ? "Mount Collection" : p == HubPage.Fashion ? "Fashion Accessories" : p == HubPage.Dependencies ? "Health" : p.ToString();
     public override void PreDraw()
     {
         style.Pop();
@@ -180,7 +183,7 @@ public sealed class MainWindow : Window, IDisposable
             case HubPage.Dashboard: DrawDashboard(); break;
             case HubPage.Plugins: DrawPlugins(); break;
             case HubPage.Profiles: DrawProfiles(); break;
-            case HubPage.Dependencies: DrawDependencies(); break;
+            case HubPage.Dependencies: health.Draw(); break;
             case HubPage.Utilities: DrawUtilities(); break;
             case HubPage.Diagnostics: DrawDiagnostics(); break;
             case HubPage.Appearance: DrawAppearance(); break;
@@ -394,3 +397,4 @@ public sealed class MainWindow : Window, IDisposable
     }
     public void Dispose() { style.Dispose(); shell.Dispose(); }
 }
+

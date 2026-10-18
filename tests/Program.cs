@@ -804,6 +804,7 @@ Test("Shared menu preserves Mount-only offers and adds the explicit Fashion no-a
  Check(IdentificationPolicy.Offer(true,true,false)&&IdentificationPolicy.Offer(true,true,true));
 });
 
+OperationsTests.Run(Test, Check);
 Console.WriteLine(passed + " policy test groups passed.");
 
 sealed class FakeLatencyRuntime : ILatencyRuntime
@@ -826,3 +827,4 @@ struct FakeLatencyCall : ILatencyInterceptedCall
  public void After(bool result){Trace.After++;if(Trace.ThrowAfter)throw new Exception("observer");}
  public void Fault(){Trace.Faults++;if(Trace.ThrowFault)throw new Exception("fault observer");}
 }
+

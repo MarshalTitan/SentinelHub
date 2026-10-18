@@ -12,6 +12,7 @@ using SentinelHub.Utilities.Latency;
 using SentinelHub.Mounts;
 using SentinelHub.Fashion;
 using SentinelHub.Identification;
+using SentinelHub.Health;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 namespace SentinelHub;
@@ -43,12 +44,15 @@ public sealed class Plugin : IDalamudPlugin
     private readonly PluginDiscovery discovery;
     private readonly MainWindow window;
     private readonly QuickOpen quickOpen;
+    private readonly PublicCatalog publicCatalog=new();
+    private readonly HealthService health;
     private bool disposed;
     public Plugin()
     {
         settings = Pi.GetPluginConfig() as Configuration.Configuration ?? new();
         settings.Normalize();
         discovery = new(Pi, faults);
+        health=new(Pi,discovery.Capture,()=>discovery.Snapshot,publicCatalog);
         antiAfk = new(Pi, Client, settings, faults);
         quest = new(Pi, Client, GameGui, Condition, Objects, Data, settings, faults);
         latency = new(Pi, Interop, Data, Client, Condition, Objects, settings, faults);
@@ -58,7 +62,8 @@ public sealed class Plugin : IDalamudPlugin
         window = new(settings, () => discovery.Snapshot, faults, Save, () => discovery.Refresh(true),
             (id, diagnostics) => quickOpen.Open(id, diagnostics), Export,
             () => Pi.UiBuilder.ShouldUseReducedMotion, antiAfkView: () => antiAfk.View, questView: () => quest.View, latencyView: () => latency.View,
-            mountView: () => mounts.View, refreshMounts: mounts.RequestRefresh, retryMounts: mounts.Retry, mountIcon: DrawCollectionIcon, fashionView: () => fashion.View, refreshFashion: fashion.RequestRefresh, retryFashion: fashion.Retry);
+            mountView: () => mounts.View, refreshMounts: mounts.RequestRefresh, retryMounts: mounts.Retry, mountIcon: DrawCollectionIcon, fashionView: () => fashion.View, refreshFashion: fashion.RequestRefresh, retryFashion: fashion.Retry,
+            healthView:()=>health.View,refreshHealth:()=>{discovery.Refresh(true);health.Tick(true);},publicVersions:publicCatalog.Request);
         identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, window.ClearIdentification, faults);
         windows.AddWindow(window);
         Commands.AddHandler("/shub", new CommandInfo(OnCommand) { HelpMessage = "Open Sentinel Hub. /shub export saves sanitized Hub diagnostics." });
@@ -68,7 +73,7 @@ public sealed class Plugin : IDalamudPlugin
         Framework.Update += Update;
         discovery.Refresh(true);
     }
-    private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); antiAfk.Tick(); quest.Tick(); latency.Tick(); mounts.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Mounts); fashion.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Fashion); identifyMenu.Tick(); } }
+    private void Update(IFramework _) { if (!disposed) { discovery.Refresh(); health.Tick(); antiAfk.Tick(); quest.Tick(); latency.Tick(); mounts.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Mounts); fashion.Tick(window.IsOpen && !settings.Collapsed && settings.Page == Configuration.HubPage.Fashion); identifyMenu.Tick(); } }
     private void DrawCollectionIcon(uint id, Vector2 size)
     {
         Dalamud.Interface.Textures.TextureWraps.IDalamudTextureWrap? wrap = null;
@@ -109,6 +114,7 @@ public sealed class Plugin : IDalamudPlugin
     public void Dispose()
     {
         disposed = true;
+        publicCatalog.Dispose();
         Framework.Update -= Update;
         identifyMenu.Dispose();
         fashion.Dispose();
@@ -125,3 +131,4 @@ public sealed class Plugin : IDalamudPlugin
         window.Dispose();
     }
 }
+
