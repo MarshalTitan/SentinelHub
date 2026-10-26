@@ -31,7 +31,7 @@ public sealed class PlayerInspector(IObjectTable objects,IPlayerState own,IClien
             if(current is null||current.Address!=player.Address||current.EntityId!=t.EntityId||current.ObjectIndex!=t.Index||!current.IsValid()){Clear();return;}
             View=new(true,DateTimeOffset.UtcNow,mount,fashion,
                 data.Failed?new(InspectionState.Unavailable,null,"Local inspection catalog unavailable."):
-                !data.Loaded?new(InspectionState.Unavailable,null,"Loading local Emote data."):
+                !data.Loaded?new(InspectionState.Unavailable,null,"Loading local Emote data…"):
                 InspectionPolicy.Emote(emote,id=>data.Find(InspectionKind.Emote,id),data.EmoteMode));
         }catch{Clear();}
     }

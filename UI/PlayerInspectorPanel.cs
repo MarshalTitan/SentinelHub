@@ -10,7 +10,7 @@ public sealed class PlayerInspectorPanel(HubSettings settings,Action save,Func<I
     {
         var enabled=settings.PlayerInspectorEnabled;
         if(ImGui.Checkbox("Enable shared Player Inspector",ref enabled)){settings.PlayerInspectorEnabled=enabled;save();}
-        ImGui.TextWrapped("Opt in to the single player context action for mount, accessory and supported explicit emote information. Right-click a loaded player  Sentinel Hub: Inspect player.");
+        ImGui.TextWrapped("Opt in to the single player context action for mount, accessory and supported explicit emote information. Right-click a loaded player → Sentinel Hub: Inspect player.");
         var v=view();if(!v.Tracking)ImGui.TextWrapped("No current player observation. Inspect a loaded player; observations clear when this page closes, the actor unloads, you zone, or five minutes elapse.");
         else ImGui.TextWrapped("Live observation: "+v.At.ToLocalTime().ToString("T")+". Own unlock state always describes your character.");
         if(v.Tracking&&ImGui.Button("Dismiss inspection"))dismiss?.Invoke();
