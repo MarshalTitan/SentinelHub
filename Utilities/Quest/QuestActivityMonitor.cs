@@ -26,9 +26,9 @@ internal sealed unsafe class QuestActivityMonitor : IDisposable
         if(flag is ConditionFlag.OccupiedInCutSceneEvent or ConditionFlag.WatchingCutscene or ConditionFlag.WatchingCutscene78)gate.Wake();
     }
     public void Reset()=>gate.Reset();
-    public bool ShouldProcess(QuestConvenienceOptions options,bool pending)
+    public bool ShouldProcess(QuestConvenienceOptions options,bool pending)=>ShouldProcess(options,pending,Environment.TickCount64);
+    internal bool ShouldProcess(QuestConvenienceOptions options,bool pending,long now)
     {
-        var now=Environment.TickCount64;
         if(gate.ShouldProbe(now))
         {
             var active=options.SkipDialogue&&Visible("Talk")

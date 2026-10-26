@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Dalamud.Game.Addon.Lifecycle;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using SentinelHub.Compatibility;
@@ -15,7 +17,7 @@ internal static class ServiceSchedulingTests
     private static void Check(bool value,string why){if(!value)throw new Exception(why);}
     public static void Run()
     {
-        Discovery();Ownership();Compatibility();Profiles();
+        Discovery();Ownership();AddonWakeups();Compatibility();Profiles();
         Console.WriteLine("PASS shared inventory scheduling, dormant/legacy ownership, pre-enable conflict protection and event-driven Profiles IPC lifecycle.");
     }
     private static void Discovery()
@@ -71,6 +73,24 @@ internal static class ServiceSchedulingTests
         Check(quest.View.State==QuestConvenienceState.LegacyHudInstalled,"Mixed legacy inventory bypassed ownership protection.");
         all=[new("SentinelHUD",true,"0.8.5.2")];quest.Tick();
         Check(quest.View.State==QuestConvenienceState.Active,"Modern engine-free HUD was blocked.");
+    }
+    private static void AddonWakeups()
+    {
+        var reads=0;var registered=new List<IAddonLifecycle.AddonEventDelegate>();var removed=0;
+        var lifecycle=IdlePerformanceTests.Fake<IAddonLifecycle>((m,args)=>{
+            if(m.Name=="RegisterListener")registered.Add((IAddonLifecycle.AddonEventDelegate)args![2]!);
+            if(m.Name=="UnregisterListener"){Check(registered.Contains((IAddonLifecycle.AddonEventDelegate)args![2]!),"Removed the wrong addon callback.");removed++;}
+            return IdlePerformanceTests.Default(m.ReturnType);
+        });
+        var gui=IdlePerformanceTests.Fake<IGameGui>((m,_)=>{if(m.Name.StartsWith("GetAddonByName"))reads++;return IdlePerformanceTests.Default(m.ReturnType);});
+        var monitor=new QuestActivityMonitor(gui,IdlePerformanceTests.Fake<ICondition>(),lifecycle);
+        var options=new QuestConvenienceOptions{SkipDialogue=true};
+        monitor.ShouldProcess(options,false,0);var first=reads;Check(first>0&&registered.Count==3,"Addon scheduling was not initialized.");
+        monitor.ShouldProcess(options,false,99);Check(reads==first,"Idle Quest queried addons each frame.");
+        registered[0](AddonEvent.PostSetup,null!);Check(reads==first,"Addon event performed game reads directly.");
+        monitor.ShouldProcess(options,false,99);Check(reads>first,"Addon lifecycle did not wake the next framework observation.");
+        var second=reads;monitor.ShouldProcess(options,false,199);Check(reads>second,"Bounded addon fallback did not recover a missed event.");
+        monitor.Dispose();Check(removed==3,"Addon lifecycle subscriptions leaked.");
     }
     private static void Compatibility()
     {
