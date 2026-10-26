@@ -83,6 +83,13 @@ internal static class ServiceSchedulingTests
         all=[new("NoClippy",true,"1.0.0.0")];scanner.Tick();
         Check(scanner.View.Findings.Any(f=>f.Provider==OverlapProvider.NoClippy&&f.SuspendHub),"Plugin notification missed NoClippy.");
         available=false;scanner.Tick();Check(scanner.View.Blocks(CompatibilityFeature.Latency)&&scanner.View.Blocks(CompatibilityFeature.Dialogue),"Unavailable inventory failed open.");
+        all=[];available=true;
+        var actual=new CompatibilityScanner(pi,()=>all,()=>available);
+        actual.Tick(latencyEnabled:true);
+        Check(actual.LatencyReadiness()==LatencyState.Compensating,"Native fixture did not establish fresh eligibility.");
+        all=[new("NoClippy",true,"1.0.0.0")];
+        Check(actual.LatencyReadiness()==LatencyState.ConflictCheckUnavailable,"Unconsumed inventory change reused stale native eligibility.");
+        actual.Tick(latencyEnabled:true);Check(actual.LatencyReadiness()==LatencyState.NoClippyConflict,"Refreshed inventory failed to protect native writes.");
     }
     private static void Profiles()
     {

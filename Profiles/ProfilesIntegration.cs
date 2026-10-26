@@ -60,5 +60,8 @@ public sealed class ProfilesIntegration : IDisposable
             catch{Notice="Sentinel Profiles is unavailable. Refresh or reopen its settings.";dirty=true;}
         }
     }
-    public void Dispose(){disposed=true;pendingOpen=null;changed.Unsubscribe(onChanged);}
+    public void Dispose(){if(disposed)return;disposed=true;pendingOpen=null;
+        try{changed.Unsubscribe(onChanged);}catch{/* Provider teardown must not prevent utility/native cleanup. */}
+        View=ProfilesView.Unavailable;
+    }
 }

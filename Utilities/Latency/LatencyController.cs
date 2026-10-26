@@ -39,8 +39,10 @@ public sealed class LatencyController : IDisposable
     {
         if (disposed || settings.LatencyMode == LatencyMode.Off) return LatencyState.Off;
         if (suspended()) return LatencyState.Paused;
-        if (!client.IsLoggedIn || objects.LocalPlayer is null) return LatencyState.WaitingForLogin;
-        if (objects.LocalPlayer.IsDead || condition[ConditionFlag.BetweenAreas] || condition[ConditionFlag.BetweenAreas51]
+        if (!client.IsLoggedIn) return LatencyState.WaitingForLogin;
+        var local=objects.LocalPlayer;
+        if(local is null)return LatencyState.WaitingForLogin;
+        if (local.IsDead || condition[ConditionFlag.BetweenAreas] || condition[ConditionFlag.BetweenAreas51]
             || condition[ConditionFlag.OccupiedInCutSceneEvent] || condition[ConditionFlag.WatchingCutscene] || condition[ConditionFlag.WatchingCutscene78])
             return LatencyState.Paused;
         return conflictState();
