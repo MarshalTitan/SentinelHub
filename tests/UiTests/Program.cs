@@ -31,6 +31,7 @@ internal static class Program
     }
     static unsafe void Run()
     {
+        IdlePerformanceTests.Run();
         var context = ImGui.CreateContext();
         try
         {
