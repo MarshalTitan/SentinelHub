@@ -24,6 +24,7 @@ internal static class PerformancePolicyTests
             check(actions==0&&resets==1);session.Tick(QuestConvenienceState.Active,1,10001);check(actions==1);
             session.Tick(QuestConvenienceState.Active,2,10002,false);check(resets==2);
             session.Tick(QuestConvenienceState.Off,2,10003,false);check(resets==3&&session.State==QuestConvenienceState.Off);
+            session.Tick(QuestConvenienceState.Active,-1,10004,false);check(session.State==QuestConvenienceState.Faulted);
         });
         test("Profiles contract projects only schema-approved names, IDs and authoritative state",()=>{
             var id=Guid.NewGuid().ToString("D");var json=JsonSerializer.Serialize(new{Schema=1,Revision=2,Profiles=new[]{new{Id=id,Name="Hunts"}},SelectedProfileId=id,LastAppliedProfileId=id,Match="Matched",Applying=false,PrivateConfig="not projected"});

@@ -56,7 +56,13 @@ public sealed class QuestConvenienceController : IDisposable
         int? saved = null;
         try
         {
-            var now=Environment.TickCount64;var loggedIn=client.IsLoggedIn;var all=inventory();
+            var now=Environment.TickCount64;var loggedIn=client.IsLoggedIn;
+            if(!loggedIn){
+                if(previousLogin!=false||previousEnabled!=true){session.Stop(QuestConvenienceState.WaitingForLogin);monitor.Reset();Release();
+                    View=new(QuestConvenienceState.WaitingForLogin,null,"Waiting for login","Waiting for login","Waiting for login");}
+                previousEnabled=true;previousLogin=false;nextOwnership=0;return;
+            }
+            var all=inventory();
             var version=effectiveVersion?.Invoke();
             var raw=(settings.QuestDialogue?1:0)|(settings.QuestCutscenes?2:0)|((Enum.IsDefined(settings.QuestRewardMode)?(int)settings.QuestRewardMode:0)<<2);
             var packedOptions=preferences;

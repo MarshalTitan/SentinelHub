@@ -37,7 +37,7 @@ public sealed class QuestExecutionSession(Action<QuestConvenienceOptions> update
     {
         if (ownership != QuestConvenienceState.Active) { Stop(ownership); return; }
         if (now < retryAfter) { State = QuestConvenienceState.Faulted; return; }
-        if (fingerprint!=preferences && !QuestPreferenceCodec.TryDecode(preferences, out options)) { Stop(QuestConvenienceState.Faulted); return; }
+        if (preferences is <0 or >15 || (fingerprint!=preferences || options is null) && !QuestPreferenceCodec.TryDecode(preferences, out options)) { Stop(QuestConvenienceState.Faulted); return; }
         try
         {
             if (!running || fingerprint != preferences) { reset(); running = true; fingerprint = preferences; }

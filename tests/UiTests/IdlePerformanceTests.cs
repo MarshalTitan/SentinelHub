@@ -65,7 +65,10 @@ internal static class IdlePerformanceTests
             worst = Math.Max(worst, Stopwatch.GetTimestamp() - tick);
         }
         var elapsed = Stopwatch.GetElapsedTime(start);
-        Console.WriteLine($"PERF fixture {name}: n={count}; mean-us={elapsed.TotalMicroseconds/count:F3}; max-us={worst*1000000d/Stopwatch.Frequency:F3}; bytes/call={(GC.GetAllocatedBytesForCurrentThread()-allocated)/(double)count:F1}");
+        var bytesPerCall=(GC.GetAllocatedBytesForCurrentThread()-allocated)/(double)count;
+        Console.WriteLine($"PERF fixture {name}: n={count}; mean-us={elapsed.TotalMicroseconds/count:F3}; max-us={worst*1000000d/Stopwatch.Frequency:F3}; bytes/call={bytesPerCall:F1}");
+        if(name is "quest-off" or "mounts-closed" or "fashion-closed" or "inspector-inactive" or "activity-unchanged" && bytesPerCall>8)
+            throw new Exception("Dormant service allocation regression: "+name);
     }
 
     internal static T Fake<T>(Func<MethodInfo, object?[]?, object?>? invoke = null) where T : class
