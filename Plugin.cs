@@ -74,7 +74,7 @@ public sealed class Plugin : IDalamudPlugin
         discovery = new(Pi, faults);
         discovery.Refresh(true);
         health=new(Pi,()=>discovery.Inventory,()=>discovery.Snapshot,publicCatalog,OwnCharacterKey);
-        compatibility=new(Pi,()=>discovery.Inventory,()=>discovery.Available);
+        compatibility=new(Pi,()=>discovery.Inventory,()=>discovery.Available&&!discovery.PendingChange);
         compatibility.Tick(true);
         antiAfk = new(Pi, Client, settings, faults,ReadInventory);
         quest = new(Pi, Client, GameGui, Condition, Objects, Data, settings, faults,

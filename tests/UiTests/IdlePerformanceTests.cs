@@ -76,7 +76,7 @@ internal static class IdlePerformanceTests
         ((ServiceProxy)value).Handler = invoke ?? ((method, _) => Default(method.ReturnType));
         return value;
     }
-    private static object? Default(Type type)
+    internal static object? Default(Type type)
     {
         if (type == typeof(void)) return null;
         if (type == typeof(string)) return "";

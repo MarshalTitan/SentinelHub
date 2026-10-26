@@ -6,6 +6,7 @@ public sealed class PluginDiscovery : IDisposable
     private readonly IDalamudPluginInterface pi;
     private readonly FaultJournal faults;
     private volatile bool dirty = true;
+    public bool PendingChange=>dirty;
     private long nextInventory, nextProbes;
     public long Revision { get; private set; }
     public bool Available { get; private set; }

@@ -25,7 +25,7 @@ public sealed class ProfilesIntegration : IDisposable
         snapshot=pi.GetIpcSubscriber<string>("SentinelProfiles.Hub.v1.Snapshot");
         changed=pi.GetIpcSubscriber<long,object?>("SentinelProfiles.Hub.v1.Changed");
         open=pi.GetIpcSubscriber<string,bool>("SentinelProfiles.Hub.v1.Open");
-        onChanged=_=>dirty=true;changed.Subscribe(onChanged);
+        onChanged=_=>{dirty=true;System.Threading.Volatile.Write(ref retryAfter,0);};changed.Subscribe(onChanged);
     }
     public void Refresh(){dirty=true;retryAfter=0;}
     public void RequestOpen(string id){if(View.Availability==ProfilesAvailability.Ready)pendingOpen=id;}

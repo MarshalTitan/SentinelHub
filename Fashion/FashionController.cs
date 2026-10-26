@@ -47,7 +47,7 @@ public sealed class FashionController : IDisposable
     public void Tick(bool visible)
     {
         if (disposed) return;
-        if (!visible && !requested) { wasVisible=false; return; }
+        if (!visible) { wasVisible=false; return; }
         try
         {
             var ready = Ready;
