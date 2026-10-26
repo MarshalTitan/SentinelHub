@@ -8,4 +8,4 @@ Replaces the Profiles UNKNOWN placeholder with saved profiles, selected/last-app
 
 Adds explicit RAM-only /shub perf start, report and stop measurement (ten-minute limit). Normal release operation does not sample or write performance history. Saved settings/layout, collections/acquisition data and Core 0.4.1 stay intact.
 
-See docs/PERFORMANCE_PROFILES.md for measurements, residual fallback checks and supervised acceptance. This branch is a candidate until the new movement/interaction gate passes.
+See docs/PERFORMANCE_PROFILES.md for measurements, residual fallback checks and supervised acceptance. The user authorized normal live publication on 2026-10-26 so their girlfriend can evaluate the differences. Pre-release movement/interaction acceptance is deferred; a resolved stutter or new in-game PASS is not claimed.

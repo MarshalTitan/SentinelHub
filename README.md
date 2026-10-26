@@ -72,6 +72,6 @@ Plugin cards on Dashboard, Plugins and Profiles now measure the real inner wrap 
 For normal use, disable the isolated development copy, enable/update live Sentinel Hub through the existing custom repository and confirm 0.7.0.0. Saved preferences remain intact. The focused gate is closed; unreported scenarios retain their documented scope.
 
 
-## 0.7.1.0 performance and Profiles candidate
+## 0.7.1.0 performance and Profiles
 
-Shared inventory, dormant inactive modules, addon-driven Quest with bounded fallback, cached latency conflict checks and an authoritative Profiles overview are implemented for proving. Requires Profiles 0.2.1.8 for the new overview; older builds show a clear compatibility message. Current public catalogs remain unchanged pending native acceptance. See [performance evidence and checklist](docs/PERFORMANCE_PROFILES.md).
+Shared inventory, dormant inactive modules, addon-driven Quest with bounded fallback, cached latency conflict checks and an authoritative Profiles overview are included in the user-authorized live update. Requires Profiles 0.2.1.8 for the new overview; older builds show a clear compatibility message. On 2026-10-26 the user requested normal live publication so their girlfriend can evaluate the differences; movement/camera and interaction acceptance remain unreported, not PASS. See [performance evidence and checklist](docs/PERFORMANCE_PROFILES.md).

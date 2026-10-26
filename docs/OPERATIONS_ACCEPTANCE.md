@@ -34,6 +34,6 @@ Turn Hub utility switches Off, unload the candidate, then re-enable live 0.6.0.0
 For normal use, disable the isolated development copy, enable/update live Sentinel Hub through the existing custom repository and confirm 0.7.0.0. Saved preferences remain intact. The focused gate is closed; unreported scenarios retain their documented scope.
 
 
-## 0.7.1.0 performance / Profiles candidate
+## 0.7.1.0 performance / Profiles live-feedback authorization
 
-The new scheduling and Profiles integration gate remains pending. Historical 0.7.0.0 PASS reports above retain their original scope. See [measurements and supervised checklist](PERFORMANCE_PROFILES.md). Use the validated CI candidate packages from PR #17 and Profiles PR #9, preserve configuration, and keep the other copy disabled. No live promotion until movement/camera and interaction checks are reported.
+On 2026-10-26 the user explicitly requested committing and publishing the update to live so their girlfriend can evaluate the differences through ordinary use. This supersedes the earlier pre-release movement/camera and interaction hold; those observations remain unreported, not PASS. Software review, CI and installable-package validation passed. Historical 0.7.0.0 PASS reports above retain their original scope. See [measurements and optional post-update checklist](PERFORMANCE_PROFILES.md). Update Profiles to 0.2.1.8 before Hub 0.7.1.0 using the existing custom repository, preserve configuration, and keep only one copy of each plugin enabled.
