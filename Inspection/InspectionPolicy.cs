@@ -7,7 +7,7 @@ public sealed record InspectionEntry(InspectionKind Kind,uint Id,string Name,uin
 public sealed record InspectionPart(InspectionState State,InspectionEntry? Entry=null,string Detail="");
 public sealed record InspectorView(bool Tracking,DateTimeOffset At,InspectionPart Mount,InspectionPart Fashion,InspectionPart Emote)
 {
-    public static InspectorView Empty=>new(false,DateTimeOffset.MinValue,new(InspectionState.Unavailable),new(InspectionState.Unavailable),
+    public static readonly InspectorView Empty=new(false,DateTimeOffset.MinValue,new(InspectionState.Unavailable),new(InspectionState.Unavailable),
         new(InspectionState.Unavailable));
 }
 public readonly record struct EmoteObservation(bool Valid,bool DrawLoaded,bool Transformed,uint EmoteId,byte Mode,byte ModeParam);

@@ -45,11 +45,14 @@ internal static class IdlePerformanceTests
         Measure("inspector-inactive", () => inspector.Tick(false));
         Measure("activity-unchanged", () => activity.Observe(health, compatibility));
         Console.WriteLine($"PERF fixture installed-plugin reads={reads}");
+        if(reads!=0)throw new Exception("Disabled Quest enumerated installed plugins.");
         var conflict = new LatencyConflictProbe(pi);
+        conflict.Read(true);
+        Measure("cached-native-conflict-check", () => conflict.ReadCached());
         Measure("full-module-conflict-scan", () => conflict.Read(true), 50);
     }
 
-    private static void Measure(string name, Action call, int count = 10000)
+    internal static void Measure(string name, Action call, int count = 10000)
     {
         for (var i = 0; i < 200; i++) call();
         var allocated = GC.GetAllocatedBytesForCurrentThread();
@@ -67,7 +70,7 @@ internal static class IdlePerformanceTests
 
     internal static T Fake<T>(Func<MethodInfo, object?[]?, object?>? invoke = null) where T : class
         => (T)Proxy(typeof(T), invoke);
-    private static object Proxy(Type type, Func<MethodInfo, object?[]?, object?>? invoke = null)
+    internal static object Proxy(Type type, Func<MethodInfo, object?[]?, object?>? invoke = null)
     {
         var value = DispatchProxy.Create(type, typeof(ServiceProxy));
         ((ServiceProxy)value).Handler = invoke ?? ((method, _) => Default(method.ReturnType));

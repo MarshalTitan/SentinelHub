@@ -32,6 +32,11 @@ public sealed class MountController : IDisposable
         && objects.LocalPlayer is not null
         && !condition[ConditionFlag.BetweenAreas] && !condition[ConditionFlag.BetweenAreas51];
     public void RequestRefresh() { if (!disposed) { requested = true; nextObservation = 0; } }
+    public void Invalidate()
+    {
+        session.Clear();lastSession=0;nextObservation=0;
+        View=new(state,catalog,session.Snapshot);
+    }
     public void Retry()
     {
         if (disposed) return;
@@ -42,6 +47,7 @@ public sealed class MountController : IDisposable
     public void Tick(bool visible)
     {
         if (disposed) return;
+        if (!visible && !requested) { wasVisible=false; return; }
         try
         {
             var ready = Ready;
@@ -67,7 +73,8 @@ public sealed class MountController : IDisposable
                 nextObservation = now + 2000; requested = false;
                 if (!session.Snapshot.Available) faults.Record(FaultCode.MountCollectionUnavailable);
             }
-            View = new(state, catalog, session.Snapshot);
+            if(View.State!=state || !ReferenceEquals(View.Catalog,catalog) || !ReferenceEquals(View.Character,session.Snapshot))
+                View = new(state, catalog, session.Snapshot);
         }
         catch
         {

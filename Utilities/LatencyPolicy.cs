@@ -4,7 +4,7 @@ public enum LatencyState { Off, WaitingForLogin, Paused, NoClippyConflict, XivAl
 public sealed record LatencyView(LatencyState State, long Samples = 0, long Adjustments = 0,
     double LastResponseMs = 0, double AverageResponseMs = 0, double LastReductionMs = 0, double TotalReductionMs = 0)
 {
-    public static LatencyView Off => new(LatencyState.Off);
+    public static readonly LatencyView Off = new(LatencyState.Off);
     public string Description => State switch
     {
         LatencyState.Off => "Off; no latency hooks are active.",
@@ -149,10 +149,10 @@ public sealed class LatencyLifecycle(Func<LatencyMode, ILatencyRuntime> create) 
         try
         {
             if (requested == LatencyMode.Off)
-            { Stop(); mode = requested; latched = null; View = View with { State = LatencyState.Off }; return; }
-            if (latched is { } state) { View = View with { State = state }; return; }
+            { Stop(); mode = requested; latched = null; if(View.State!=LatencyState.Off)View = View with { State = LatencyState.Off }; return; }
+            if (latched is { } state) { if(View.State!=state)View = View with { State = state }; return; }
             if (readiness != LatencyState.Compensating)
-            { Stop(); View = View with { State = readiness }; return; }
+            { Stop(); if(View.State!=readiness)View = View with { State = readiness }; return; }
             if (runtime is not null && mode != requested) Stop();
             if (runtime is null) { mode = requested; runtime = create(requested); }
             View = runtime.View;

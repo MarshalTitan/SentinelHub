@@ -2,11 +2,23 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Dalamud.Plugin;
 namespace SentinelHub.Utilities.Latency;
-internal sealed class LatencyConflictProbe(IDalamudPluginInterface pi)
+internal sealed class LatencyConflictProbe(IDalamudPluginInterface pi,Func<SentinelHub.Ecosystem.InstalledPlugin[]>? inventory=null)
 {
     private readonly object sync = new();
     private long next;
     private LatencyState cached = LatencyState.ConflictCheckUnavailable;
+    private volatile bool noClippy;
+    private long validUntil;
+    public const int ScanIntervalMilliseconds=10_000;
+    // No enumeration, managed discovery or IPC from native callbacks. Expired observations fail closed.
+    public LatencyState ReadCached()
+    {
+        if(noClippy)return LatencyState.NoClippyConflict;
+        try{
+            foreach(var name in Names)if(GetModuleHandle(name)!=0)return LatencyState.XivAlexanderConflict;
+            return Environment.TickCount64<=System.Threading.Volatile.Read(ref validUntil)?cached:LatencyState.ConflictCheckUnavailable;
+        }catch{return LatencyState.ConflictCheckUnavailable;}
+    }
     public LatencyState Read(bool force)
     {
         lock (sync)
@@ -14,13 +26,16 @@ internal sealed class LatencyConflictProbe(IDalamudPluginInterface pi)
             try
             {
                 // Any loaded copy matters here, including a dev copy beside disabled live.
-                if (pi.InstalledPlugins.Any(p => LatencyConflictPolicy.IsNoClippy(p.InternalName, p.IsLoaded)))
+                noClippy=inventory is not null?inventory().Any(p=>LatencyConflictPolicy.IsNoClippy(p.Id,p.Loaded)):
+                    pi.InstalledPlugins.Any(p => LatencyConflictPolicy.IsNoClippy(p.InternalName, p.IsLoaded));
+                if (noClippy)
                     return LatencyState.NoClippyConflict;
                 foreach (var name in Names)
                     if (GetModuleHandle(name) != 0) return LatencyState.XivAlexanderConflict;
                 var now = Environment.TickCount64;
                 if (!force && now < next) return cached;
-                next = now + 500;
+                next = now + ScanIntervalMilliseconds;
+                System.Threading.Volatile.Write(ref validUntil,now+ScanIntervalMilliseconds+1000);
                 using var process = Process.GetCurrentProcess();
                 foreach (ProcessModule module in process.Modules)
                 {

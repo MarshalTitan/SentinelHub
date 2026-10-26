@@ -11,7 +11,7 @@ public sealed class LatencyController : IDisposable
     private readonly IObjectTable objects;
     private readonly HubSettings settings;
     private readonly FaultJournal faults;
-    private readonly LatencyConflictProbe conflicts;
+    private readonly Func<LatencyState> conflictState;
     private readonly LatencyLifecycle lifecycle;
     private uint? territory;
     private HashSet<uint>? instantActions;
@@ -19,10 +19,10 @@ public sealed class LatencyController : IDisposable
     private readonly Func<bool> suspended;
     public LatencyView View => lifecycle.View;
     public LatencyController(IDalamudPluginInterface pi, IGameInteropProvider interop, IDataManager data, IClientState client,
-        ICondition condition, IObjectTable objects, HubSettings settings, FaultJournal faults, Func<bool>? suspended=null)
+        ICondition condition, IObjectTable objects, HubSettings settings, FaultJournal faults, Func<bool>? suspended=null,Func<LatencyState>? conflictState=null)
     {
         this.client = client; this.condition = condition; this.objects = objects; this.settings = settings; this.faults = faults;this.suspended=suspended??(()=>false);
-        conflicts = new(pi);
+        this.conflictState=conflictState??new LatencyConflictProbe(pi).ReadCached;
         lifecycle = new(mode =>
         {
             // Managed sheet lookup runs only on first enable, never from a native effect callback.
@@ -43,12 +43,13 @@ public sealed class LatencyController : IDisposable
         if (objects.LocalPlayer.IsDead || condition[ConditionFlag.BetweenAreas] || condition[ConditionFlag.BetweenAreas51]
             || condition[ConditionFlag.OccupiedInCutSceneEvent] || condition[ConditionFlag.WatchingCutscene] || condition[ConditionFlag.WatchingCutscene78])
             return LatencyState.Paused;
-        return conflicts.Read(force);
+        return conflictState();
     }
     public void Tick()
     {
         if (disposed) return;
         var mode = Enum.IsDefined(settings.LatencyMode) ? settings.LatencyMode : LatencyMode.Off;
+        if(mode==LatencyMode.Off&&View.State==LatencyState.Off)return;
         LatencyState state;
         try
         {

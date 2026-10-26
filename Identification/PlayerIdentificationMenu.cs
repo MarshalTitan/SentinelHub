@@ -20,8 +20,6 @@ public sealed class PlayerIdentificationMenu : IDisposable
     private readonly FaultJournal faults;
     private readonly Action<IdentificationTicket>? inspect;
     private readonly IdentificationQueue queue=new();
-    private ulong session;
-    private uint territory;
     private bool disposed;
     public PlayerIdentificationMenu(IContextMenu menu,IObjectTable objects,IClientState client,IPlayerState player,IFramework framework,
         IDataManager data,HubSettings settings,Func<bool> ready,Action<PlayerIdentification> open,Action clear,FaultJournal faults,Action<IdentificationTicket>? inspect=null)
@@ -52,8 +50,7 @@ public sealed class PlayerIdentificationMenu : IDisposable
     public void Tick()
     {
         if(disposed)return;
-        if(!ready()||!Enabled||player.ContentId!=session||client.TerritoryType!=territory)
-        {queue.Clear();clear();session=player.ContentId;territory=client.TerritoryType;return;}
+        if(!queue.HasPending)return;
         var request=queue.Take();if(request is not {} ticket)return;
         clear(); // A new request never keeps a previous player's inspector result visible.
         try{
@@ -77,6 +74,7 @@ public sealed class PlayerIdentificationMenu : IDisposable
             open(new(mount,fashion,now));
         }catch{clear();faults.Record(FaultCode.PlayerIdentificationUnavailable);}
     }
+    public void Invalidate(){queue.Clear();clear();}
     public void Dispose(){if(disposed)return;disposed=true;queue.Clear();clear();menu.OnMenuOpened-=OnOpened;}
 }
 

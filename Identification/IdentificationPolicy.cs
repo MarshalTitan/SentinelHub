@@ -27,6 +27,7 @@ public static class IdentificationPolicy
 public sealed class IdentificationQueue
 {
     private IdentificationTicket? pending;
+    public bool HasPending=>pending.HasValue;
     public void Request(IdentificationTicket ticket)=>pending=ticket;
     public IdentificationTicket? Take(){var value=pending;pending=null;return value;}
     public void Clear()=>pending=null;
