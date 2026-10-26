@@ -278,7 +278,7 @@ public sealed class MainWindow : Window, IDisposable
             if(Button("Refresh Profiles"))refreshProfiles();
             return;
         }
-        Card("profiles-current",v.Applying?"APPLYING":v.Match.ToUpperInvariant(),v.Match=="Matched"?SentinelModernPillTone.Ready:SentinelModernPillTone.Neutral,
+        Card("profiles-current",v.Applying?"APPLYING":v.Match=="NoProfileApplied"?"NONE APPLIED":v.Match.ToUpperInvariant(),v.Match=="Matched"?SentinelModernPillTone.Ready:SentinelModernPillTone.Neutral,
             ["Current Profile","Selected profile: "+v.Selected,"Last applied profile: "+v.LastApplied,
                 "Match / drift: "+(v.Match=="NoProfileApplied"?"No profile applied":v.Match),v.Applying?"A profile application is in progress.":"Hub only opens Profiles; it does not apply or edit profile rules."]);
         ImGui.TextWrapped("Available Profiles");

@@ -21,6 +21,7 @@ public sealed class PlayerIdentificationMenu : IDisposable
     private readonly Action<IdentificationTicket>? inspect;
     private readonly IdentificationQueue queue=new();
     private bool disposed;
+    private bool wasEnabled;
     public PlayerIdentificationMenu(IContextMenu menu,IObjectTable objects,IClientState client,IPlayerState player,IFramework framework,
         IDataManager data,HubSettings settings,Func<bool> ready,Action<PlayerIdentification> open,Action clear,FaultJournal faults,Action<IdentificationTicket>? inspect=null)
     {
@@ -50,6 +51,8 @@ public sealed class PlayerIdentificationMenu : IDisposable
     public void Tick()
     {
         if(disposed)return;
+        if(!Enabled){if(wasEnabled||queue.HasPending)Invalidate();wasEnabled=false;return;}
+        wasEnabled=true;
         if(!queue.HasPending)return;
         var request=queue.Take();if(request is not {} ticket)return;
         clear(); // A new request never keeps a previous player's inspector result visible.
