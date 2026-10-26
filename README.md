@@ -70,3 +70,8 @@ Plugin cards on Dashboard, Plugins and Profiles now measure the real inner wrap 
 [Immutable release](https://github.com/MarshalTitan/SentinelHub/releases/tag/v0.7.0.0) published from `8e449cd4e75001a277ffdce2ca45e725801f1293`. [Release pipeline](https://github.com/MarshalTitan/SentinelHub/actions/runs/39162571980) validates the package and compares the downloaded public ZIP against its tested CI artifact before distribution. GitHub asset metadata: SentinelHub.zip, 429065 bytes, SHA256 `7a7ded95f95e5d7fc581f7d64ca4736518c88c6e22fd7f6dfe26e0edc6e8367b` (metadata read; hash equality is checked by the pipeline). Exact child/central promotion evidence is recorded in the canonical Sentinel RELEASE_PROCESS.md and release PR.
 
 For normal use, disable the isolated development copy, enable/update live Sentinel Hub through the existing custom repository and confirm 0.7.0.0. Saved preferences remain intact. The focused gate is closed; unreported scenarios retain their documented scope.
+
+
+## 0.7.1.0 performance and Profiles candidate
+
+Shared inventory, dormant inactive modules, addon-driven Quest with bounded fallback, cached latency conflict checks and an authoritative Profiles overview are implemented for proving. Requires Profiles 0.2.1.8 for the new overview; older builds show a clear compatibility message. Current public catalogs remain unchanged pending native acceptance. See [performance evidence and checklist](docs/PERFORMANCE_PROFILES.md).

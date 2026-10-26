@@ -74,7 +74,7 @@ public sealed class Plugin : IDalamudPlugin
         discovery = new(Pi, faults);
         discovery.Refresh(true);
         health=new(Pi,()=>discovery.Inventory,()=>discovery.Snapshot,publicCatalog,OwnCharacterKey);
-        compatibility=new(Pi,()=>discovery.Inventory,()=>discovery.Available&&!discovery.PendingChange);
+        compatibility=new(Pi,()=>discovery.Inventory,()=>!discovery.PendingChange&&discovery.Available);
         compatibility.Tick(true);
         antiAfk = new(Pi, Client, settings, faults,ReadInventory);
         quest = new(Pi, Client, GameGui, Condition, Objects, Data, settings, faults,
@@ -106,11 +106,17 @@ public sealed class Plugin : IDalamudPlugin
         Client.Login+=InvalidateSession;
         Client.Logout+=OnLogout;
         Client.TerritoryChanged+=OnTerritory;
+        Client.InstanceChanged+=OnTerritory;
+        Condition.ConditionChange+=OnCondition;
     }
     private InstalledPlugin[] ReadInventory()=>discovery.Available?discovery.Inventory:throw new InvalidOperationException("Plugin inventory unavailable.");
     private void InvalidateSession()=>sessionInvalidated=true;
     private void OnLogout(int _,int __)=>InvalidateSession();
     private void OnTerritory(uint _)=>InvalidateSession();
+    private void OnCondition(Dalamud.Game.ClientState.Conditions.ConditionFlag flag,bool value)
+    {
+        if(value&&(flag is Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas or Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51))InvalidateSession();
+    }
     private void Draw(){performance.Context(window.IsOpen);using var timing=performance.Measure(HubService.Draw);windows.Draw();}
     private void Update(IFramework _)
     {
@@ -189,7 +195,8 @@ public sealed class Plugin : IDalamudPlugin
     {
         disposed = true;
         Framework.Update -= Update;
-        Client.Login-=InvalidateSession;Client.Logout-=OnLogout;Client.TerritoryChanged-=OnTerritory;
+        Client.Login-=InvalidateSession;Client.Logout-=OnLogout;Client.TerritoryChanged-=OnTerritory;Client.InstanceChanged-=OnTerritory;
+        Condition.ConditionChange-=OnCondition;
         performance.Stop();profiles.Dispose();
         identifyMenu.Dispose();
         inspector.Clear();

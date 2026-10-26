@@ -32,3 +32,8 @@ Turn Hub utility switches Off, unload the candidate, then re-enable live 0.6.0.0
 [Immutable release](https://github.com/MarshalTitan/SentinelHub/releases/tag/v0.7.0.0) published from `8e449cd4e75001a277ffdce2ca45e725801f1293`. [Release pipeline](https://github.com/MarshalTitan/SentinelHub/actions/runs/39162571980) validates the package and compares the downloaded public ZIP against its tested CI artifact before distribution. GitHub asset metadata: SentinelHub.zip, 429065 bytes, SHA256 `7a7ded95f95e5d7fc581f7d64ca4736518c88c6e22fd7f6dfe26e0edc6e8367b` (metadata read; hash equality is checked by the pipeline). Exact child/central promotion evidence is recorded in the canonical Sentinel RELEASE_PROCESS.md and release PR.
 
 For normal use, disable the isolated development copy, enable/update live Sentinel Hub through the existing custom repository and confirm 0.7.0.0. Saved preferences remain intact. The focused gate is closed; unreported scenarios retain their documented scope.
+
+
+## 0.7.1.0 performance / Profiles candidate
+
+The new scheduling and Profiles integration gate remains pending. Historical 0.7.0.0 PASS reports above retain their original scope. See [measurements and supervised checklist](PERFORMANCE_PROFILES.md). Use the validated CI candidate packages from PR #17 and Profiles PR #9, preserve configuration, and keep the other copy disabled. No live promotion until movement/camera and interaction checks are reported.

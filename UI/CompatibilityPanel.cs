@@ -6,6 +6,7 @@ public sealed class CompatibilityPanel(Func<CompatibilityView> view)
     public void Draw()
     {
         ImGui.TextWrapped("Compatibility / Hub self-protection");
+        ImGui.TextWrapped("Native module checks run before latency activation and periodically while active. With latency Off, any native conflict shown is a cached observation.");
         var findings=view().Findings;
         if(findings.Length==0)ImGui.TextWrapped("No reviewed overlap currently detected. This is not a scan of every third-party module or private configuration.");
         foreach(var f in findings){ImGui.Separator();ImGui.TextWrapped(f.Provider+" / "+f.Feature+" — "+f.Kind+(f.SuspendHub?" / Hub suspended":""));ImGui.TextWrapped(f.Explanation);}

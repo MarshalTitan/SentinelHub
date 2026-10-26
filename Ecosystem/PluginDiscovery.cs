@@ -6,7 +6,8 @@ public sealed class PluginDiscovery : IDisposable
     private readonly IDalamudPluginInterface pi;
     private readonly FaultJournal faults;
     private volatile bool dirty = true;
-    public bool PendingChange=>dirty;
+    private volatile bool capturing;
+    public bool PendingChange=>dirty||capturing;
     private long nextInventory, nextProbes;
     public long Revision { get; private set; }
     public bool Available { get; private set; }
@@ -25,6 +26,7 @@ public sealed class PluginDiscovery : IDisposable
         var changed = false;
         if (force || dirty || now >= nextInventory)
         {
+            capturing=true;
             dirty = false; nextInventory = now + 60_000;
             try
             {
@@ -41,6 +43,7 @@ public sealed class PluginDiscovery : IDisposable
                 nextInventory = now + 5_000;
                 faults.Record(FaultCode.DiscoveryUnavailable);
             }
+            finally{capturing=false;}
         }
         if (!force && !changed && now < nextProbes) return false;
         nextProbes = now + (visible ? 2_000 : 15_000);

@@ -15,19 +15,23 @@ public sealed class CompatibilityScanner
     private InstalledPlugin[]? previousInventory;
     private bool previousLatency,previousQuest,previousAvailable;
     private long next;
+    private volatile bool evaluating;
     public CompatibilityView View {get;private set;}=CompatibilityView.Empty;
     public CompatibilityScanner(IDalamudPluginInterface pi,Func<InstalledPlugin[]> inventory,Func<bool> available,Func<bool,LatencyState>? nativeProbe=null)
     {
         this.pi=pi;this.inventory=inventory;this.available=available;latency=new(pi,inventory);
         readNative=nativeProbe??latency.Read;
     }
-    public LatencyState LatencyReadiness()=>!available()?LatencyState.ConflictCheckUnavailable:latency.ReadCached();
+    public LatencyState LatencyReadiness()=>evaluating||!available()||!ReferenceEquals(previousInventory,inventory())
+        ?LatencyState.ConflictCheckUnavailable:latency.ReadCached();
     public bool Tick(bool force=false,bool latencyEnabled=false,bool questEnabled=false,bool visible=false)
     {
         var all=inventory();var valid=available();var now=Environment.TickCount64;
         var changed=!ReferenceEquals(previousInventory,all)||previousAvailable!=valid;
         var enabled=previousLatency!=latencyEnabled||previousQuest!=questEnabled;
         if(!force&&!changed&&!enabled&&now<next)return false;
+        evaluating=true;
+        try{
         previousInventory=all;previousAvailable=valid;previousLatency=latencyEnabled;previousQuest=questEnabled;
         // Active Quest retains the reviewed 500 ms provider-state protection. These providers
         // expose no supported change notification, so a bounded status poll remains necessary.
@@ -59,6 +63,7 @@ public sealed class CompatibilityScanner
         var values=findings.ToArray();
         if(View.Findings.SequenceEqual(values))return false;
         View=new(values);return true;
+        }finally{evaluating=false;}
     }
     private static readonly (string,OverlapProvider)[] Multipurpose=[("SimpleTweaksPlugin",OverlapProvider.SimpleTweaks),("PandorasBox",OverlapProvider.PandorasBox),("DailyRoutines",OverlapProvider.DailyRoutines)];
     private bool? Read(string endpoint){try{return pi.GetIpcSubscriber<bool>(endpoint).InvokeFunc();}catch{return null;}}
