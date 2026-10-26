@@ -31,16 +31,17 @@ public sealed class QuestExecutionSession(Action<QuestConvenienceOptions> update
     private bool running;
     private int fingerprint = -1;
     private long retryAfter;
+    private QuestConvenienceOptions? options;
     public QuestConvenienceState State { get; private set; }
-    public void Tick(QuestConvenienceState ownership, int preferences, long now)
+    public void Tick(QuestConvenienceState ownership, int preferences, long now, bool process=true)
     {
         if (ownership != QuestConvenienceState.Active) { Stop(ownership); return; }
         if (now < retryAfter) { State = QuestConvenienceState.Faulted; return; }
-        if (!QuestPreferenceCodec.TryDecode(preferences, out var options)) { Stop(QuestConvenienceState.Faulted); return; }
+        if (preferences is <0 or >15 || (fingerprint!=preferences || options is null) && !QuestPreferenceCodec.TryDecode(preferences, out options)) { Stop(QuestConvenienceState.Faulted); return; }
         try
         {
             if (!running || fingerprint != preferences) { reset(); running = true; fingerprint = preferences; }
-            update(options);
+            if(process)update(options!);
             State = QuestConvenienceState.Active;
         }
         catch

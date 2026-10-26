@@ -18,26 +18,36 @@ public sealed class AntiAfkController : IDisposable
     private bool? previousLogin;
     private bool claimed;
     private bool disposed;
+    private readonly Func<SentinelHub.Ecosystem.InstalledPlugin[]> inventory;
+    private SentinelHub.Ecosystem.InstalledPlugin[]? previousInventory;
     public AntiAfkView View { get; private set; } = AntiAfkView.Off;
-    public AntiAfkController(IDalamudPluginInterface pi, IClientState client, HubSettings settings, FaultJournal faults)
+    public AntiAfkController(IDalamudPluginInterface pi, IClientState client, HubSettings settings, FaultJournal faults,
+        Func<SentinelHub.Ecosystem.InstalledPlugin[]>? inventory=null)
     {
         this.pi = pi; this.client = client; this.settings = settings; this.faults = faults;
+        this.inventory=inventory??(()=>pi.InstalledPlugins.Select(p=>new SentinelHub.Ecosystem.InstalledPlugin(p.InternalName,p.IsLoaded,p.Version.ToString())).ToArray());
         requested = pi.GetIpcProvider<bool>("SentinelHub.AntiAfk.Enabled");
         requested.RegisterFunc(() => !disposed && settings.AntiAfkEnabled);
     }
     public void Tick()
     {
         if (disposed) return;
+        if(!settings.AntiAfkEnabled&&previousEnabled==false)return;
+        if(!settings.AntiAfkEnabled)
+        {
+            previousEnabled=false;engine.Suspend();Release();View=new(AntiAfkState.Off,engine.Cycles,null);return;
+        }
         try
         {
             var now=Environment.TickCount64;
             // Ownership changes need a prompt response, not an inventory/IPC scan on every frame.
             // Off and login changes bypass the one-second poll delay.
             var enabled=settings.AntiAfkEnabled;var loggedIn=client.IsLoggedIn;
-            if(previousEnabled==enabled&&previousLogin==loggedIn&&now<nextOwnershipCheck)return;
+            var all=inventory();
+            if(previousEnabled==enabled&&previousLogin==loggedIn&&ReferenceEquals(previousInventory,all)&&now<nextOwnershipCheck)return;
+            previousInventory=all;
             previousEnabled=enabled;previousLogin=loggedIn;nextOwnershipCheck=now+1000;
-            var hud = HudUtilityOwnership.Select(pi.InstalledPlugins.Where(p=>p.InternalName=="SentinelHUD")
-                .Select(p=>new SentinelHub.Ecosystem.InstalledPlugin(p.InternalName,p.IsLoaded,p.Manifest.AssemblyVersion.ToString())),new Version(0,8,4,6));
+            var hud = HudUtilityOwnership.Select(all,new Version(0,8,4,6));
             bool? saved = null;
             var acknowledged = false;
             var compatible = false;

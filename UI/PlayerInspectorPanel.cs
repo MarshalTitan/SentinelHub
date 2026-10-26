@@ -4,7 +4,7 @@ using SentinelHub.Inspection;
 using System.Numerics;
 using Dalamud.Interface.Utility;
 namespace SentinelHub.UI;
-public sealed class PlayerInspectorPanel(HubSettings settings,Action save,Func<InspectorView> view,Action<uint> mount,Action<uint?> fashion,Action<uint,Vector2>? icon)
+public sealed class PlayerInspectorPanel(HubSettings settings,Action save,Func<InspectorView> view,Action<uint> mount,Action<uint?> fashion,Action<uint,Vector2>? icon,Action? dismiss=null)
 {
     public void Draw()
     {
@@ -13,6 +13,7 @@ public sealed class PlayerInspectorPanel(HubSettings settings,Action save,Func<I
         ImGui.TextWrapped("Opt in to the single player context action for mount, accessory and supported explicit emote information. Right-click a loaded player → Sentinel Hub: Inspect player.");
         var v=view();if(!v.Tracking)ImGui.TextWrapped("No current player observation. Inspect a loaded player; observations clear when this page closes, the actor unloads, you zone, or five minutes elapse.");
         else ImGui.TextWrapped("Live observation: "+v.At.ToLocalTime().ToString("T")+". Own unlock state always describes your character.");
+        if(v.Tracking&&ImGui.Button("Dismiss inspection"))dismiss?.Invoke();
         Part("Mount",v.Mount);
         if(v.Mount.Entry is {} m&&ImGui.Button("Open Mount Collection entry"))mount(m.Id);
         Part("Fashion accessory",v.Fashion);

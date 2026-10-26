@@ -16,6 +16,7 @@ using SentinelHub.Inspection;
 using SentinelHub.Health;
 using SentinelHub.Activity;
 using SentinelHub.Compatibility;
+using SentinelHub.Profiles;
 using CSCharacter=FFXIVClientStructs.FFXIV.Client.Game.Character.Character;
 internal static class Program
 {
@@ -31,6 +32,8 @@ internal static class Program
     }
     static unsafe void Run()
     {
+        IdlePerformanceTests.Run();
+        ServiceSchedulingTests.Run();
         var context = ImGui.CreateContext();
         try
         {
@@ -100,6 +103,36 @@ internal static class Program
                         Check(!settings.Collapsed && Find(MainWindow.WindowId).Size.Y >= 800 * scale - 1, "Restore lost expanded size");
                     }
                 }
+                var profileId=Guid.NewGuid().ToString("D");var appliedId=Guid.NewGuid().ToString("D");
+                var profileCases=0;
+                var profileStates=new[]{ProfilesView.Unavailable,
+                    new ProfilesView(ProfilesAvailability.Missing,[],null,null,"Unavailable",false),
+                    new ProfilesView(ProfilesAvailability.Disabled,[],null,null,"Unavailable",false),
+                    new ProfilesView(ProfilesAvailability.Ready,[],null,null,"NoProfileApplied",false),
+                    new ProfilesView(ProfilesAvailability.Ready,[new(profileId,"Hunts"),new(appliedId,new string('W',64))],profileId,appliedId,"Drifted",false),
+                    new ProfilesView(ProfilesAvailability.Ready,[new(profileId,"Raid")],profileId,profileId,"Matched",false),
+                    new ProfilesView(ProfilesAvailability.Ready,[new(profileId,"Raid")],profileId,profileId,"Matched",true)};
+                foreach(var profileView in profileStates)
+                foreach(var profileTheme in new[]{0,1})foreach(var profileScale in new[]{1f,1.5f,2f})
+                {
+                    io.FontGlobalScale=profileScale;
+                    var settings=new HubSettings{Theme=profileTheme,Page=HubPage.Profiles};var opens=0;
+                    using var overview=new MainWindow(settings,()=>fixtures[1],new(),()=>{},()=>{},(_,_)=>true,()=>{},()=>true,()=>font,
+                        profilesView:()=>profileView,openProfile:_=>opens++);
+                    var saved=JsonSerializer.Serialize(settings);
+                    foreach(var width in new[]{480f,860f,480f})
+                    {
+                        for(var i=0;i<12;i++)Frame(overview,new(width,680),profileScale);
+                        var content=profileTheme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
+                        Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Profiles overview overflow");
+                        Check(saved==JsonSerializer.Serialize(settings)&&opens==0,"Rendering Profiles changed settings or sent an action");
+                        profileCases++;
+                    }
+                }
+                Console.WriteLine($"PASS {profileCases} authoritative Profiles availability/empty/selected/applied/busy/theme/scale/resize cases.");
+                io.FontGlobalScale=1;
+                using(var rendered=new MainWindow(new HubSettings{Theme=1,Page=HubPage.Dashboard},()=>fixtures[1],new(),()=>{},()=>{},(_,_)=>true,()=>{},()=>true,()=>font))
+                    IdlePerformanceTests.Measure("modern-dashboard-open",()=>Frame(rendered,new(860,680),1),300);
                 var pluginResizeCases=0;
                 foreach(var theme in new[]{0,1})
                 foreach(var scale in new[]{1f,1.5f,2f})

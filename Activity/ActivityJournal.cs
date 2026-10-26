@@ -40,15 +40,18 @@ public sealed class ActivityJournal
     public const int Capacity=200;
     public static readonly TimeSpan Retention=TimeSpan.FromDays(7);
     private readonly List<ActivityEntry> entries=[];
-    public ActivityEntry[] Snapshot(DateTimeOffset now){Prune(now);return entries.OrderByDescending(e=>e.LastAt).ToArray();}
+    private ActivityEntry[]? cached;
+    public ActivityEntry[] Snapshot(DateTimeOffset now){Prune(now);return cached??=entries.OrderByDescending(e=>e.LastAt).ToArray();}
     public bool Add(string source,ActivityCode code,DateTimeOffset now)
     {
         if(!ActivityCatalog.Allowed(source,code))return false;Prune(now);
         var index=entries.FindLastIndex(e=>e.Source==source&&e.Code==code&&now>=e.LastAt&&now-e.LastAt<TimeSpan.FromSeconds(60));
         if(index>=0)entries[index]=entries[index] with{LastAt=now,Count=Math.Min(9999,entries[index].Count+1)};
         else{if(entries.Count>=Capacity)entries.RemoveAt(entries.FindIndex(e=>e.LastAt==entries.Min(v=>v.LastAt)));entries.Add(new(now,now,source,code,1));}
-        return true;
+        cached=null;return true;
     }
-    private void Prune(DateTimeOffset now)=>entries.RemoveAll(e=>e.LastAt<now-Retention||e.LastAt>now.AddMinutes(5));
-    public void Clear()=>entries.Clear();
+    private void Prune(DateTimeOffset now){
+        for(var i=entries.Count-1;i>=0;i--)if(entries[i].LastAt<now-Retention||entries[i].LastAt>now.AddMinutes(5)){entries.RemoveAt(i);cached=null;}
+    }
+    public void Clear(){entries.Clear();cached=null;}
 }

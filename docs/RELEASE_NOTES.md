@@ -1,15 +1,11 @@
-# Sentinel Hub 0.7.0.0
+# Sentinel Hub 0.7.1.0
 
-Add Health/Dependency Doctor, an optional sanitized diagnostics ZIP, reviewed compatibility self-protection, a shared passive Player Inspector for mounts/accessories/supported loop emotes, and bounded session-only Recent Activity.
+Reduces avoidable idle work with shared event-driven plugin inventory, cached Health/Compatibility snapshots, snapshot-triggered Activity, dormant closed collections/Inspector and addon-driven Quest scheduling with a bounded fallback. Existing Quest native timing/safety and Anti-AFK timer behavior remain unchanged.
 
-- Health separates installed/live/dev/catalog versions, IPC response and readiness; unsupported states remain explicit.
-- Diagnostics and Activity stay in memory during normal use. Explicit Export replaces one diagnostics/sentinel-diagnostics.zip. The earlier candidate's exact activity history file is retired; normal settings and user exports remain intact.
-- Player Inspector uses current typed actor state, revalidates identity/session/lifetime, and preserves the existing Mount/Fashion workflows. Emotes require explicit matching loop state; poses and arbitrary animations are not guessed. Dated attributed source facts remain identity-gated, with current availability Unknown.
-- Plugin cards on Dashboard, Plugins and Profiles use tighter sizing and put actions beside content when space permits, with a narrow fallback. Both themes, resizing and keyboard/controller behavior are preserved.
-- Anti-AFK uses a compact state-labeled switch. Current HUD needs no obsolete utility ownership acknowledgment; older engine-bearing HUD builds retain safeguards. Ten-second native timer checks and accepted Quest/Latency engines are unchanged.
+Unifies latency conflict protection. No full native scan while latency is Off or from native action callbacks; active safety scans use a bounded reusable handle buffer. Pre-enable checks, named-module checks, loaded NoClippy protection and conservative failures remain in place.
 
-The unreleased barding, global pause and settings backup/restore experiments are omitted from this release. No consumer/Core update is required; Core/UI remain exactly 0.4.1. Mount/Fashion layouts, metadata, tracks and token logic remain unchanged.
+Replaces the Profiles UNKNOWN placeholder with saved profiles, selected/last-applied and authoritative match/drift/busy status from Sentinel Profiles 0.2.1.8. Open in Profiles selects/opens the existing editor without applying or changing plugin rules. Missing/disabled/older providers get concise explanations.
 
-Validation: 107 policy groups and 1990 native UI cases, typed ornament/emote memory fixtures, input/collapse/stack checks and package/exact Core validation. Scoped native evidence includes active Anti-AFK checks and Off stopping them, Inspector opt-in/recognized accessory/emote, Activity recording/reload behavior, responsive buttons/tighter cards, compact Anti-AFK appearance and Health feedback. The final focused gate passed on 2026-10-18 at 16:13 America/Toronto; unreported scenarios retain their explicit scope.
+Adds explicit RAM-only /shub perf start, report and stop measurement (ten-minute limit). Normal release operation does not sample or write performance history. Saved settings/layout, collections/acquisition data and Core 0.4.1 stay intact.
 
-See [acceptance record](OPERATIONS_ACCEPTANCE.md), [source/API/storage audit](OPERATIONS_EXPANSION.md), and [release PR](https://github.com/MarshalTitan/SentinelHub/pull/15).
+See docs/PERFORMANCE_PROFILES.md for measurements, residual fallback checks and supervised acceptance. Movement/interaction validation remains pending; a resolved stutter or new in-game PASS is not claimed.

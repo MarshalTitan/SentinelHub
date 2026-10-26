@@ -12,6 +12,7 @@ using SentinelHub.Utilities.Quest;
 using SentinelHub.Mounts;
 using SentinelHub.Fashion;
 using SentinelHub.Identification;
+using SentinelHub.Profiles;
 namespace SentinelHub.UI;
 public sealed class MainWindow : Window, IDisposable
 {
@@ -35,12 +36,19 @@ public sealed class MainWindow : Window, IDisposable
     private readonly CompatibilityPanel compatibility;
     private readonly PlayerInspectorPanel inspector;
     private readonly RecentActivityPanel activity;
+    private readonly Func<ProfilesView> profilesView;
+    private readonly Action<string> openProfile;
+    private readonly Action refreshProfiles;
+    private readonly Func<string?> profilesNotice;
+    private readonly Dictionary<(PluginStatus,bool),PluginPresentation> pluginPresentations=new();
+    private HubSnapshot? presentationSnapshot;
     private PlayerIdentification? identification;
     private readonly SentinelModernStyleScope style = new();
     private readonly SentinelModernAppShellState shell = new();
     private readonly SentinelModernNavItem[] navigation;
     private static readonly HubPage[] PageOrder = [HubPage.Dashboard, HubPage.Plugins, HubPage.Profiles, HubPage.Dependencies,
         HubPage.Utilities, HubPage.Mounts, HubPage.Fashion, HubPage.PlayerInspector, HubPage.RecentActivity, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
+    private static readonly string[] PageNames=PageOrder.Select(PageTitle).ToArray();
     private Vector2 frameSize;
     private Vector2? pendingSize;
     private bool modern;
@@ -52,15 +60,19 @@ public sealed class MainWindow : Window, IDisposable
         Func<SentinelHub.Health.HealthView>? healthView=null, Action? refreshHealth=null, Action? publicVersions=null,
         Func<SentinelHub.Compatibility.CompatibilityView>? compatibilityView=null,
         Func<SentinelHub.Inspection.InspectorView>? inspectorView=null,
-        Func<SentinelHub.Activity.ActivityEntry[]>? activityEntries=null, Action? clearActivity=null) : base(WindowId)
+        Func<SentinelHub.Activity.ActivityEntry[]>? activityEntries=null, Action? clearActivity=null,
+        Func<ProfilesView>? profilesView=null,Action<string>? openProfile=null,Action? refreshProfiles=null,Func<string?>? profilesNotice=null,
+        Action? dismissInspector=null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.questView = questView ?? (() => QuestConvenienceView.Off);
         this.latencyView = latencyView ?? (() => LatencyView.Off);
+        this.profilesView=profilesView??(()=>ProfilesView.Unavailable);this.openProfile=openProfile??(_=>{});
+        this.refreshProfiles=refreshProfiles??(()=>{});this.profilesNotice=profilesNotice??(()=>null);
         health=new(healthView??(()=>SentinelHub.Health.HealthView.Empty),refreshHealth??(()=>{}),publicVersions??(()=>{}));
         activity=new(activityEntries??(()=>[]),clearActivity??(()=>{}));
         compatibility=new(compatibilityView??(()=>SentinelHub.Compatibility.CompatibilityView.Empty));
-        inspector=new(config,save,inspectorView??(()=>SentinelHub.Inspection.InspectorView.Empty),OpenMount,OpenFashion,mountIcon);
+        inspector=new(config,save,inspectorView??(()=>SentinelHub.Inspection.InspectorView.Empty),OpenMount,OpenFashion,mountIcon,dismissInspector);
         mounts = new(config, mountView ?? (() => MountCollectionView.Empty), save,
             refreshMounts ?? (() => {}), retryMounts ?? (() => {}), mountIcon);
         fashion = new(config, fashionView ?? (() => FashionView.Empty), save, refreshFashion ?? (() => {}), retryFashion ?? (() => {}), mountIcon);
@@ -121,7 +133,7 @@ public sealed class MainWindow : Window, IDisposable
         {
             ImGui.SetNextItemWidth(-1);
             var page = Array.IndexOf(PageOrder, config.Page);
-            var names = PageOrder.Select(PageTitle).ToArray();
+            var names = PageNames;
             if (ImGui.Combo("##Page", ref page, names, names.Length)) { config.Page = PageOrder[page]; save(); }
             DrawPage();
         }
@@ -221,6 +233,9 @@ public sealed class MainWindow : Window, IDisposable
     }
     private void PluginCard(PluginStatus p, bool detail)
     {
+        var current=snapshot();
+        if(!ReferenceEquals(presentationSnapshot,current)){presentationSnapshot=current;pluginPresentations.Clear();}
+        if(!pluginPresentations.TryGetValue((p,detail),out var presentation)){
         var lines = new List<string> { p.Component.Name, StatusPolicy.PresenceText(p.State), "Installed version: " + p.Version };
         if (p.State != Presence.Missing && p.State != Presence.Unknown)
             lines.Add(p.IsDev ? "Installation: development (no live installation found)" : "Installation: live");
@@ -236,8 +251,11 @@ public sealed class MainWindow : Window, IDisposable
         };
         if (detail && p.Component.DiagnosticsCommand is not null)
             actions.Add(("Open diagnostics", p.State == Presence.Loaded, () => Open(p.Component.Id, true)));
-        Card(p.Component.Id, p.State.ToString().ToUpperInvariant(), Tone(p.State), lines, actions, actionsOnRight: true);
+        presentation=new(lines.ToArray(),actions.ToArray());pluginPresentations[(p,detail)]=presentation;
+        }
+        Card(p.Component.Id, p.State.ToString().ToUpperInvariant(), Tone(p.State), presentation.Lines, presentation.Actions, actionsOnRight: true);
     }
+    private sealed record PluginPresentation(string[] Lines,(string Label,bool Enabled,Action Click)[] Actions);
     private void DrawDependencies()
     {
         ImGui.TextWrapped("Dependencies are feature-specific. Missing optional companions do not make the whole ecosystem unhealthy.");
@@ -251,9 +269,28 @@ public sealed class MainWindow : Window, IDisposable
     {
         var p = snapshot().Plugins.Single(x => x.Component.Id == "SentinelProfiles");
         PluginCard(p, false);
-        Card("profiles-contract", "UNKNOWN", SentinelModernPillTone.Neutral,
-            ["Selected profile: unavailable", "Last applied: unavailable", "Drift / health: unavailable",
-             "The current Profiles build exposes no public read-only status contract. Open Profiles for authoritative state. Hub does not read private configuration or apply profiles."]);
+        var v=profilesView();
+        if(v.Availability!=ProfilesAvailability.Ready)
+        {
+            var message=p.State==Presence.Missing?"Sentinel Profiles is not installed.":p.State==Presence.Disabled?"Enable Sentinel Profiles to view your saved profiles.":
+                "Profiles status is unavailable. Update/enable a compatible Sentinel Profiles build (0.2.1.8+) or open its settings.";
+            Card("profiles-contract","UNAVAILABLE",SentinelModernPillTone.Neutral,[message]);
+            if(Button("Refresh Profiles"))refreshProfiles();
+            return;
+        }
+        Card("profiles-current",v.Applying?"APPLYING":v.Match=="NoProfileApplied"?"NONE APPLIED":v.Match.ToUpperInvariant(),v.Match=="Matched"?SentinelModernPillTone.Ready:SentinelModernPillTone.Neutral,
+            ["Current Profile","Selected profile: "+v.Selected,"Last applied profile: "+v.LastApplied,
+                "Match / drift: "+(v.Match=="NoProfileApplied"?"No profile applied":v.Match),v.Applying?"A profile application is in progress.":"Hub only opens Profiles; it does not apply or edit profile rules."]);
+        ImGui.TextWrapped("Available Profiles");
+        if(Button("Refresh Profiles"))refreshProfiles();
+        if(v.Profiles.Length==0)ImGui.TextWrapped("No profiles have been created. Open Sentinel Profiles to create one.");
+        foreach(var profile in v.Profiles)
+        {
+            var status=profile.Id==v.SelectedId&&profile.Id==v.LastAppliedId?"SELECTED / LAST APPLIED":profile.Id==v.SelectedId?"SELECTED":profile.Id==v.LastAppliedId?"LAST APPLIED":"SAVED";
+            Card("profile-"+profile.Id,status,SentinelModernPillTone.Neutral,[profile.Name],
+                [("Open in Profiles",!v.Applying,()=>openProfile(profile.Id))],actionsOnRight:true);
+        }
+        if(profilesNotice() is {} notice)ImGui.TextWrapped(notice);
     }
     private void DrawUtilities()
     {
@@ -369,7 +406,7 @@ public sealed class MainWindow : Window, IDisposable
     private void Card(string id, string status, SentinelModernPillTone tone, IEnumerable<string> lines,
         IReadOnlyList<(string Label, bool Enabled, Action Click)>? actions = null, bool actionsOnRight = false)
     {
-        var text = lines.ToArray();
+        var text = lines as string[] ?? lines.ToArray();
         var scale = ImGuiHelpers.GlobalScale;
         var style = ImGui.GetStyle();
         var padding = modern ? new Vector2(14, 12) * scale : style.WindowPadding;

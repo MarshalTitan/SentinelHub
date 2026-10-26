@@ -5,12 +5,16 @@ namespace SentinelHub.Health;
 public sealed class HealthService(IDalamudPluginInterface pi,Func<InstalledPlugin[]> capture,Func<HubSnapshot> snapshot,PublicCatalog catalog,Func<string>? ownCharacterKey=null)
 {
     private long next;
+    private HubSnapshot? previous;
+    private string? catalogStatus;
     public HealthView View {get;private set;}=HealthView.Empty;
-    public void Tick(bool force=false)
+    public bool Tick(bool force=false, bool visible=false)
     {
-        catalog.Tick();if(!force&&Environment.TickCount64<next)return;next=Environment.TickCount64+2000;
+        catalog.Tick();var s=snapshot();
+        if(!force&&ReferenceEquals(previous,s)&&catalogStatus==catalog.Status&&Environment.TickCount64<next)return false;
+        previous=s;catalogStatus=catalog.Status;next=Environment.TickCount64+(visible?2000:15000);
         try{
-            var all=capture();var s=snapshot();
+            var all=capture();
             var checks=Catalog.Components.Select(c=>HealthPolicy.Plugin(c,all,s.DiscoveryAvailable,catalog.Versions,
                 c.Id=="SentinelHub"?0:Probe(c.Id,all))).Concat(s.Dependencies.Select(HealthPolicy.Dependency)).ToList();
             var core=typeof(SentinelCore.Ipc.SentinelIpcContract).Assembly.GetName().Version?.ToString();
@@ -20,6 +24,7 @@ public sealed class HealthService(IDalamudPluginInterface pi,Func<InstalledPlugi
                 "Direct Faloop is dormant in audited SRank 0.7.62.0. Live feed state is not exposed here; HuntAlerts/Sonar installation does not prove a live report feed."));
             View=new(DateTimeOffset.UtcNow,s.DiscoveryAvailable,checks.ToArray(),catalog.At,catalog.Status);
         }catch{View=HealthView.Empty;}
+        return true;
     }
     private int? Probe(string id,InstalledPlugin[] all)
     {
