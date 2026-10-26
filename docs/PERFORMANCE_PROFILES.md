@@ -1,6 +1,6 @@
 # Performance and Profiles — 0.7.1.0
 
-**Live publication authorized by the user on 2026-10-26.** Software review, CI and candidate-package validation passed. The user explicitly requested the normal live update so their girlfriend can evaluate the change during ordinary use. Pre-release movement/camera and interaction acceptance is deferred; no new in-game PASS or proven stutter fix is claimed. Historical 0.7.0.0 PASS reports do not certify this scheduling change. Profiles counterpart: 0.2.1.8; no configuration/schema migration or Core update.
+**Live release preparation — 2026-10-26.** Software review, CI and candidate-package validation passed. Movement/camera and interaction validation remains pending; no new in-game PASS or proven stutter fix is claimed. Historical 0.7.0.0 PASS reports do not certify this scheduling change. Profiles counterpart: 0.2.1.8; no configuration/schema migration or Core update.
 
 ## Investigation and fixture measurements
 
@@ -45,7 +45,7 @@ The [owner contract](https://github.com/MarshalTitan/SentinelProfiles/blob/main/
 
 ## Acceptance and release
 
-Update Profiles to 0.2.1.8 first, then Hub to 0.7.1.0 through the existing custom repository. Keep only one enabled copy of each plugin and preserve configuration. The following are optional post-update observations; they are not prerequisites the user must perform before this authorized publication.
+Update Profiles to 0.2.1.8 first, then Hub to 0.7.1.0 through the existing custom repository. Keep only one enabled copy of each plugin and preserve configuration. The following are optional post-update observations.
 
 1. With usual switches retained, profile walking/camera movement for 60 seconds with Hub closed and 30 seconds open. Compare with Hub disabled; report remaining stutter and `/shub perf stop` results.
 2. Check dialogue responsiveness/manual choices, cutscene skip/dedicated confirmation and a choose-one reward. Off must stop actions. Check Anti-AFK and latency/provider conflict protection without running competing compensation engines together.
@@ -53,4 +53,4 @@ Update Profiles to 0.2.1.8 first, then Hub to 0.7.1.0 through the existing custo
 4. Verify all saved Profiles, selected/last-applied distinction and drift/busy. Open only selects/opens; apply only from Profiles and verify Hub updates. Disable/re-enable Profiles and verify clear status/recovery.
 5. Reload Hub; saved switches/layout stay intact and session Activity clears, then records genuine changes.
 
-Only observed cases become PASS. The user superseded the earlier pre-release acceptance hold on 2026-10-26 and explicitly authorized commit/merge/live publication for feedback from their girlfriend. Release Profiles first, then Hub through the existing immutable pipelines; verify tested/public ZIPs and exact child/central objects, preserve other catalog entries and reconcile canonical docs. Never replace a published asset. If a regression is reported, disable the affected plugin or feature while preparing a higher-version fix; do not delete settings or overwrite released assets.
+Only observed cases become PASS. Live validation follows publication. Release Profiles first, then Hub through the existing immutable pipelines; verify tested/public ZIPs and exact child/central objects, preserve other catalog entries and reconcile canonical docs. Never replace a published asset. If a regression is reported, disable the affected plugin or feature while preparing a higher-version fix; do not delete settings or overwrite released assets.

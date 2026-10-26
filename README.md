@@ -74,4 +74,4 @@ For normal use, disable the isolated development copy, enable/update live Sentin
 
 ## 0.7.1.0 performance and Profiles
 
-Shared inventory, dormant inactive modules, addon-driven Quest with bounded fallback, cached latency conflict checks and an authoritative Profiles overview are included in the user-authorized live update. Requires Profiles 0.2.1.8 for the new overview; older builds show a clear compatibility message. On 2026-10-26 the user requested normal live publication so their girlfriend can evaluate the differences; movement/camera and interaction acceptance remain unreported, not PASS. See [performance evidence and checklist](docs/PERFORMANCE_PROFILES.md).
+Shared inventory, dormant inactive modules, addon-driven Quest with bounded fallback, cached latency conflict checks and an authoritative Profiles overview are included in this live update. Requires Profiles 0.2.1.8 for the new overview; older builds show a clear compatibility message. Movement/camera and interaction validation remains pending. See [performance evidence and checklist](docs/PERFORMANCE_PROFILES.md).
