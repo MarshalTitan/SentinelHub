@@ -1,4 +1,4 @@
-# Treasure Maps — 0.8.0.0 candidate
+# Treasure Maps — 0.8.0.0
 
 Treasure Maps is an optional Hub page and independent floating queue. It is **Off by default** on new installations and upgrades. Existing utility settings, page IDs, performance scheduling and Core/UI 0.4.1 are preserved. Page IDs 12–15 remain reserved for retired candidates; the new page uses 16.
 
@@ -53,7 +53,7 @@ Current public Dalamud sources inspected at `1e514694497ae448fca8e8a46f7b63642ad
 
 Automated checks cover raw coordinate/map-variant preservation, real `MapLinkPayload` encode/decode/restore, rejection of text-only/unrelated channels/non-player labels, owner-aware duplicates and explicit copies, reorder/Complete/Undo/Delete/limits, character-scoped JSON recovery, stale queued actions after logout, framework-thread gating, subscription cleanup, save flushing, exactly-once native forwarding, twelve decipher/view notification-order scenarios, manual Share preparation and idle allocation/read guards. Native ImGui fixtures cover populated/empty/full queues, both themes, three UI scales, narrow/wide/narrow resizing and independent floating visibility. Existing Hub tests remain required.
 
-**Required live observations for this candidate (not established by CI):**
+**In-game verification procedure (not established by CI):**
 
 1. Enable Treasure Maps on 0.8.0.0. Decipher a map; confirm the displayed flag against the actual treasure-map image and zone. Test another supported map type or a map variant where available. Independently toggle after-decipher and existing-map-view behavior.
 2. Have party members link flags normally. Check each owner and exact location. Repeat a flag, share the same coordinates from two different owners, and post a second different map from one owner. Confirm unrelated channels/text are ignored and ordinary chat is unaffected.
@@ -62,4 +62,4 @@ Automated checks cover raw coordinate/map-variant preservation, real `MapLinkPay
 5. Reload Hub/restart the game; unfinished entries and floating preferences remain. Switch characters and confirm queues do not mix. Preserve the existing settings file.
 6. Compare movement/camera with normal Hub settings, both queue windows closed and then the floating queue visible. Optionally collect `/shub perf start` → normal movement → `/shub perf stop` output. A synthetic zero-allocation fixture is not a live performance PASS.
 
-Return the candidate version, observed behavior and any untested cases. Rollback is turning Treasure Maps Off or unloading the candidate and returning to live 0.7.1.0; existing configuration and consumers remain intact. No catalog downgrade or asset replacement is required while this remains an isolated candidate.
+0.8.0.0 is distributed through the existing live plugin repository and normal Dalamud updates. No separate development installation or manual ZIP download is needed. These procedures document optional in-game verification and are not a claim that it has occurred. If the new module misbehaves, turn Treasure Maps Off; existing configuration, performance improvements and other Hub features remain intact. Published release assets remain immutable.

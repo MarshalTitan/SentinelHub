@@ -2,7 +2,7 @@
 
 Optional ecosystem control center for MarshalTitan Sentinel plugins. Open with `/shub`; export sanitized diagnostics with `/shub export`.
 
-## Treasure Maps — 0.8.0.0 candidate
+## Treasure Maps — 0.8.0.0
 
 Adds an optional Treasure Maps page and independent floating queue: deciphered-map location detection, Party flags (Alliance opt-in), exact saved map variants, Open/Next, manual flag sharing, Complete with brief Undo, Delete/reorder and character-scoped unfinished queues. Enable the module in Treasure Maps; upgrades leave it Off. Share restores the actual flag and copies `/p <flag>` for manual sending. No teleport/navigation, external service or additional plugin is needed. See [implementation, performance, API/license audit and live checks](docs/TREASURE_MAPS.md). Native detection and real chat/map behavior remain pending supervised validation; automated tests do not certify them.
 
