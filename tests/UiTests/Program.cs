@@ -134,6 +134,63 @@ internal static class Program
                     floating.OnClose();Check(!settings.TreasureMaps.FloatingOpen,"Floating close state was not saved");
                 }
                 Console.WriteLine($"PASS {treasureCases} Treasure Maps populated/empty/full-queue, theme/scale/resize and independent floating-window cases.");
+                var treasureCloseCases=0;
+                foreach(var theme in new[]{0,1})foreach(var scale in new[]{1f,1.5f,2f})
+                {
+                    io.FontGlobalScale=scale;io.AddMousePosEvent(-100,-100);
+                    var settings=new HubSettings{Theme=theme};settings.TreasureMaps.Enabled=true;
+                    var saved=new List<bool>();var actions=0;
+                    void Save()=>saved.Add(settings.TreasureMaps.FloatingOpen);
+                    var view=new SentinelHub.TreasureMaps.TreasureView(true,[],null,false,"Listening","");
+                    var panel=new TreasureMapsPanel(settings.TreasureMaps,()=>view,(_,_)=>actions++,()=>{},Save);
+                    using var floating=new TreasureQueueWindow(settings,()=>view,(_,_)=>actions++,()=>{},Save);
+                    void Controls(string? activate=null)
+                    {
+                        ImGui.NewFrame();ImGui.SetNextWindowPos(new(800,50),ImGuiCond.Always);ImGui.SetNextWindowSize(new Vector2(480,800)*scale,ImGuiCond.Always);
+                        ImGui.Begin("Treasure close controls");
+                        if(activate is not null){var context=ImGui.GetCurrentContext();context.NavNextActivateId=ImGui.GetID(activate);}
+                        panel.Draw();ImGui.End();ImGui.Render();
+                    }
+                    Vector2 closePoint=default;
+                    void FloatingFrame()
+                    {
+                        ImGui.NewFrame();floating.PreOpenCheck();
+                        if(floating.IsOpen)
+                        {
+                            var context=ImGui.GetCurrentContext();var styles=context.StyleVarStack.Size;var colours=context.ColorStack.Size;
+                            floating.PreDraw();ImGui.SetNextWindowPos(new(50,50),ImGuiCond.Always);ImGui.SetNextWindowSize(new Vector2(420,420)*scale,ImGuiCond.Always);
+                            var open=floating.IsOpen;
+                            if(ImGui.Begin(TreasureQueueWindow.WindowId,ref open,floating.Flags))floating.Draw();
+                            closePoint=ImGui.GetWindowPos()+new Vector2(ImGui.GetWindowSize().X-ImGui.GetStyle().FramePadding.X-ImGui.GetFontSize()/2,
+                                ImGui.GetStyle().FramePadding.Y+ImGui.GetFontSize()/2);
+                            // Same ordering as Dalamud WindowHost: apply Begin's close result,
+                            // then PostDraw; OnClose is deferred until the following frame.
+                            if(!open)floating.IsOpen=false;
+                            ImGui.End();floating.PostDraw();
+                            Check(context.StyleVarStack.Size==styles&&context.ColorStack.Size==colours,"Floating close leaked styles");
+                        }
+                        ImGui.Render();
+                    }
+                    Controls();Controls("Show Floating Queue");Controls();
+                    Check(settings.TreasureMaps.FloatingOpen,"Show button did not enable floating queue");
+                    for(var i=0;i<3;i++)FloatingFrame();
+                    var beforeClose=saved.Count;
+                    io.AddMousePosEvent(closePoint.X,closePoint.Y);io.AddMouseButtonEvent(0,true);FloatingFrame();
+                    io.AddMouseButtonEvent(0,false);FloatingFrame();
+                    Check(!floating.IsOpen&&!settings.TreasureMaps.FloatingOpen,"Native X did not close and persist floating state");
+                    Check(saved.Count==beforeClose+1&&!saved[^1],"Native X did not save exactly one closed preference");
+                    floating.OnClose();floating.PreOpenCheck();
+                    Check(!floating.IsOpen&&saved.Count==beforeClose+1,"Delayed OnClose reopened the queue or saved twice");
+                    io.AddMousePosEvent(-100,-100);
+                    Controls("Show Floating Queue");Controls();FloatingFrame();
+                    Check(floating.IsOpen&&settings.TreasureMaps.FloatingOpen,"Show button did not return after X close");
+                    Controls("Hide Floating Queue");Controls();FloatingFrame();
+                    Check(!floating.IsOpen&&!settings.TreasureMaps.FloatingOpen,"Hide button did not close the queue");
+                    Controls("Show Floating Queue");Controls();FloatingFrame();
+                    Check(floating.IsOpen&&settings.TreasureMaps.FloatingOpen&&actions==0,"Show/Hide cycle sent queue actions or failed to reopen");
+                    treasureCloseCases++;
+                }
+                Console.WriteLine($"PASS {treasureCloseCases} native floating X close, persistent preference, delayed callback and real Hub Show/Hide button cycles.");
                 var profileId=Guid.NewGuid().ToString("D");var appliedId=Guid.NewGuid().ToString("D");
                 var profileCases=0;
                 var profileStates=new[]{ProfilesView.Unavailable,
