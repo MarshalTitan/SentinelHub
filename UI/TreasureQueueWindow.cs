@@ -32,9 +32,19 @@ public sealed class TreasureQueueWindow : Window, IDisposable
         PopPadding(); style.Pop(); if (settings.Theme == 1) style.PushAppShell(ImGuiHelpers.GlobalScale);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(12) * ImGuiHelpers.GlobalScale); paddingPushed = true;
     }
-    public override void PostDraw() { PopPadding(); style.Pop(); }
+    public override void PostDraw()
+    {
+        PopPadding(); style.Pop();
+        // The host applies the title-bar X before PostDraw, but invokes OnClose
+        // next frame. Save now so PreOpenCheck cannot reopen the closed window.
+        if (!IsOpen) OnClose();
+    }
     private void PopPadding() { if (!paddingPushed) return; ImGui.PopStyleVar(); paddingPushed = false; }
-    public override void OnClose() { settings.TreasureMaps.FloatingOpen = false; save(); }
+    public override void OnClose()
+    {
+        if (!settings.TreasureMaps.FloatingOpen) return;
+        settings.TreasureMaps.FloatingOpen = false; save();
+    }
     public override void Draw()
     {
         panel.Queue(view(), true);

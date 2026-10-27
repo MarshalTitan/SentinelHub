@@ -1,4 +1,4 @@
-# Treasure Maps — 0.8.0.1
+# Treasure Maps — 0.8.0.2
 
 Treasure Maps is an optional Hub page and independent floating queue. It is **Off by default** on new installations and upgrades. Existing utility settings, page IDs, performance scheduling and Core/UI 0.4.1 are preserved. Page IDs 12–15 remain reserved for retired candidates; the new page uses 16.
 
@@ -32,6 +32,8 @@ Public key-item added/removed notifications distinguish a newly deciphered item 
 
 Unfinished queues and the last identified current map are stored in the existing local Hub configuration under the active content-ID key. Characters have independent queues; logout clears the runtime view and transient work without deleting persisted entries. No content ID, player name or queue payload is added to diagnostics exports. Floating visibility and geometry are saved as ordinary Hub UI preferences. The full page and floating window read the same controller snapshot.
 
+The floating queue's title-bar X and Hub's Show/Hide Floating Queue button control the same persisted visibility setting. Closing with X returns Hub to Show Floating Queue; clicking Show reopens the window at its remembered geometry. Closing the window preserves all unfinished entries. The X-close regression uses native ImGui input and the real panel buttons across both themes and three UI scales.
+
 Default capacity is 50, configurable from 5 to 200. A full queue rejects new additions without evicting unfinished maps. Lowering the limit never silently trims existing entries. Invalid persisted rows are rejected independently while valid entries survive. Undo and share tickets are not persisted. Changes are saved on a coalesced 300-ms deadline and flushed on logout/unload; there is no periodic queue file write.
 
 Idle `Tick` returns before clocks, framework/service reads, metadata, inventory or allocation. There is no chat-history scan, full inventory search, IPC, network operation, timer thread or background game-API task. Relevant events and explicit actions are bounded to 128 pending items and 32 processed per framework update. Closed windows do not draw queue UI. Visible UI has normal layout/rendering costs. `/shub perf start`, `report` and `stop` include a separate TreasureMaps service bucket.
@@ -57,11 +59,11 @@ Automated checks cover raw coordinate/map-variant preservation, real `MapLinkPay
 
 **In-game verification procedure (not established by CI):**
 
-1. Enable Treasure Maps on 0.8.0.1. Decipher a map; confirm the displayed flag against the actual treasure-map image and zone. Test another supported map type or a map variant where available. Independently toggle after-decipher and existing-map-view behavior.
+1. Enable Treasure Maps on 0.8.0.2. Decipher a map; confirm the displayed flag against the actual treasure-map image and zone. Test another supported map type or a map variant where available. Independently toggle after-decipher and existing-map-view behavior.
 2. Have party members link flags normally. Check each owner and exact location. Repeat a flag, share the same coordinates from two different owners, and post a second different map from one owner. Confirm unrelated channels/text are ignored and ordinary chat is unaffected.
 3. Open a queued flag. Click Share, paste `/p <flag>` into party chat and send it. Confirm the sent link is clickable for another party member and opens the same location. Confirm the local echo does not add a duplicate or change ownership.
 4. Complete a middle/first entry, Undo, reorder and Delete; test Clear confirmation. Open the floating window with the main Hub closed and verify both views stay synchronized.
 5. Reload Hub/restart the game; unfinished entries and floating preferences remain. Switch characters and confirm queues do not mix. Preserve the existing settings file.
 6. Compare movement/camera with normal Hub settings, both queue windows closed and then the floating queue visible. Optionally collect `/shub perf start` → normal movement → `/shub perf stop` output. A synthetic zero-allocation fixture is not a live performance PASS.
 
-0.8.0.1 is distributed through the existing live plugin repository and normal Dalamud updates. No separate development installation or manual ZIP download is needed. These procedures document optional in-game verification and are not a claim that it has occurred. If the new module misbehaves, turn Treasure Maps Off; existing configuration, performance improvements and other Hub features remain intact. Published release assets remain immutable.
+0.8.0.2 is distributed through the existing live plugin repository and normal Dalamud updates. No separate development installation or manual ZIP download is needed. These procedures document optional in-game verification and are not a claim that it has occurred. If the new module misbehaves, turn Treasure Maps Off; existing configuration, performance improvements and other Hub features remain intact. Published release assets remain immutable.

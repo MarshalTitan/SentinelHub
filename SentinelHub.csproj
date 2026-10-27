@@ -1,6 +1,6 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
-    <Version>0.8.0.1</Version><Author>MTitan</Author><Name>Sentinel Hub</Name>
+    <Version>0.8.0.2</Version><Author>MTitan</Author><Name>Sentinel Hub</Name>
     <Punchline>Optional Sentinel ecosystem control center.</Punchline>
     <Description>Sentinel ecosystem control center with health/dependency checks, sanitized diagnostics, compatibility protection, passive player inspection and collections and recent activity. Other Sentinel plugins remain independent.</Description>
     <RepoUrl>https://github.com/MarshalTitan/SentinelHub</RepoUrl>
