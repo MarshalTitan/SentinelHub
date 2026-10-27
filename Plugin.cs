@@ -125,11 +125,11 @@ public sealed class Plugin : IDalamudPlugin
     {
         if(value&&(flag is Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas or Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51))InvalidateSession();
     }
-    private void Draw(){performance.Context(window.IsOpen);using var timing=performance.Measure(HubService.Draw);windows.Draw();}
+    private void Draw(){performance.Context(window.IsOpen || treasureWindow.IsOpen);using var timing=performance.Measure(HubService.Draw);windows.Draw();}
     private void Update(IFramework _)
     {
         if(disposed)return;
-        performance.Context(window.IsOpen);using var updateTiming=performance.Measure(HubService.Update);
+        performance.Context(window.IsOpen || treasureWindow.IsOpen);using var updateTiming=performance.Measure(HubService.Update);
         if(sessionInvalidated){sessionInvalidated=false;mounts.Invalidate();fashion.Invalidate();identifyMenu.Invalidate();inspector.Clear();quest.Invalidate();}
         var expanded=window.IsOpen&&!settings.Collapsed;
         var forceHealth=healthRefreshRequested;healthRefreshRequested=false;

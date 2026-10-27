@@ -108,7 +108,7 @@ public sealed class TreasureController : IDisposable
         else if (retryUntil != 0 && now >= retryAt) { sessionDirty = true; retryAt = now + 500; }
         if (sessionDirty)
         {
-            sessionDirty = false; Flush(); queue.Detach(); characterKey = null; self = null;
+            sessionDirty = false; Flush(); queue.Detach(); characterKey = null; self = null; notice = "";
             addedItem = 0; addedUntil = 0; shownAt = 0; undoUntil = 0; decipherHandled = false; pendingView = null; viewDue = 0;
             if (client.IsLoggedIn && player.IsLoaded && player.ContentId != 0 && objects.LocalPlayer is { } local)
             {
@@ -215,7 +215,7 @@ public sealed class TreasureController : IDisposable
                 }
                 break;
             case TreasureAction.Complete:
-                if (queue.Remove(request.EntryId, true, now)) { undoUntil = now + 15_000; Dirty(now); } break;
+                if (queue.Remove(request.EntryId, true, now)) { undoUntil = now + 15_000; notice = "Map completed. Undo is available for 15 seconds."; Dirty(now); } break;
             case TreasureAction.Delete: if (queue.Remove(request.EntryId, false, now)) Dirty(now); break;
             case TreasureAction.Up: if (queue.Move(request.EntryId, -1)) Dirty(now); break;
             case TreasureAction.Down: if (queue.Move(request.EntryId, 1)) Dirty(now); break;

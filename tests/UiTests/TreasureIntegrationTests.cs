@@ -103,12 +103,12 @@ internal static class TreasureIntegrationTests
         frameworkThread = false; controller.Request(TreasureAction.Complete, original); controller.Tick();
         Check(controller.View.Entries.Length == 1, "Queue actions ran off the framework thread");
         frameworkThread = true; controller.Tick();
-        Check(controller.View.Entries.Length == 0 && controller.View.CanUndo, "Complete did not remove from shared view");
+        Check(controller.View.Entries.Length == 0 && controller.View.CanUndo && controller.View.Notice.Contains("Undo"), "Complete did not remove from shared view or expose Undo feedback");
         controller.Request(TreasureAction.Undo); controller.Tick();
         Check(controller.View.Entries.Single().Id == original, "Undo did not restore identity");
         controller.Request(TreasureAction.Delete, original); // queued against the previous session
         loggedIn = false; logout!.DynamicInvoke(0, 0); controller.Tick();
-        Check(!controller.View.Available && controller.View.Entries.Length == 0 && first.Entries.Count == 1,
+        Check(!controller.View.Available && controller.View.Entries.Length == 0 && controller.View.Notice.Length == 0 && first.Entries.Count == 1,
             "Logout lost saved maps or accepted a stale queued action");
         cid = 456; loggedIn = true; login!.DynamicInvoke(); controller.Tick();
         Check(controller.View.Available && controller.View.Entries.Length == 0, "Character queues mixed");
