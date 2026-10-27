@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 namespace SentinelHub.Diagnostics;
 
-public enum HubService { Update,Discovery,Health,Compatibility,AntiAfk,Quest,Latency,Activity,Mounts,Fashion,Menu,Inspector,Profiles,Draw,Export }
+public enum HubService { Update,Discovery,Health,Compatibility,AntiAfk,Quest,Latency,Activity,Mounts,Fashion,Menu,Inspector,Profiles,Draw,Export,TreasureMaps }
 // Explicit, bounded, RAM-only measurement. Disabled scopes don't read a clock or GC counter.
 public sealed class FrameworkProfiler
 {

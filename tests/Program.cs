@@ -817,6 +817,7 @@ Test("Shared menu preserves Mount-only offers and adds the explicit Fashion no-a
 
 OperationsTests.Run(Test, Check);
 PerformancePolicyTests.Run(Test, Check);
+TreasureTests.Run(Test, Check);
 Console.WriteLine(passed + " policy test groups passed.");
 
 sealed class FakeLatencyRuntime : ILatencyRuntime

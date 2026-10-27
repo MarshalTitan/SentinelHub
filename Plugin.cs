@@ -18,6 +18,7 @@ using SentinelHub.Inspection;
 using SentinelHub.Coordination;
 using SentinelHub.Activity;
 using SentinelHub.Profiles;
+using SentinelHub.TreasureMaps;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 namespace SentinelHub;
@@ -39,6 +40,8 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IContextMenu ContextMenu { get; private set; } = null!;
     [PluginService] internal static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
     [PluginService] internal static ITargetManager Targets { get; private set; } = null!;
+    [PluginService] internal static IGameInventory Inventory { get; private set; } = null!;
+    [PluginService] internal static ISigScanner SigScanner { get; private set; } = null!;
     private readonly MountController mounts;
     private readonly PlayerIdentificationMenu identifyMenu;
     private readonly FashionController fashion;
@@ -58,6 +61,8 @@ public sealed class Plugin : IDalamudPlugin
     private readonly ActivityService activity;
     private readonly HubOperationsIpc operationsIpc;
     private readonly ProfilesIntegration profiles;
+    private readonly TreasureController treasures;
+    private readonly TreasureQueueWindow treasureWindow;
     private readonly FrameworkProfiler performance=new();
     private volatile bool sessionInvalidated;
     private bool wasExpanded;
@@ -85,6 +90,8 @@ public sealed class Plugin : IDalamudPlugin
         inspector=new(Objects,Player,Client,Framework,settings,()=>mounts.Ready&&fashion.Ready,
             new InspectionGameData(Data,Unlocks,()=>mounts.Ready&&fashion.Ready),()=>Targets.Target?.GameObjectId??0);
         profiles=new(Pi,()=>discovery.Inventory,()=>discovery.Available);
+        treasures=new(settings.TreasureMaps,Chat,Client,Player,Objects,Framework,GameGui,Inventory,Data,SigScanner,Interop,Save,text=>ImGui.SetClipboardText(text));
+        treasureWindow=new(settings,()=>treasures.View,treasures.Request,treasures.Configure,Save);
         quickOpen = new(discovery.Capture, Commands.ProcessCommand, faults);
         window = new(settings, () => discovery.Snapshot, faults, Save, () => healthRefreshRequested=true,
             (id, diagnostics) => quickOpen.Open(id, diagnostics), Export,
@@ -94,10 +101,11 @@ public sealed class Plugin : IDalamudPlugin
             compatibilityView:()=>compatibility.View,inspectorView:()=>inspector.View,
             activityEntries:()=>activity.Journal.Snapshot(DateTimeOffset.UtcNow),clearActivity:activity.Journal.Clear,
             profilesView:()=>profiles.View,openProfile:profiles.RequestOpen,refreshProfiles:profiles.Refresh,profilesNotice:()=>profiles.Notice,
-            dismissInspector:inspector.Clear);
+            dismissInspector:inspector.Clear,treasureView:()=>treasures.View,treasureRequest:treasures.Request,treasureChanged:treasures.Configure);
         identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, ()=>{window.ClearIdentification();inspector.Clear();}, faults,
             ticket=>{inspector.Select(ticket);window.OpenPlayerInspector();});
         windows.AddWindow(window);
+        windows.AddWindow(treasureWindow);
         Commands.AddHandler("/shub", new CommandInfo(OnCommand) { HelpMessage = "Open Sentinel Hub. /shub export saves a sanitized Sentinel diagnostics ZIP." });
         Pi.UiBuilder.Draw += Draw;
         Pi.UiBuilder.OpenConfigUi += Open;
@@ -140,6 +148,7 @@ public sealed class Plugin : IDalamudPlugin
         // The menu may have opened/restored Hub during this tick; evaluate visibility after consuming it.
         using(performance.Measure(HubService.Inspector))inspector.Tick(window.IsOpen&&!settings.Collapsed&&settings.Page==Configuration.HubPage.PlayerInspector);
         using(performance.Measure(HubService.Profiles))profiles.Tick(expanded&&settings.Page==Configuration.HubPage.Profiles);
+        using(performance.Measure(HubService.TreasureMaps))treasures.Tick();
         if(exportRequested){exportRequested=false;using(performance.Measure(HubService.Export))WriteExport();}
     }
     private void DrawCollectionIcon(uint id, Vector2 size)
@@ -198,6 +207,7 @@ public sealed class Plugin : IDalamudPlugin
         Client.Login-=InvalidateSession;Client.Logout-=OnLogout;Client.TerritoryChanged-=OnTerritory;Client.InstanceChanged-=OnTerritory;
         Condition.ConditionChange-=OnCondition;
         performance.Stop();profiles.Dispose();
+        treasures.Dispose(); treasureWindow.Dispose();
         identifyMenu.Dispose();
         inspector.Clear();
         latency.Dispose();
