@@ -1,4 +1,4 @@
-# Treasure Maps — 0.8.0.0
+# Treasure Maps — 0.8.0.1
 
 Treasure Maps is an optional Hub page and independent floating queue. It is **Off by default** on new installations and upgrades. Existing utility settings, page IDs, performance scheduling and Core/UI 0.4.1 are preserved. Page IDs 12–15 remain reserved for retired candidates; the new page uses 16.
 
@@ -20,7 +20,9 @@ Duplicate identity is owner name plus home world and exact territory/map, with a
 
 The adapter observes the game's treasure-map display call and forwards the original call exactly once before observing anything. It never suppresses the normal treasure-map window. The rank/subrow pair resolves through `TreasureHuntRank` → `TreasureSpot` → `Level.Map`; this preserves map variants. Actual spot subrow zero is valid. Cached rank/item and map/territory metadata is resolved only on demand.
 
-There is no current public Dalamud decipher/treasure-spot event. The single optional native observer uses the call site anchored by the current FFXIVClientStructs `Client.Game.UI.Map.Instance` signature (source `b72bc1f73e5f2b09ba460a9238fbf3b9a5bbeb3c`). It requires exactly one match, validates the call opcode and bounds of both the call site and resolved target in the executable text section, and latches unavailable on setup failure. The x64 observation ABI still requires supervised game validation. A signature match or successful compilation does **not** certify native compatibility.
+There is no current public Dalamud decipher/treasure-spot event. The optional observer now matches the treasure caller's rank/spot/mode register setup and separately validates the callee's argument reads, as well as signature uniqueness, signed relative CALL target and executable-text bounds. The generic UI singleton anchor used in 0.8.0.0 matched an unrelated one-argument function; it has been removed. A plausible CALL target inside executable memory alone is insufficient proof of function identity.
+
+The corrected binding was checked offline against game build `2026.10.16.0000.0000`: exactly one call-site match (RVA `8E2F94`) resolved to the treasure display handler (RVA `CFB710`), and the handler reads the expected manager, rank, spot and mode registers. The maintained implementation contains a signature and semantic instruction checks, not those fixed addresses. No game binary or full disassembly is shipped. Setup failure latches unavailable with the failing binding stage, leaving chat capture usable. Offline instruction inspection does not establish actual in-game opening, correct treasure coordinates or felt performance.
 
 No ActorControl packet parser, unmanaged treasure-manager pointer, old rank/spot getter signature or external dataset is imported. Native observation copies only rank/subrow numbers to a bounded queue. Game sheets, map APIs and UI work run from Hub's framework update. Detection is installed only when the module and detection option are enabled and a character is ready. Off/logout/unload disables or disposes it; it does not rescan every frame. An unavailable observer leaves structured chat capture and saved queue actions usable.
 
@@ -55,11 +57,11 @@ Automated checks cover raw coordinate/map-variant preservation, real `MapLinkPay
 
 **In-game verification procedure (not established by CI):**
 
-1. Enable Treasure Maps on 0.8.0.0. Decipher a map; confirm the displayed flag against the actual treasure-map image and zone. Test another supported map type or a map variant where available. Independently toggle after-decipher and existing-map-view behavior.
+1. Enable Treasure Maps on 0.8.0.1. Decipher a map; confirm the displayed flag against the actual treasure-map image and zone. Test another supported map type or a map variant where available. Independently toggle after-decipher and existing-map-view behavior.
 2. Have party members link flags normally. Check each owner and exact location. Repeat a flag, share the same coordinates from two different owners, and post a second different map from one owner. Confirm unrelated channels/text are ignored and ordinary chat is unaffected.
 3. Open a queued flag. Click Share, paste `/p <flag>` into party chat and send it. Confirm the sent link is clickable for another party member and opens the same location. Confirm the local echo does not add a duplicate or change ownership.
 4. Complete a middle/first entry, Undo, reorder and Delete; test Clear confirmation. Open the floating window with the main Hub closed and verify both views stay synchronized.
 5. Reload Hub/restart the game; unfinished entries and floating preferences remain. Switch characters and confirm queues do not mix. Preserve the existing settings file.
 6. Compare movement/camera with normal Hub settings, both queue windows closed and then the floating queue visible. Optionally collect `/shub perf start` → normal movement → `/shub perf stop` output. A synthetic zero-allocation fixture is not a live performance PASS.
 
-0.8.0.0 is distributed through the existing live plugin repository and normal Dalamud updates. No separate development installation or manual ZIP download is needed. These procedures document optional in-game verification and are not a claim that it has occurred. If the new module misbehaves, turn Treasure Maps Off; existing configuration, performance improvements and other Hub features remain intact. Published release assets remain immutable.
+0.8.0.1 is distributed through the existing live plugin repository and normal Dalamud updates. No separate development installation or manual ZIP download is needed. These procedures document optional in-game verification and are not a claim that it has occurred. If the new module misbehaves, turn Treasure Maps Off; existing configuration, performance improvements and other Hub features remain intact. Published release assets remain immutable.
