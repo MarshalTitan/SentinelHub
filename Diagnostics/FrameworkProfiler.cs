@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 namespace SentinelHub.Diagnostics;
 
-public enum HubService { Update,Discovery,Health,Compatibility,AntiAfk,Quest,Latency,Activity,Mounts,Fashion,Menu,Inspector,Profiles,Draw,Export }
+public enum HubService { Update,Discovery,Health,Compatibility,AntiAfk,Quest,Latency,Activity,Mounts,Fashion,Menu,Inspector,Profiles,Draw,Export,TreasureMaps }
 // Explicit, bounded, RAM-only measurement. Disabled scopes don't read a clock or GC counter.
 public sealed class FrameworkProfiler
 {
@@ -31,7 +31,7 @@ public sealed class FrameworkProfiler
     private struct Metric {public long Calls,Ticks,Worst,Bytes,Spikes;}
     public string[] Report()
     {
-        var lines=new List<string>{"Hub performance: "+(Enabled?"recording (10-minute limit)":"stopped")+"; RAM only. Inclusive timings/allocations; open includes collapsed windows."};
+        var lines=new List<string>{"Hub performance: "+(Enabled?"recording (10-minute limit)":"stopped")+"; RAM only. Inclusive timings/allocations; open includes floating and collapsed windows."};
         for(var i=0;i<metrics.Length;i++){var m=metrics[i];if(m.Calls==0)continue;
             lines.Add(string.Create(CultureInfo.InvariantCulture,$"{(HubService)(i/2)} {(i%2==1?"open":"closed")}: {m.Calls} calls, mean {m.Ticks*1000d/Stopwatch.Frequency/m.Calls:F4} ms, worst {m.Worst*1000d/Stopwatch.Frequency:F4} ms, {m.Bytes/(double)m.Calls:F1} B/call, {m.Spikes} over 2 ms"));}
         return lines.ToArray();

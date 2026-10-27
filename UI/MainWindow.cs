@@ -13,6 +13,7 @@ using SentinelHub.Mounts;
 using SentinelHub.Fashion;
 using SentinelHub.Identification;
 using SentinelHub.Profiles;
+using SentinelHub.TreasureMaps;
 namespace SentinelHub.UI;
 public sealed class MainWindow : Window, IDisposable
 {
@@ -36,6 +37,7 @@ public sealed class MainWindow : Window, IDisposable
     private readonly CompatibilityPanel compatibility;
     private readonly PlayerInspectorPanel inspector;
     private readonly RecentActivityPanel activity;
+    private readonly TreasureMapsPanel treasures;
     private readonly Func<ProfilesView> profilesView;
     private readonly Action<string> openProfile;
     private readonly Action refreshProfiles;
@@ -47,7 +49,7 @@ public sealed class MainWindow : Window, IDisposable
     private readonly SentinelModernAppShellState shell = new();
     private readonly SentinelModernNavItem[] navigation;
     private static readonly HubPage[] PageOrder = [HubPage.Dashboard, HubPage.Plugins, HubPage.Profiles, HubPage.Dependencies,
-        HubPage.Utilities, HubPage.Mounts, HubPage.Fashion, HubPage.PlayerInspector, HubPage.RecentActivity, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
+        HubPage.Utilities, HubPage.TreasureMaps, HubPage.Mounts, HubPage.Fashion, HubPage.PlayerInspector, HubPage.RecentActivity, HubPage.Diagnostics, HubPage.Appearance, HubPage.About];
     private static readonly string[] PageNames=PageOrder.Select(PageTitle).ToArray();
     private Vector2 frameSize;
     private Vector2? pendingSize;
@@ -62,7 +64,7 @@ public sealed class MainWindow : Window, IDisposable
         Func<SentinelHub.Inspection.InspectorView>? inspectorView=null,
         Func<SentinelHub.Activity.ActivityEntry[]>? activityEntries=null, Action? clearActivity=null,
         Func<ProfilesView>? profilesView=null,Action<string>? openProfile=null,Action? refreshProfiles=null,Func<string?>? profilesNotice=null,
-        Action? dismissInspector=null) : base(WindowId)
+        Action? dismissInspector=null, Func<TreasureView>? treasureView=null, Action<TreasureAction,Guid>? treasureRequest=null, Action? treasureChanged=null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.questView = questView ?? (() => QuestConvenienceView.Off);
@@ -71,6 +73,7 @@ public sealed class MainWindow : Window, IDisposable
         this.refreshProfiles=refreshProfiles??(()=>{});this.profilesNotice=profilesNotice??(()=>null);
         health=new(healthView??(()=>SentinelHub.Health.HealthView.Empty),refreshHealth??(()=>{}),publicVersions??(()=>{}));
         activity=new(activityEntries??(()=>[]),clearActivity??(()=>{}));
+        treasures=new(config.TreasureMaps,treasureView??(()=>TreasureView.Empty),treasureRequest??((_,_)=>{}),treasureChanged??(()=>{}),save);
         compatibility=new(compatibilityView??(()=>SentinelHub.Compatibility.CompatibilityView.Empty));
         inspector=new(config,save,inspectorView??(()=>SentinelHub.Inspection.InspectorView.Empty),OpenMount,OpenFashion,mountIcon,dismissInspector);
         mounts = new(config, mountView ?? (() => MountCollectionView.Empty), save,
@@ -91,10 +94,10 @@ public sealed class MainWindow : Window, IDisposable
     {
         HubPage.Dashboard => FontAwesomeIcon.Home, HubPage.Plugins => FontAwesomeIcon.Cubes,
         HubPage.Profiles => FontAwesomeIcon.Users, HubPage.Dependencies => FontAwesomeIcon.Link, HubPage.PlayerInspector=>FontAwesomeIcon.Search, HubPage.RecentActivity=>FontAwesomeIcon.Bell,
-        HubPage.Utilities => FontAwesomeIcon.Tools, HubPage.Diagnostics => FontAwesomeIcon.Heartbeat,
+        HubPage.Utilities => FontAwesomeIcon.Tools, HubPage.TreasureMaps => FontAwesomeIcon.Map, HubPage.Diagnostics => FontAwesomeIcon.Heartbeat,
         HubPage.Appearance => FontAwesomeIcon.Palette, HubPage.Mounts => FontAwesomeIcon.Horse, HubPage.Fashion => FontAwesomeIcon.Umbrella, _ => FontAwesomeIcon.InfoCircle,
     };
-    public static string PageTitle(HubPage p) => p == HubPage.Mounts ? "Mount Collection" : p == HubPage.Fashion ? "Fashion Accessories" : p == HubPage.Dependencies ? "Health" : p==HubPage.PlayerInspector?"Player Inspector":p==HubPage.RecentActivity?"Recent Activity":p.ToString();
+    public static string PageTitle(HubPage p) => p == HubPage.TreasureMaps ? "Treasure Maps" : p == HubPage.Mounts ? "Mount Collection" : p == HubPage.Fashion ? "Fashion Accessories" : p == HubPage.Dependencies ? "Health" : p==HubPage.PlayerInspector?"Player Inspector":p==HubPage.RecentActivity?"Recent Activity":p.ToString();
     public override void PreDraw()
     {
         style.Pop();
@@ -214,6 +217,7 @@ public sealed class MainWindow : Window, IDisposable
             case HubPage.Fashion: fashion.Draw(); break;
             case HubPage.PlayerInspector: inspector.Draw(); break;
             case HubPage.RecentActivity: activity.Draw(); break;
+            case HubPage.TreasureMaps: treasures.Draw(); break;
         }
         if (Notice.Length > 0) { ImGui.Spacing(); ImGui.TextWrapped(Notice); }
     }

@@ -1,5 +1,9 @@
 # Mount acquisition data acknowledgments
 
+## Treasure Maps interoperability references
+
+Treasure Maps is independently implemented. Globetrotter, MapLinker, SimpleMapTracker and MapPartyAssist were inspected for behavior and interoperability only; none of their source, signatures, resources, databases or synchronization implementations are incorporated. Missing license files are not treated as permission. MapPartyAssist identifies MIT licensing, but no source is imported. Current public Dalamud/Lumina APIs and the current FFXIVClientStructs map-call-site definition were consulted as dependency/API documentation. Existing dependency license obligations remain applicable. Exact source revisions and boundaries are recorded in [TREASURE_MAPS.md](docs/TREASURE_MAPS.md).
+
 Mount acquisition source facts and introduction patches in Mounts/Data/Acquisition.json are a dated, reduced snapshot from **FFXIV Collect**, created by Sera Fae / Raelys (Matt Antonelli), with community contributors.
 
 - Service and developer API invitation: https://ffxivcollect.com/

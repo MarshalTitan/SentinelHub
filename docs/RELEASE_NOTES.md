@@ -1,11 +1,7 @@
-# Sentinel Hub 0.7.1.0
+# Sentinel Hub 0.8.0.0
 
-Reduces avoidable idle work with shared event-driven plugin inventory, cached Health/Compatibility snapshots, snapshot-triggered Activity, dormant closed collections/Inspector and addon-driven Quest scheduling with a bounded fallback. Existing Quest native timing/safety and Anti-AFK timer behavior remain unchanged.
+Adds optional Treasure Maps with deciphered-map location detection, a Party map queue (Alliance opt-in), exact raw flags and map variants, Open/Next, Complete with brief Undo, Delete/reorder, an independent floating window and local character-scoped unfinished queues. Existing settings and Core/UI 0.4.1 are preserved; Treasure Maps defaults Off.
 
-Unifies latency conflict protection. No full native scan while latency is Off or from native action callbacks; active safety scans use a bounded reusable handle buffer. Pre-enable checks, named-module checks, loaded NoClippy protection and conservative failures remain in place.
+Share restores the saved game flag and copies /p <flag> for manual sending of a real clickable link. It does not post chat automatically, teleport or navigate. No external server or other plugin is required.
 
-Replaces the Profiles UNKNOWN placeholder with saved profiles, selected/last-applied and authoritative match/drift/busy status from Sentinel Profiles 0.2.1.8. Open in Profiles selects/opens the existing editor without applying or changing plugin rules. Missing/disabled/older providers get concise explanations.
-
-Adds explicit RAM-only /shub perf start, report and stop measurement (ten-minute limit). Normal release operation does not sample or write performance history. Saved settings/layout, collections/acquisition data and Core 0.4.1 stay intact.
-
-See docs/PERFORMANCE_PROFILES.md for measurements, residual fallback checks and supervised acceptance. Movement/interaction validation remains pending; a resolved stutter or new in-game PASS is not claimed.
+Processing is event-driven with dormant idle guards, cached metadata and bounded framework-thread work. Existing performance fixes remain intact. See docs/TREASURE_MAPS.md for API/license review, limitations, measurements and supervised checks. Native detection, actual map/chat interaction and gameplay performance are not certified by automated tests. This release is distributed through the normal live plugin channel; the optional module remains Off until enabled.

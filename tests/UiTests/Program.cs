@@ -21,7 +21,7 @@ using CSCharacter=FFXIVClientStructs.FFXIV.Client.Game.Character.Character;
 internal static class Program
 {
     static void Check(bool value, string why) { if (!value) throw new Exception(why); }
-    static string DirectoryPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "XIVLauncher", "addon", "Hooks", "dev");
+    static string DirectoryPath => Environment.GetEnvironmentVariable("DALAMUD_TEST_LIB_PATH") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "XIVLauncher", "addon", "Hooks", "dev");
     static int Main()
     {
         AssemblyLoadContext.Default.Resolving += (_, n) => {
@@ -34,6 +34,7 @@ internal static class Program
     {
         IdlePerformanceTests.Run();
         ServiceSchedulingTests.Run();
+        TreasureIntegrationTests.Run();
         var context = ImGui.CreateContext();
         try
         {
@@ -103,6 +104,36 @@ internal static class Program
                         Check(!settings.Collapsed && Find(MainWindow.WindowId).Size.Y >= 800 * scale - 1, "Restore lost expanded size");
                     }
                 }
+                var treasureCases=0;
+                foreach(var treasureTheme in new[]{0,1})foreach(var treasureScale in new[]{1f,1.5f,2f})foreach(var count in new[]{0,4,50})
+                {
+                    io.FontGlobalScale=treasureScale;
+                    var settings=new HubSettings{Theme=treasureTheme,Page=HubPage.TreasureMaps};settings.TreasureMaps.Enabled=true;
+                    var entries=Enumerable.Range(0,count).Select(i=>new SentinelHub.TreasureMaps.TreasureEntry(Guid.NewGuid(),
+                        new("A long player display name for wrapping "+i,42),new(100,401,123456,-789012,"A long localized territory with a specific map variant",24.2f,18.5f,[]),DateTimeOffset.UtcNow)).ToArray();
+                    var v=new SentinelHub.TreasureMaps.TreasureView(true,entries,null,true,"Listening", "Flag prepared. Paste /p <flag> into chat.");
+                    var actions=0;var before=JsonSerializer.Serialize(settings);
+                    using var w=new MainWindow(settings,()=>fixtures[0],new(),()=>{},()=>{},(_,_)=>false,()=>{},()=>true,()=>font,
+                        treasureView:()=>v,treasureRequest:(_,_)=>actions++);
+                    foreach(var width in new[]{480f,1000f,480f}){
+                        for(var i=0;i<3;i++)Frame(w,new(width,800),treasureScale);
+                        var content=treasureTheme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
+                        Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Treasure Maps horizontal overflow");
+                        Check(before==JsonSerializer.Serialize(settings)&&actions==0,"Drawing Treasure Maps altered queue/preferences or sent action");treasureCases++;
+                    }
+                    using var floating=new TreasureQueueWindow(settings,()=>v,(_,_)=>actions++,()=>{},()=>{});
+                    floating.PreOpenCheck();Check(!floating.IsOpen,"Closed floating window rendered/opened itself");
+                    settings.TreasureMaps.FloatingOpen=true;floating.PreOpenCheck();Check(floating.IsOpen,"Floating queue did not open independently");
+                    foreach(var width in new[]{300f,600f,300f}){
+                        for(var i=0;i<3;i++){
+                            ImGui.NewFrame();floating.PreDraw();ImGui.SetNextWindowPos(new(50,50),ImGuiCond.Always);ImGui.SetNextWindowSize(new(width*treasureScale,500*treasureScale),ImGuiCond.Always);
+                            ImGui.Begin(TreasureQueueWindow.WindowId);floating.Draw();ImGui.End();floating.PostDraw();ImGui.Render();
+                        }
+                        var content=Find(TreasureQueueWindow.WindowId);Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,$"Floating queue overflow: theme={treasureTheme} scale={treasureScale} width={width} content={content.ContentSize} size={content.Size} scroll={content.ScrollbarX}");Check(actions==0,"Floating drawing sent action");treasureCases++;
+                    }
+                    floating.OnClose();Check(!settings.TreasureMaps.FloatingOpen,"Floating close state was not saved");
+                }
+                Console.WriteLine($"PASS {treasureCases} Treasure Maps populated/empty/full-queue, theme/scale/resize and independent floating-window cases.");
                 var profileId=Guid.NewGuid().ToString("D");var appliedId=Guid.NewGuid().ToString("D");
                 var profileCases=0;
                 var profileStates=new[]{ProfilesView.Unavailable,
@@ -199,7 +230,7 @@ internal static class Program
                     for (var i=0;i<12;i++) Frame(utility, new(480,500), scale);
                     var content = theme == 1 ? Find(MainWindow.WindowId,"##Modern2Page") : Find(MainWindow.WindowId);
                     Check(content.ContentSize.X <= content.Size.X + 1 && !content.ScrollbarX, "Anti-AFK state overflow");
-                    Check(content.ScrollMax.Y > 0, "Narrow utility page cannot scroll");
+                    Check(content.ScrollMax.Y > 0, $"Narrow utility page cannot scroll: theme={theme} scale={scale} state={state} content={content.ContentSize} size={content.Size} flags={content.Flags} page={config.Page} collapsed={config.Collapsed}");
                 }
                 foreach(var scale in new[]{1f,1.5f,2f})
                 foreach(var theme in new[]{0,1})
@@ -435,7 +466,7 @@ internal static class Program
         for (int i = 0; i < all.Size; i++)
         {
             var name = Marshal.PtrToStringUTF8((nint)all[i].Name)!;
-            if (child is null ? name == parent : name.StartsWith(parent + "/") && name.Contains(child)) return all[i];
+            if ((child is null ? name == parent : name.StartsWith(parent + "/") && name.Contains(child)) && all[i].Active) return all[i];
         }
         throw new Exception("Window missing " + parent + "/" + child);
     }
