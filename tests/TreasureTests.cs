@@ -9,6 +9,29 @@ internal static class TreasureTests
     {
         var a = new TreasureOwner("First Player", 20); var b = new TreasureOwner("Second Player", 30);
         var time = DateTimeOffset.Parse("2026-10-27T12:00:00Z");
+        test("Treasure binding selects the rank/spot call and rejects the unrelated singleton call", () => {
+            var call = Convert.FromHexString("0FB6D04533C9440FB7C3488BCFE8000000004084F6");
+            System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(call.AsSpan(14, 4), 0x1800 - (0x1200 + 18));
+            check(TreasureNativeBinding.TryGetTarget(call, 0x1200, 0x1000, 0x2000, out var target) && target == 0x1800);
+            var old = Convert.FromHexString("488D0DF4BDF601E8FF190900488BCFE8977600004084F6");
+            check(!TreasureNativeBinding.TryGetTarget(old, 0x1200, 0x1000, 0x2000, out _));
+            // Both signed rel32 directions are valid, but neither may leave executable text.
+            System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(call.AsSpan(14, 4), 0x1100 - (0x1800 + 18));
+            check(TreasureNativeBinding.TryGetTarget(call, 0x1800, 0x1000, 0x2000, out target) && target == 0x1100);
+            check(!TreasureNativeBinding.TryGetTarget(call, 0x1800, 0x1700, 0x2000, out _));
+            check(!TreasureNativeBinding.TryGetTarget(call.AsSpan(0, 20), 0x1800, 0x1000, 0x2000, out _));
+            check(!TreasureNativeBinding.TryGetTarget(call, 0x1FF0, 0x1000, 0x2000, out _));
+            call[13] = 0xE9; check(!TreasureNativeBinding.TryGetTarget(call, 0x1800, 0x1000, 0x2000, out _));
+        });
+        test("Treasure binding validates the callee rank, spot and mode ABI before hooking", () => {
+            var handler = new byte[TreasureNativeBinding.HandlerLength];
+            Convert.FromHexString("4C8BDC555356498DAB").CopyTo(handler, 0);
+            Convert.FromHexString("4C8BF1440FB7FA33C9410FB6D9410FB7F8").CopyTo(handler, 0x3A);
+            check(TreasureNativeBinding.IsTreasureHandler(handler));
+            check(!TreasureNativeBinding.IsTreasureHandler(handler.AsSpan(0, handler.Length - 1)));
+            handler[0x3D] = 0x90; check(!TreasureNativeBinding.IsTreasureHandler(handler));
+            check(!TreasureNativeBinding.IsTreasureHandler(new byte[TreasureNativeBinding.HandlerLength]));
+        });
         test("Treasure coordinates preserve raw world positions, map scaling and offsets", () => {
             check(TreasurePolicy.Raw(123.456f) == 123456);
             check(Math.Abs(TreasurePolicy.Display(0, 100, 0) - 21.5f) < .001f);
