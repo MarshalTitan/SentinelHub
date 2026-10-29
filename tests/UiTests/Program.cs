@@ -127,7 +127,7 @@ internal static class Program
                     foreach(var width in new[]{300f,600f,300f}){
                         for(var i=0;i<3;i++){
                             ImGui.NewFrame();floating.PreDraw();ImGui.SetNextWindowPos(new(50,50),ImGuiCond.Always);ImGui.SetNextWindowSize(new(width*treasureScale,500*treasureScale),ImGuiCond.Always);
-                            ImGui.Begin(TreasureQueueWindow.WindowId);floating.Draw();ImGui.End();floating.PostDraw();ImGui.Render();
+                            ImGui.Begin(TreasureQueueWindow.WindowId,floating.Flags);floating.Draw();ImGui.End();floating.PostDraw();ImGui.Render();
                         }
                         var content=Find(TreasureQueueWindow.WindowId);Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,$"Floating queue overflow: theme={treasureTheme} scale={treasureScale} width={width} content={content.ContentSize} size={content.Size} scroll={content.ScrollbarX}");Check(actions==0,"Floating drawing sent action");treasureCases++;
                     }
@@ -163,6 +163,7 @@ internal static class Program
                             if(ImGui.Begin(TreasureQueueWindow.WindowId,ref open,floating.Flags))floating.Draw();
                             closePoint=ImGui.GetWindowPos()+new Vector2(ImGui.GetWindowSize().X-ImGui.GetStyle().FramePadding.X-ImGui.GetFontSize()/2,
                                 ImGui.GetStyle().FramePadding.Y+ImGui.GetFontSize()/2);
+                            if(theme==1)closePoint=ImGui.GetWindowPos()+new Vector2(ImGui.GetWindowSize().X-29*scale,28*scale);
                             // Same ordering as Dalamud WindowHost: apply Begin's close result,
                             // then PostDraw; OnClose is deferred until the following frame.
                             if(!open)floating.IsOpen=false;
@@ -192,6 +193,7 @@ internal static class Program
                 }
                 Console.WriteLine($"PASS {treasureCloseCases} native floating X close, persistent preference, delayed callback and real Hub Show/Hide button cycles.");
                 TreasureQueueUiTests.Run(font);
+                TreasureQueueShellTests.Run(font);
                 var profileId=Guid.NewGuid().ToString("D");var appliedId=Guid.NewGuid().ToString("D");
                 var profileCases=0;
                 var profileStates=new[]{ProfilesView.Unavailable,

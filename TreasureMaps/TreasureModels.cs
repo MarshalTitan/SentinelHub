@@ -32,6 +32,7 @@ public sealed class TreasureSettings
     public bool CaptureAlliance { get; set; }
     public bool AddOwnMap { get; set; } = true;
     public bool FloatingOpen { get; set; }
+    public bool FloatingCollapsed { get; set; }
     public int MaximumEntries { get; set; } = 50;
     public float FloatingX { get; set; } = 100;
     public float FloatingY { get; set; } = 100;
