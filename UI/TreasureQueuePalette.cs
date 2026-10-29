@@ -4,7 +4,6 @@ namespace SentinelHub.UI;
 
 internal static class TreasureQueuePalette
 {
-    internal static readonly Vector4 Background = new(.055f, .075f, .090f, 1);
     internal static readonly Vector4 Card = new(.092f, .125f, .148f, 1);
     internal static readonly Vector4 CardHover = new(.105f, .175f, .195f, 1);
     internal static readonly Vector4 Border = new(.20f, .27f, .31f, 1);

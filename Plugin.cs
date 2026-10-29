@@ -91,7 +91,8 @@ public sealed class Plugin : IDalamudPlugin
             new InspectionGameData(Data,Unlocks,()=>mounts.Ready&&fashion.Ready),()=>Targets.Target?.GameObjectId??0);
         profiles=new(Pi,()=>discovery.Inventory,()=>discovery.Available);
         treasures=new(settings.TreasureMaps,Chat,Client,Player,Objects,Framework,GameGui,Inventory,Data,SigScanner,Interop,Save,text=>ImGui.SetClipboardText(text));
-        treasureWindow=new(settings,()=>treasures.View,treasures.Request,treasures.Configure,Save);
+        treasureWindow=new(settings,()=>treasures.View,treasures.Request,treasures.Configure,Save,
+            systemReducedMotion:()=>Pi.UiBuilder.ShouldUseReducedMotion);
         quickOpen = new(discovery.Capture, Commands.ProcessCommand, faults);
         window = new(settings, () => discovery.Snapshot, faults, Save, () => healthRefreshRequested=true,
             (id, diagnostics) => quickOpen.Open(id, diagnostics), Export,

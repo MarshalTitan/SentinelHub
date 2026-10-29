@@ -40,12 +40,19 @@ internal static unsafe class TreasureQueueUiTests
                 float menuLineHeight = 0, menuFontHeight = 0;
                 void Body(int index, string? activate)
                 {
-                    if (scroll is { } y) ImGui.SetScrollY(y);
+                    if (scroll is not null || activate is not null)
+                    {
+                    var body = BodyWindow(floating, floating && theme == 1);
+                    if (scroll is { } y) body.ScrollTarget.Y = y;
                     if (activate is not null)
                     {
-                        ImGui.PushID(entries[index].Id.ToString("N"));
-                        var context = ImGui.GetCurrentContext(); context.NavNextActivateId = ImGui.GetID(activate is "Move Up" or "Move Down" ? activate : "###" + activate);
-                        ImGui.PopID();
+                        // Resolve the ID in the Core content child, before that child draws this frame.
+                        var stack = body.IDStack; var seed = stack[stack.Size - 1];
+                        var entrySeed = body.GetID(entries[index].Id.ToString("N"));
+                        stack[stack.Size - 1] = entrySeed;
+                        try { var context = ImGui.GetCurrentContext(); context.NavNextActivateId = body.GetID(activate is "Move Up" or "Move Down" ? activate : "###" + activate); }
+                        finally { stack[stack.Size - 1] = seed; }
+                    }
                     }
                     if (floating) window.Draw(); else panel.Queue(view, false);
                     lastMorePoint = (ImGui.GetItemRectMin() + ImGui.GetItemRectMax()) / 2;
@@ -58,9 +65,10 @@ internal static unsafe class TreasureQueueUiTests
                     var fonts = context.FontStack.Size;
                     if (floating) { window.PreOpenCheck(); window.PreDraw(); }
                     else if (theme == 1) style.PushAppShell(Dalamud.Interface.Utility.ImGuiHelpers.GlobalScale);
-                    ImGui.SetNextWindowPos(new(15, 15), ImGuiCond.Always); ImGui.SetNextWindowSize(new(width, 700), ImGuiCond.Always);
+                    var requestedWidth = floating && theme == 1 ? Math.Max(width, 300 * Dalamud.Interface.Utility.ImGuiHelpers.GlobalScale) : width;
+                    ImGui.SetNextWindowPos(new(15, 15), ImGuiCond.Always); ImGui.SetNextWindowSize(new(requestedWidth, 700), ImGuiCond.Always);
                     var open = true;
-                    ImGui.Begin(floating ? TreasureQueueWindow.WindowId : "Queue actions Hub", ref open);
+                    ImGui.Begin(floating ? TreasureQueueWindow.WindowId : "Queue actions Hub", ref open, floating ? window.Flags : ImGuiWindowFlags.None);
                     if (!floating) ImGui.BeginChild("queue-scroll", Vector2.Zero);
                     Body(index, activate);
                     if (!floating) ImGui.EndChild();
@@ -83,7 +91,7 @@ internal static unsafe class TreasureQueueUiTests
                     io.AddMousePosEvent(-100, -100);
                 }
                 for (var i = 0; i < 3; i++) Frame();
-                var body = BodyWindow(floating);
+                var body = BodyWindow(floating, floating && theme == 1);
                 Check(body.ScrollMax.Y > 0, "Full queue is not scrollable");
                 Check(body.ContentSize.X <= body.Size.X + 1 && !body.ScrollbarX, "Queue controls overflow narrow content");
                 var menuIndex = entries.Length - 2;
@@ -309,13 +317,14 @@ internal static unsafe class TreasureQueueUiTests
         finally { io.DisplaySize = oldDisplay; io.FontGlobalScale = oldScale; io.AddMousePosEvent(-100, -100); }
         Console.WriteLine($"PASS {cases} native mouse drag/drop flows across themes/scales and between queue windows; before/after, self-drop, cancel and disabled guards.");
     }
-    private static ImGuiWindowPtr BodyWindow(bool floating)
+    private static ImGuiWindowPtr BodyWindow(bool floating, bool modern = false)
     {
         var windows = ImGui.GetCurrentContext().Windows;
         for (var i = 0; i < windows.Size; i++)
         {
             var w = windows[i]; var name = System.Runtime.InteropServices.Marshal.PtrToStringUTF8((nint)w.Name)!;
-            if (w.Active && (floating ? name == TreasureQueueWindow.WindowId : name.Contains("queue-scroll"))) return w;
+            if (floating && modern && name.StartsWith(TreasureQueueWindow.WindowId + "/") && name.Contains("##Modern2Page")) return w;
+            if (!(floating && modern) && (floating ? name == TreasureQueueWindow.WindowId : name.Contains("queue-scroll"))) return w;
         }
         throw new Exception("Queue content window not found");
     }
