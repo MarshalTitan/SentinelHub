@@ -1,4 +1,4 @@
-# Treasure Maps — 0.8.0.2
+# Treasure Maps — 0.8.1.0
 
 Treasure Maps is an optional Hub page and independent floating queue. It is **Off by default** on new installations and upgrades. Existing utility settings, page IDs, performance scheduling and Core/UI 0.4.1 are preserved. Page IDs 12–15 remain reserved for retired candidates; the new page uses 16.
 
@@ -11,7 +11,8 @@ Each location retains its exact territory ID, **specific map ID**, raw signed co
 - **Open Flag / Next Map** establishes the saved flag on the world map. No teleport, navigation or character movement is requested.
 - **Share** establishes that exact flag and copies `/p <flag>` to the clipboard. Paste it into chat and press Enter to send a real clickable game map link. This is an explicit manual-send fallback: Dalamud's public chat service prints local messages and does not offer a supported party-send API. Hub does not invoke a private chat-send function or silently substitute plain coordinates. Changing the game's flag before sending also changes what `<flag>` will send.
 - **Complete** immediately removes the entry on the next framework update; the next map moves up. **Undo Complete** restores its identity and previous index for 15 seconds. Only one Undo slot exists in RAM.
-- **More...** offers Delete, Move Up, Move Down and Add another. Delete creates no completion record. Add another supports an intentional second map from the same owner at the same location.
+- Every row in both views offers **Open Flag**, **Share**, **Complete**, visible **Up/Down arrows** and **More...**. Controls wrap onto another line at narrow widths. Up is disabled on the first row; Down is disabled on the final row. Reordering uses the existing persisted character queue, so Next Map always opens its current first entry.
+- **More...** offers Delete, Move Up, Move Down and Add another in an independent native ImGui popup. Menu items size to their labels and ImGui repositions the popup inside the viewport. Delete creates no completion record. Add another supports an intentional second map from the same owner at the same location. The floating view includes all unfinished rows in its scroll area, with the same actions as Hub; only receipt timestamps are omitted for compactness.
 - Clear Entire Queue requires confirmation and affects only the active character. There is no completed-map archive.
 
 Duplicate identity is owner name plus home world and exact territory/map, with a two-raw-unit tolerance (0.002 world units) solely to absorb flag float round-trips. Stored coordinates and payload bytes are never rounded or altered. Different owners remain independent. Different flags from one owner remain independent. A 30-second explicit-share ticket ignores only the local echo of the prepared flag; it does not suppress another player's matching flag. Identical repeated chat payloads cannot establish whether the same owner has a second physical map, so Add another is available instead of guessing.
@@ -59,11 +60,11 @@ Automated checks cover raw coordinate/map-variant preservation, real `MapLinkPay
 
 **In-game verification procedure (not established by CI):**
 
-1. Enable Treasure Maps on 0.8.0.2. Decipher a map; confirm the displayed flag against the actual treasure-map image and zone. Test another supported map type or a map variant where available. Independently toggle after-decipher and existing-map-view behavior.
+1. Enable Treasure Maps on 0.8.1.0. Decipher a map; confirm the displayed flag against the actual treasure-map image and zone. Test another supported map type or a map variant where available. Independently toggle after-decipher and existing-map-view behavior.
 2. Have party members link flags normally. Check each owner and exact location. Repeat a flag, share the same coordinates from two different owners, and post a second different map from one owner. Confirm unrelated channels/text are ignored and ordinary chat is unaffected.
 3. Open a queued flag. Click Share, paste `/p <flag>` into party chat and send it. Confirm the sent link is clickable for another party member and opens the same location. Confirm the local echo does not add a duplicate or change ownership.
 4. Complete a middle/first entry, Undo, reorder and Delete; test Clear confirmation. Open the floating window with the main Hub closed and verify both views stay synchronized.
 5. Reload Hub/restart the game; unfinished entries and floating preferences remain. Switch characters and confirm queues do not mix. Preserve the existing settings file.
 6. Compare movement/camera with normal Hub settings, both queue windows closed and then the floating queue visible. Optionally collect `/shub perf start` → normal movement → `/shub perf stop` output. A synthetic zero-allocation fixture is not a live performance PASS.
 
-0.8.0.2 is distributed through the existing live plugin repository and normal Dalamud updates. No separate development installation or manual ZIP download is needed. These procedures document optional in-game verification and are not a claim that it has occurred. If the new module misbehaves, turn Treasure Maps Off; existing configuration, performance improvements and other Hub features remain intact. Published release assets remain immutable.
+0.8.1.0 is distributed through the existing live plugin repository and normal Dalamud updates. No separate development installation or manual ZIP download is needed. These procedures document optional in-game verification and are not a claim that it has occurred. If the new module misbehaves, turn Treasure Maps Off; existing configuration, performance improvements and other Hub features remain intact. Published release assets remain immutable.

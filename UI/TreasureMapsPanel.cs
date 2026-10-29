@@ -52,48 +52,38 @@ public sealed class TreasureMapsPanel(TreasureSettings settings, Func<TreasureVi
         ImGui.BeginDisabled(!v.Available);
         if (v.Entries.Length > 0 && Button("Next Map")) Send(TreasureAction.Next);
         if (v.CanUndo && Button("Undo Complete")) Send(TreasureAction.Undo);
-        var count = compact ? Math.Min(v.Entries.Length, 4) : v.Entries.Length;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < v.Entries.Length; i++)
         {
             var entry = v.Entries[i]; ImGui.PushID(entry.Id.ToString("N"));
-            // Auto-height child rows allow wrapped owner/location text at narrow widths.
             ImGui.Separator();
             ImGui.TextWrapped($"{i + 1}. {entry.Owner.Name}"); ImGui.TextWrapped(entry.Location.Label);
             if (!compact) ImGui.TextWrapped("Received " + entry.ReceivedAt.ToLocalTime().ToString("g"));
-            if (!compact || i == 0)
+            // Both views share every action. Natural button widths wrap at the row edge.
+            var right = ImGui.GetCursorScreenPos().X + ImGui.GetContentRegionAvail().X;
+            var first = true;
+            ActionButton("Open Flag", TreasureAction.Open, entry.Id, right, ref first);
+            ActionButton("Share", TreasureAction.Share, entry.Id, right, ref first);
+            ActionButton("Complete", TreasureAction.Complete, entry.Id, right, ref first);
+            Arrow("Move Up", ImGuiDir.Up, TreasureAction.Up, entry.Id, i == 0, right, ref first);
+            Arrow("Move Down", ImGuiDir.Down, TreasureAction.Down, entry.Id, i == v.Entries.Length - 1, right, ref first);
+            PlaceControl(ImGui.CalcTextSize("More...").X + 2 * ImGui.GetStyle().FramePadding.X, right, ref first);
+            if (ImGui.Button("More...")) ImGui.OpenPopup("queue-actions");
+            // MenuItem supplies intrinsic text widths. BeginPopup creates an independent
+            // auto-sizing popup window and lets ImGui place it inside the viewport.
+            if (ImGui.BeginPopup("queue-actions", ImGuiWindowFlags.AlwaysAutoResize))
             {
-                var openWidth = ImGui.CalcTextSize("Open Flag").X + 24;
-                var shareWidth = ImGui.CalcTextSize("Share").X + 24;
-                var completeWidth = ImGui.CalcTextSize("Complete").X + 24;
-                var inline = ImGui.GetContentRegionAvail().X >= openWidth + shareWidth + completeWidth + 2 * ImGui.GetStyle().ItemSpacing.X;
-                if (inline)
-                {
-                    if (ImGui.Button("Open Flag", new(openWidth, 0))) request(TreasureAction.Open, entry.Id);
-                    ImGui.SameLine(); if (ImGui.Button("Share", new(shareWidth, 0))) request(TreasureAction.Share, entry.Id);
-                    ImGui.SameLine(); if (ImGui.Button("Complete", new(completeWidth, 0))) request(TreasureAction.Complete, entry.Id);
-                }
-                else
-                {
-                    RowButton("Open Flag", TreasureAction.Open, entry.Id);
-                    RowButton("Share", TreasureAction.Share, entry.Id);
-                    RowButton("Complete", TreasureAction.Complete, entry.Id);
-                }
-                if (!compact)
-                {
-                    if (ImGui.Button("More...")) ImGui.OpenPopup("queue-actions");
-                    if (ImGui.BeginPopup("queue-actions"))
-                    {
-                        RowButton("Delete", TreasureAction.Delete, entry.Id);
-                        ImGui.BeginDisabled(i == 0); RowButton("Move Up", TreasureAction.Up, entry.Id); ImGui.EndDisabled();
-                        ImGui.BeginDisabled(i == v.Entries.Length - 1); RowButton("Move Down", TreasureAction.Down, entry.Id); ImGui.EndDisabled();
-                        RowButton("Add another", TreasureAction.AddCopy, entry.Id);
-                        ImGui.EndPopup();
-                    }
-                }
+                if (ImGui.MenuItem("Delete")) request(TreasureAction.Delete, entry.Id);
+                ImGui.BeginDisabled(i == 0);
+                if (ImGui.MenuItem("Move Up") && i > 0) request(TreasureAction.Up, entry.Id);
+                ImGui.EndDisabled();
+                ImGui.BeginDisabled(i == v.Entries.Length - 1);
+                if (ImGui.MenuItem("Move Down") && i < v.Entries.Length - 1) request(TreasureAction.Down, entry.Id);
+                ImGui.EndDisabled();
+                if (ImGui.MenuItem("Add another")) request(TreasureAction.AddCopy, entry.Id);
+                ImGui.EndPopup();
             }
             ImGui.PopID(); ImGui.Spacing();
         }
-        if (compact && v.Entries.Length > count) ImGui.TextWrapped($"+ {v.Entries.Length - count} more in Treasure Maps");
         if (v.Entries.Length == 0) ImGui.TextWrapped("No unfinished maps. Party flags appear here when capture is enabled.");
         if (v.Notice.Length > 0) ImGui.TextWrapped(v.Notice);
         ImGui.EndDisabled();
@@ -105,6 +95,24 @@ public sealed class TreasureMapsPanel(TreasureSettings settings, Func<TreasureVi
         ImGui.SameLine(); ImGui.TextWrapped(label);
     }
     private static bool Button(string label) => ImGui.Button(label, new Vector2(-1, 28 * ImGuiHelpers.GlobalScale));
-    private void RowButton(string label, TreasureAction action, Guid id) { if (Button(label)) request(action, id); }
+    private void ActionButton(string label, TreasureAction action, Guid id, float right, ref bool first)
+    {
+        PlaceControl(ImGui.CalcTextSize(label).X + 2 * ImGui.GetStyle().FramePadding.X, right, ref first);
+        if (ImGui.Button(label)) request(action, id);
+    }
+    private void Arrow(string label, ImGuiDir direction, TreasureAction action, Guid id, bool disabled, float right, ref bool first)
+    {
+        PlaceControl(ImGui.GetFrameHeight(), right, ref first);
+        ImGui.BeginDisabled(disabled);
+        if (ImGui.ArrowButton(label, direction) && !disabled) request(action, id);
+        ImGui.EndDisabled();
+        if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) ImGui.SetTooltip(label);
+    }
+    private static void PlaceControl(float width, float right, ref bool first)
+    {
+        if (!first && ImGui.GetItemRectMax().X + ImGui.GetStyle().ItemSpacing.X + width <= right)
+            ImGui.SameLine();
+        first = false;
+    }
     private void Send(TreasureAction action) => request(action, Guid.Empty);
 }

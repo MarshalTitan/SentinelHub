@@ -28,6 +28,7 @@ internal static class TreasureIntegrationTests
             "A non-player label was invented as an owner");
         Lifecycle();
         DisplaySettings();
+        QueueOrderAndRecovery();
         Console.WriteLine("PASS Treasure structured payload round-trip, text/channel rejection, shared controller queue, lifecycle cleanup and zero-allocation dormant ticks.");
     }
     private static void DisplaySettings()
@@ -65,6 +66,53 @@ internal static class TreasureIntegrationTests
                 "Share failed to prepare the real flag or posted without manual sending");
         }
         Console.WriteLine("PASS 12 decipher/view setting and inventory-event-order cases, exact map opening and explicit manual Share preparation.");
+    }
+    private static void QueueOrderAndRecovery()
+    {
+        long now = 100; var opened = new List<string>(); string? savedJson = null;
+        var local = IdlePerformanceTests.Fake<IPlayerCharacter>((m, _) => m.Name == "get_Name" ? new SeString(new List<Payload> { new TextPayload("Queue Owner") }) : IdlePerformanceTests.Default(m.ReturnType));
+        var client = IdlePerformanceTests.Fake<IClientState>((m, _) => m.Name == "get_IsLoggedIn" ? true : IdlePerformanceTests.Default(m.ReturnType));
+        var player = IdlePerformanceTests.Fake<IPlayerState>((m, _) => m.Name == "get_IsLoaded" ? true : m.Name == "get_ContentId" ? 789UL : IdlePerformanceTests.Default(m.ReturnType));
+        var objects = IdlePerformanceTests.Fake<IObjectTable>((m, _) => m.Name == "get_LocalPlayer" ? local : IdlePerformanceTests.Default(m.ReturnType));
+        var framework = IdlePerformanceTests.Fake<IFramework>((m, _) => m.Name == "get_IsInFrameworkUpdateThread" ? true : IdlePerformanceTests.Default(m.ReturnType));
+        var gui = IdlePerformanceTests.Fake<IGameGui>((m, args) => {
+            if (m.Name == "OpenMapWithMapLink") { opened.Add(((MapLinkPayload)args![0]!).DataString); return true; }
+            return IdlePerformanceTests.Default(m.ReturnType);
+        });
+        var settings = new TreasureSettings { Enabled = true, DetectDeciphered = false };
+        var state = new CharacterTreasureQueue(); var queue = new TreasureQueue(); queue.Bind(state);
+        for (var i = 0; i < 3; i++) queue.Add(new("Queue Owner " + i, 42), new(100, 401, 123456 + i * 1000, -987654,
+            "Fixture", 24.2f, 18.5f, []), DateTimeOffset.UtcNow, 50);
+        settings.Characters[789UL.ToString("X16")] = state;
+        using var controller = new TreasureController(settings, IdlePerformanceTests.Fake<IChatGui>(), client, player, objects,
+            framework, gui, IdlePerformanceTests.Fake<IGameInventory>(), IdlePerformanceTests.Fake<IDataManager>(),
+            IdlePerformanceTests.Fake<ISigScanner>(), IdlePerformanceTests.Fake<IGameInteropProvider>(),
+            () => savedJson = System.Text.Json.JsonSerializer.Serialize(settings), _ => { }, validLocation: v => v.Valid, clock: () => now);
+        controller.Tick(); var original = controller.View.Entries.ToArray();
+        Func<TreasureView> hub = () => controller.View, floating = () => controller.View;
+        controller.Request(TreasureAction.Up, original[2].Id); controller.Tick();
+        controller.Request(TreasureAction.Up, original[2].Id); controller.Tick();
+        Check(ReferenceEquals(hub(), floating()) && hub().Entries.Select(e => e.Id).SequenceEqual(new[] { original[2].Id, original[0].Id, original[1].Id }),
+            "Full/floating views did not share the reordered queue");
+        var snapshot = controller.View.Entries;
+        controller.Request(TreasureAction.Up, original[2].Id); controller.Tick();
+        Check(ReferenceEquals(snapshot, controller.View.Entries), "Boundary reorder rebuilt the queue snapshot");
+        controller.Request(TreasureAction.Next); controller.Tick();
+        Check(opened.Single() == "m:100,401,125456,-987654", "Next Map ignored the reordered first entry or changed its exact flag");
+        now = 1000; controller.Tick();
+        var restored = System.Text.Json.JsonSerializer.Deserialize<TreasureSettings>(savedJson!)!; restored.Normalize();
+        var recovered = new TreasureQueue(); recovered.Bind(restored.Characters[789UL.ToString("X16")]);
+        Check(recovered.Entries.Select(e => e.Id).SequenceEqual(snapshot.Select(e => e.Id)), "Saved queue order did not survive JSON recovery");
+        controller.Request(TreasureAction.Down, original[0].Id); controller.Tick();
+        var reordered = controller.View.Entries.ToArray();
+        Check(reordered[1].Id == original[1].Id, "Down did not move an entry one position");
+        controller.Request(TreasureAction.Complete, reordered[1].Id); controller.Tick();
+        Check(controller.View.Entries.Length == 2 && controller.View.Entries[1].Id == reordered[2].Id, "Complete did not immediately promote remaining rows");
+        controller.Request(TreasureAction.Undo); controller.Tick();
+        Check(controller.View.Entries.SequenceEqual(reordered), "Undo did not restore the reordered index and entry");
+        controller.Request(TreasureAction.Delete, reordered[2].Id); controller.Tick();
+        Check(controller.View.Entries.Length == 2 && !controller.View.Entries.Any(e => e.Id == reordered[2].Id), "Delete did not remove the selected entry");
+        Console.WriteLine("PASS shared Hub/floating reorder state, no-op snapshot guard, exact reordered Next Map, persisted order, Complete/Undo and Delete.");
     }
     private static void Lifecycle()
     {

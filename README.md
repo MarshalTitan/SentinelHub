@@ -2,7 +2,7 @@
 
 Optional ecosystem control center for MarshalTitan Sentinel plugins. Open with `/shub`; export sanitized diagnostics with `/shub export`.
 
-## Treasure Maps — 0.8.0.2
+## Treasure Maps — 0.8.1.0
 
 Adds an optional Treasure Maps page and independent floating queue: deciphered-map location detection, Party flags (Alliance opt-in), exact saved map variants, Open/Next, manual flag sharing, Complete with brief Undo, Delete/reorder and character-scoped unfinished queues. Enable the module in Treasure Maps; upgrades leave it Off. Share restores the actual flag and copies `/p <flag>` for manual sending. No teleport/navigation, external service or additional plugin is needed. See [implementation, performance, API/license audit and live checks](docs/TREASURE_MAPS.md). Native detection and real chat/map behavior remain pending supervised validation; automated tests do not certify them.
 
@@ -11,6 +11,8 @@ HUD visuals and camera, SRankSentinel, PvPSentinel, ClassySentinel, SentinelProf
 0.8.0.1 corrects the native treasure-display binding: the first release matched an unrelated UI helper, so deciphering did not identify or open the location. The corrected call and handler ABI were checked offline against game build 2026.10.16.0000.0000. Existing queues, settings and dormant performance behavior are preserved.
 
 0.8.0.2 makes the floating queue's title-bar X close and remember the window state. Hub returns to Show Floating Queue, and the same button can reopen it. Queue contents and saved window geometry are preserved.
+
+0.8.1.0 gives both queue views the same per-entry controls, visible Up/Down arrows and readable native More menus. The floating queue shows every unfinished entry in its scroll area. Reordering uses the existing shared, persisted queue; Next Map follows the first entry. Complete/Undo, decipher detection, sharing, X close and performance scheduling are preserved.
 
 ## Control center and utilities
 

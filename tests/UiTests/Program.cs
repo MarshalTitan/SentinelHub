@@ -191,6 +191,7 @@ internal static class Program
                     treasureCloseCases++;
                 }
                 Console.WriteLine($"PASS {treasureCloseCases} native floating X close, persistent preference, delayed callback and real Hub Show/Hide button cycles.");
+                TreasureQueueUiTests.Run();
                 var profileId=Guid.NewGuid().ToString("D");var appliedId=Guid.NewGuid().ToString("D");
                 var profileCases=0;
                 var profileStates=new[]{ProfilesView.Unavailable,

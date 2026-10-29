@@ -1,7 +1,7 @@
-# Sentinel Hub 0.8.0.2
+# Sentinel Hub 0.8.1.0
 
-Fixes the floating Treasure Map Queue's title-bar X: it now closes the window and saves the closed preference before the next frame can reopen it. Hub changes back to Show Floating Queue, and Show/Hide can continue toggling the same window normally.
+Both Treasure Maps queue views now provide every per-entry action: Open Flag, Share, Complete, visible Up/Down arrows and More with Delete, Move Up, Move Down and Add another. The floating window includes the full scrollable queue. Compact controls wrap to fit narrow windows.
 
-Queue contents and saved geometry are preserved. Close notifications save only once. Native ImGui regression coverage exercises X close, the deferred close callback and the actual Show/Hide buttons in both themes at three UI scales.
+More uses native auto-sizing menu items in an independent popup, fixing the clipped menu and allowing ImGui to reposition it inside the game viewport. Boundary reorder controls are disabled. Order is shared immediately and saved by the existing character-scoped queue; Next Map follows its first entry. Complete still removes a row, and Undo restores its prior position when possible.
 
-The 0.8.0.1 decipher-detection fix and previous event-driven performance improvements are retained. Normal live plugin updates deliver this change.
+Existing queues, settings, geometry, floating X/Show/Hide behavior, decipher detection, structured chat capture, manual flag sharing and event-driven performance scheduling are preserved. No native detection, dependency or background processing changes. Normal live plugin updates deliver this release.
