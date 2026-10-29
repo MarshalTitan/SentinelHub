@@ -16,11 +16,11 @@ public sealed class TreasureQueueWindow : Window, IDisposable
     private readonly Action save;
     private readonly SentinelModernStyleScope style = new();
     private bool paddingPushed;
-    public TreasureQueueWindow(HubSettings settings, Func<TreasureView> view, Action<TreasureAction, Guid> request,
-        Action changed, Action save) : base(WindowId)
+    public TreasureQueueWindow(HubSettings settings, Func<TreasureView> view, Action<TreasureRequest> request,
+        Action changed, Action save, Func<ImFontPtr>? iconFont = null) : base(WindowId)
     {
         this.settings = settings; this.view = view; this.save = save;
-        panel = new(settings.TreasureMaps, view, request, changed, save);
+        panel = new(settings.TreasureMaps, view, request, changed, save, iconFont);
         var s = settings.TreasureMaps;
         Position = new(s.FloatingX, s.FloatingY); PositionCondition = ImGuiCond.FirstUseEver;
         Size = new(s.FloatingWidth, s.FloatingHeight); SizeCondition = ImGuiCond.FirstUseEver;

@@ -79,6 +79,23 @@ internal static class TreasureTests
             check(!q.Undo(2, 5) && q.Entries.Length == 5 && q.CanUndo(2));
             q.Clear(); check(q.Entries.Length == 0 && !q.CanUndo(3));
         });
+        test("Treasure drag reorder is atomic, identity-based and preserves untouched rows and no-op snapshots", () => {
+            var q = new TreasureQueue(); q.Bind(new());
+            for (var i = 0; i < 200; i++) q.Add(a, Location(i * 1000), time, 200);
+            var original = q.Entries.ToArray();
+            check(q.MoveRelative(original[199].Id, original[0].Id, false));
+            check(q.Entries[0] == original[199] && q.Entries.Skip(1).SequenceEqual(original.Take(199)));
+            var snapshot = q.Entries;
+            check(!q.MoveRelative(original[199].Id, original[0].Id, false) && ReferenceEquals(snapshot, q.Entries));
+            check(!q.MoveRelative(original[0].Id, original[199].Id, true) && ReferenceEquals(snapshot, q.Entries));
+            check(!q.MoveRelative(original[0].Id, original[0].Id, false) && ReferenceEquals(snapshot, q.Entries));
+            check(!q.MoveRelative(Guid.NewGuid(), original[0].Id, true) && ReferenceEquals(snapshot, q.Entries));
+            check(!q.MoveRelative(original[0].Id, Guid.NewGuid(), true) && ReferenceEquals(snapshot, q.Entries));
+            check(q.MoveRelative(original[199].Id, original[198].Id, true) && q.Entries.SequenceEqual(original));
+            check(q.MoveRelative(original[0].Id, original[100].Id, false));
+            check(q.Entries[99] == original[0] && q.Entries[100] == original[100]);
+            check(q.Remove(original[0].Id, true, 100) && q.Undo(101, 200) && q.Entries[99] == original[0]);
+        });
         test("Treasure explicit repost guard ignores only the local echo and expires", () => {
             var q = new TreasureQueue(); q.Bind(new()); q.Shared(Location(), a, 100);
             check(q.IsRepost(a, Location(), 101)); check(!q.IsRepost(b, Location(), 101));

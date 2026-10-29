@@ -65,5 +65,5 @@ public sealed record TreasureView(bool Available, TreasureEntry[] Entries, OwnTr
 {
     public static readonly TreasureView Empty = new(false, [], null, false, "Disabled", "");
 }
-public enum TreasureAction { Open, Share, Complete, Delete, Up, Down, Undo, Clear, OpenMine, AddMine, AddCopy, Next }
-public readonly record struct TreasureRequest(TreasureAction Action, Guid EntryId = default);
+public enum TreasureAction { Open, Share, Complete, Delete, Up, Down, Undo, Clear, OpenMine, AddMine, AddCopy, Next, MoveBefore, MoveAfter }
+public readonly record struct TreasureRequest(TreasureAction Action, Guid EntryId = default, Guid TargetId = default);

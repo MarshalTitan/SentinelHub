@@ -1,13 +1,16 @@
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using SentinelCore.UI;
 using SentinelHub.TreasureMaps;
 namespace SentinelHub.UI;
 
 public sealed class TreasureMapsPanel(TreasureSettings settings, Func<TreasureView> view,
-    Action<TreasureAction, Guid> request, Action changed, Action save)
+    Action<TreasureRequest> request, Action changed, Action save, Func<ImFontPtr>? iconFont = null)
 {
+    internal const string DragPayload = "SHUB_TREASURE_QUEUE";
+    private readonly Func<ImFontPtr> icons = iconFont ?? (() => UiBuilder.IconFont);
     private bool confirmClear;
     public void Draw()
     {
@@ -56,7 +59,7 @@ public sealed class TreasureMapsPanel(TreasureSettings settings, Func<TreasureVi
         {
             var entry = v.Entries[i]; ImGui.PushID(entry.Id.ToString("N"));
             ImGui.Separator();
-            ImGui.TextWrapped($"{i + 1}. {entry.Owner.Name}"); ImGui.TextWrapped(entry.Location.Label);
+            EntryLink(entry, i, v.Available);
             if (!compact) ImGui.TextWrapped("Received " + entry.ReceivedAt.ToLocalTime().ToString("g"));
             // Both views share every action. Natural button widths wrap at the row edge.
             var right = ImGui.GetCursorScreenPos().X + ImGui.GetContentRegionAvail().X;
@@ -72,14 +75,14 @@ public sealed class TreasureMapsPanel(TreasureSettings settings, Func<TreasureVi
             // auto-sizing popup window and lets ImGui place it inside the viewport.
             if (ImGui.BeginPopup("queue-actions", ImGuiWindowFlags.AlwaysAutoResize))
             {
-                if (ImGui.MenuItem("Delete")) request(TreasureAction.Delete, entry.Id);
+                if (IconMenuItem("Delete", FontAwesomeIcon.Trash)) request(new(TreasureAction.Delete, entry.Id));
                 ImGui.BeginDisabled(i == 0);
-                if (ImGui.MenuItem("Move Up") && i > 0) request(TreasureAction.Up, entry.Id);
+                if (IconMenuItem("Move Up", FontAwesomeIcon.ArrowUp) && i > 0) request(new(TreasureAction.Up, entry.Id));
                 ImGui.EndDisabled();
                 ImGui.BeginDisabled(i == v.Entries.Length - 1);
-                if (ImGui.MenuItem("Move Down") && i < v.Entries.Length - 1) request(TreasureAction.Down, entry.Id);
+                if (IconMenuItem("Move Down", FontAwesomeIcon.ArrowDown) && i < v.Entries.Length - 1) request(new(TreasureAction.Down, entry.Id));
                 ImGui.EndDisabled();
-                if (ImGui.MenuItem("Add another")) request(TreasureAction.AddCopy, entry.Id);
+                if (IconMenuItem("Add another", FontAwesomeIcon.Plus)) request(new(TreasureAction.AddCopy, entry.Id));
                 ImGui.EndPopup();
             }
             ImGui.PopID(); ImGui.Spacing();
@@ -98,13 +101,13 @@ public sealed class TreasureMapsPanel(TreasureSettings settings, Func<TreasureVi
     private void ActionButton(string label, TreasureAction action, Guid id, float right, ref bool first)
     {
         PlaceControl(ImGui.CalcTextSize(label).X + 2 * ImGui.GetStyle().FramePadding.X, right, ref first);
-        if (ImGui.Button(label)) request(action, id);
+        if (ImGui.Button(label)) request(new(action, id));
     }
     private void Arrow(string label, ImGuiDir direction, TreasureAction action, Guid id, bool disabled, float right, ref bool first)
     {
         PlaceControl(ImGui.GetFrameHeight(), right, ref first);
         ImGui.BeginDisabled(disabled);
-        if (ImGui.ArrowButton(label, direction) && !disabled) request(action, id);
+        if (ImGui.ArrowButton(label, direction) && !disabled) request(new(action, id));
         ImGui.EndDisabled();
         if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) ImGui.SetTooltip(label);
     }
@@ -114,5 +117,61 @@ public sealed class TreasureMapsPanel(TreasureSettings settings, Func<TreasureVi
             ImGui.SameLine();
         first = false;
     }
-    private void Send(TreasureAction action) => request(action, Guid.Empty);
+    private void Send(TreasureAction action) => request(new(action));
+
+    private bool IconMenuItem(string label, FontAwesomeIcon icon)
+    {
+        // Keep MenuItem's intrinsic size and native hit box, reserving an icon column.
+        var indent = (int)Math.Ceiling((ImGui.GetFontSize() + ImGui.GetStyle().ItemInnerSpacing.X)
+            / Math.Max(1, ImGui.CalcTextSize(" ").X));
+        var clicked = ImGui.MenuItem(new string(' ', indent) + label + "##" + label);
+        var min = ImGui.GetItemRectMin(); var height = ImGui.GetItemRectSize().Y;
+        ImGui.PushFont(icons());
+        var glyph = icon.ToIconString(); var size = ImGui.CalcTextSize(glyph);
+        ImGui.GetWindowDrawList().AddText(new(min.X + ImGui.GetStyle().ItemSpacing.X / 2,
+            min.Y + (height - size.Y) / 2), ImGui.GetColorU32(ImGuiCol.Text), glyph);
+        ImGui.PopFont();
+        return clicked;
+    }
+
+    // Shared by both windows. Only explicit drops publish work; hover and previews are read-only.
+    internal unsafe void EntryLink(TreasureEntry entry, int index, bool available = true)
+    {
+        ImGui.BeginGroup();
+        ImGui.PushFont(icons()); ImGui.TextUnformatted(FontAwesomeIcon.GripVertical.ToIconString()); ImGui.PopFont();
+        ImGui.SameLine(); ImGui.TextWrapped($"{index + 1}. {entry.Owner.Name}");
+        ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetStyle().Colors[(int)ImGuiCol.CheckMark]);
+        ImGui.TextWrapped(entry.Location.Label); ImGui.PopStyleColor();
+        ImGui.EndGroup();
+        if (!available) return;
+        var min = ImGui.GetItemRectMin(); var max = ImGui.GetItemRectMax();
+        if (ImGui.IsItemHovered()) ImGui.SetTooltip("Drag this map to reorder. Click to open its flag.");
+        if (ImGui.IsItemHovered() && ImGui.IsMouseReleased(ImGuiMouseButton.Left)
+            && ImGui.GetIO().MouseDragMaxDistanceSqr[0] < MathF.Pow(ImGui.GetIO().MouseDragThreshold, 2))
+            request(new(TreasureAction.Open, entry.Id));
+        if (ImGui.BeginDragDropSource(ImGuiDragDropFlags.SourceAllowNullId))
+        {
+            Span<byte> id = stackalloc byte[16]; entry.Id.TryWriteBytes(id);
+            ImGui.SetDragDropPayload(DragPayload, id, ImGuiCond.Once);
+            ImGui.TextUnformatted(entry.Owner.Name); ImGui.TextWrapped(entry.Location.Label);
+            ImGui.EndDragDropSource();
+        }
+        if (ImGui.BeginDragDropTarget())
+        {
+            var payload = ImGui.AcceptDragDropPayload(DragPayload, ImGuiDragDropFlags.AcceptBeforeDelivery);
+            if (payload.Handle != null && payload.DataSize == 16)
+            {
+                var source = new Guid(new ReadOnlySpan<byte>(payload.Data, 16));
+                if (source != entry.Id)
+                {
+                    var after = ImGui.GetMousePos().Y >= (min.Y + max.Y) / 2;
+                    var y = after ? max.Y : min.Y;
+                    ImGui.GetWindowDrawList().AddLine(new(min.X, y), new(max.X, y),
+                        ImGui.GetColorU32(ImGuiCol.CheckMark), 2 * ImGuiHelpers.GlobalScale);
+                    if (payload.IsDelivery()) request(new(after ? TreasureAction.MoveAfter : TreasureAction.MoveBefore, source, entry.Id));
+                }
+            }
+            ImGui.EndDragDropTarget();
+        }
+    }
 }

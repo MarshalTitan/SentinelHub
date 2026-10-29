@@ -112,6 +112,18 @@ internal static class TreasureIntegrationTests
         Check(controller.View.Entries.SequenceEqual(reordered), "Undo did not restore the reordered index and entry");
         controller.Request(TreasureAction.Delete, reordered[2].Id); controller.Tick();
         Check(controller.View.Entries.Length == 2 && !controller.View.Entries.Any(e => e.Id == reordered[2].Id), "Delete did not remove the selected entry");
+        var dragSource = controller.View.Entries[1]; var dragTarget = controller.View.Entries[0];
+        controller.Request(new(TreasureAction.MoveBefore, dragSource.Id, dragTarget.Id)); controller.Tick();
+        Check(ReferenceEquals(hub(), floating()) && hub().Entries[0] == dragSource, "Atomic drop did not update both views");
+        var dragView = controller.View;
+        controller.Request(new(TreasureAction.MoveBefore, dragSource.Id, dragTarget.Id)); controller.Tick();
+        controller.Request(new(TreasureAction.MoveAfter, dragSource.Id, Guid.NewGuid())); controller.Tick();
+        Check(ReferenceEquals(dragView, controller.View), "No-op or stale drop rebuilt the view");
+        controller.Request(TreasureAction.Next); controller.Tick();
+        Check(opened[^1] == TreasureLinks.Restore(dragSource.Location).DataString, "Next ignored a dragged first entry");
+        now = 2000; controller.Tick();
+        restored = System.Text.Json.JsonSerializer.Deserialize<TreasureSettings>(savedJson!)!; restored.Normalize();
+        Check(restored.Characters[789UL.ToString("X16")].Entries.Select(e => e.Id).SequenceEqual(controller.View.Entries.Select(e => e.Id)), "Drag order did not persist");
         Console.WriteLine("PASS shared Hub/floating reorder state, no-op snapshot guard, exact reordered Next Map, persisted order, Complete/Undo and Delete.");
     }
     private static void Lifecycle()

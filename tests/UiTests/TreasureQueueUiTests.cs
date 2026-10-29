@@ -8,8 +8,11 @@ internal static unsafe class TreasureQueueUiTests
 {
     private static string scenario = "";
     private static void Check(bool value, string message) { if (!value) throw new Exception(message + " (" + scenario + ")"); }
-    public static void Run()
+    public static void Run(ImFontPtr font)
     {
+        foreach (var icon in new[] { Dalamud.Interface.FontAwesomeIcon.Trash, Dalamud.Interface.FontAwesomeIcon.ArrowUp,
+            Dalamud.Interface.FontAwesomeIcon.ArrowDown, Dalamud.Interface.FontAwesomeIcon.Plus, Dalamud.Interface.FontAwesomeIcon.GripVertical })
+            Check(font.FindGlyphNoFallback((ushort)icon) != null, "Queue icon missing from actual icon font: " + icon);
         var io = ImGui.GetIO(); var oldDisplay = io.DisplaySize; var oldScale = io.FontGlobalScale;
         var actionCases = 0; var placementCases = 0;
         try
@@ -26,10 +29,10 @@ internal static unsafe class TreasureQueueUiTests
                     new(100, 401, 123456 + i * 1000, -789012, "Fixture District", 24.2f, 18.5f, []), DateTimeOffset.UtcNow)).ToArray();
                 var view = new TreasureView(true, entries, null, true, "Listening", "");
                 var actions = new List<TreasureRequest>();
-                void Request(TreasureAction action, Guid id) => actions.Add(new(action, id));
-                var panel = new TreasureMapsPanel(settings.TreasureMaps, () => view, Request, () => { }, () => { });
+                void Request(TreasureRequest request) => actions.Add(request);
+                var panel = new TreasureMapsPanel(settings.TreasureMaps, () => view, Request, () => { }, () => { }, () => font);
                 using var style = new SentinelCore.UI.SentinelModernStyleScope();
-                using var window = new TreasureQueueWindow(settings, () => view, Request, () => { }, () => { });
+                using var window = new TreasureQueueWindow(settings, () => view, Request, () => { }, () => { }, () => font);
                 float? scroll = null;
                 Vector2 lastMorePoint = default;
                 float menuLineHeight = 0, menuFontHeight = 0;
@@ -50,6 +53,7 @@ internal static unsafe class TreasureQueueUiTests
                 {
                     ImGui.NewFrame();
                     var context = ImGui.GetCurrentContext(); var styles = context.StyleVarStack.Size; var colours = context.ColorStack.Size;
+                    var fonts = context.FontStack.Size;
                     if (floating) { window.PreOpenCheck(); window.PreDraw(); }
                     else if (theme == 1) style.PushAppShell(Dalamud.Interface.Utility.ImGuiHelpers.GlobalScale);
                     ImGui.SetNextWindowPos(new(15, 15), ImGuiCond.Always); ImGui.SetNextWindowSize(new(width, 700), ImGuiCond.Always);
@@ -61,7 +65,7 @@ internal static unsafe class TreasureQueueUiTests
                     ImGui.End();
                     if (floating) window.PostDraw();
                     else if (theme == 1) style.Pop();
-                    Check(context.StyleVarStack.Size == styles && context.ColorStack.Size == colours, "Queue actions unbalanced styles");
+                    Check(context.StyleVarStack.Size == styles && context.ColorStack.Size == colours && context.FontStack.Size == fonts, "Queue actions unbalanced styles/fonts");
                     ImGui.Render();
                 }
                 void Activate(string label, TreasureAction action, int index)
@@ -91,7 +95,7 @@ internal static unsafe class TreasureQueueUiTests
                         && popup.Pos.X + popup.Size.X <= viewport.WorkPos.X + viewport.WorkSize.X + 1
                         && popup.Pos.Y + popup.Size.Y <= viewport.WorkPos.Y + viewport.WorkSize.Y + 1,
                         "Queue popup escaped the game viewport");
-                    Check(popup.Size.X >= ImGui.CalcTextSize("Add another").X + 2 * popup.WindowPadding.X,
+                    Check(popup.Size.X >= ImGui.CalcTextSize("Add another").X + ImGui.GetFontSize() + 2 * popup.WindowPadding.X,
                         "Queue menu text clipped by intrinsic width");
                     Check(popup.ContentSize.X <= popup.Size.X + 1 && !popup.ScrollbarX, "Queue popup has horizontal clipping");
                     Check(popup.ClipRect.Min.X <= popup.Pos.X + popup.WindowPadding.X + 1
@@ -133,6 +137,83 @@ internal static unsafe class TreasureQueueUiTests
         }
         finally { io.DisplaySize = oldDisplay; io.FontGlobalScale = oldScale; io.AddMousePosEvent(-100, -100); }
         Console.WriteLine($"PASS {placementCases} queue popup viewport/width/theme/scale placements and {actionCases} full/floating native menu, arrow and all-row action flows.");
+        DragLinks(font);
+    }
+    private static void DragLinks(ImFontPtr font)
+    {
+        var io = ImGui.GetIO(); var oldDisplay = io.DisplaySize; var oldScale = io.FontGlobalScale;
+        var cases = 0;
+        try
+        {
+            foreach (var scale in new[] { 1f, 1.5f, 2f }) foreach (var theme in new[] { 0, 1 })
+            foreach (var crossWindow in new[] { false, true })
+            {
+                scenario = $"drag scale={scale}, theme={theme}, crossWindow={crossWindow}";
+                io.DisplaySize = new(1000, 760); io.FontGlobalScale = scale;
+                var entries = Enumerable.Range(0, 3).Select(i => new TreasureEntry(Guid.NewGuid(), new("Owner " + i, 42),
+                    new(100, 401, i * 1000, 123456, "District", 24.2f, 18.5f, []), DateTimeOffset.UtcNow)).ToArray();
+                var queue = new TreasureQueue(); queue.Bind(new() { Entries = entries.ToList() });
+                var requests = new List<TreasureRequest>();
+                var v = new TreasureView(true, entries, null, false, "", "");
+                var panel = new TreasureMapsPanel(new(), () => v, r => requests.Add(r), () => { }, () => { }, () => font);
+                using var style = new SentinelCore.UI.SentinelModernStyleScope();
+                var rectangles = new (Vector2 Min, Vector2 Max)[2, 3];
+                void Frame(bool available = true)
+                {
+                    ImGui.NewFrame();
+                    if (theme == 1) style.PushAppShell(Dalamud.Interface.Utility.ImGuiHelpers.GlobalScale);
+                    for (var side = 0; side < 2; side++)
+                    {
+                        ImGui.SetNextWindowPos(new(side * 470 + 10, 20), ImGuiCond.Always);
+                        ImGui.SetNextWindowSize(new(440, 700), ImGuiCond.Always);
+                        ImGui.Begin("Drag queue " + side);
+                        for (var i = 0; i < entries.Length; i++)
+                        {
+                            ImGui.PushID(entries[i].Id.ToString("N"));
+                            panel.EntryLink(entries[i], i, available);
+                            rectangles[side, i] = (ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+                            ImGui.PopID(); ImGui.Separator();
+                        }
+                        ImGui.End();
+                    }
+                    if (theme == 1) style.Pop();
+                    ImGui.Render();
+                }
+                Vector2 Point(int side, int row, bool after = false)
+                {
+                    var (min, max) = rectangles[side, row];
+                    return new(min.X + 20, min.Y + (max.Y - min.Y) * (after ? .75f : .25f));
+                }
+                void Drag(int from, int target, bool after, bool cancel = false, bool available = true)
+                {
+                    var p = Point(0, from); io.AddMousePosEvent(p.X, p.Y); Frame(available);
+                    io.AddMouseButtonEvent(0, true); Frame(available);
+                    io.AddMousePosEvent(p.X + 24, p.Y); Frame(available); Frame(available);
+                    p = cancel ? new(980, 750) : Point(crossWindow ? 1 : 0, target, after);
+                    io.AddMousePosEvent(p.X, p.Y); Frame(available); Frame(available);
+                    io.AddMouseButtonEvent(0, false); Frame(available); Frame(available);
+                }
+                io.AddMousePosEvent(-100, -100); Frame(); Frame(); Frame();
+                var click = Point(0, 1); io.AddMousePosEvent(click.X, click.Y); Frame();
+                io.AddMouseButtonEvent(0, true); Frame(); io.AddMouseButtonEvent(0, false); Frame();
+                Check(requests.SequenceEqual(new[] { new TreasureRequest(TreasureAction.Open, entries[1].Id) }), "Map link click did not open the selected flag");
+                requests.Clear();
+                Drag(2, 0, false);
+                Check(requests.SequenceEqual(new[] { new TreasureRequest(TreasureAction.MoveBefore, entries[2].Id, entries[0].Id) }),
+                    "Dragging a map link did not deliver exactly one atomic MoveBefore: " + string.Join(",", requests));
+                Check(queue.MoveRelative(requests[0].EntryId, requests[0].TargetId, false)
+                    && queue.Entries.Select(e => e.Id).SequenceEqual(new[] { entries[2].Id, entries[0].Id, entries[1].Id }), "Drop changed the wrong identities");
+                requests.Clear(); Drag(0, 2, true);
+                Check(requests.SequenceEqual(new[] { new TreasureRequest(TreasureAction.MoveAfter, entries[0].Id, entries[2].Id) }),
+                    "Dragging below a link did not select MoveAfter");
+                requests.Clear(); Drag(1, 1, false); Check(requests.Count == 0, "Self-drop emitted work");
+                Drag(2, 0, false, cancel: true); Check(requests.Count == 0, "Canceled drag emitted work");
+                Drag(2, 0, false, available: false); Check(requests.Count == 0, "Unavailable queue accepted a drop");
+                io.AddMousePosEvent(-100, -100); Frame(); cases++;
+            }
+        }
+        finally { io.DisplaySize = oldDisplay; io.FontGlobalScale = oldScale; io.AddMousePosEvent(-100, -100); }
+        Console.WriteLine($"PASS {cases} native mouse drag/drop flows across themes/scales and between queue windows; before/after, self-drop, cancel and disabled guards.");
     }
     private static ImGuiWindowPtr BodyWindow(bool floating)
     {

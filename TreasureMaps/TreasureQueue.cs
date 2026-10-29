@@ -40,6 +40,17 @@ public sealed class TreasureQueue
         (state.Entries[from], state.Entries[to]) = (state.Entries[to], state.Entries[from]); Rebuild(); return true;
     }
     public void Clear() { state.Entries.Clear(); undo = null; repost = null; Rebuild(); }
+    public bool MoveRelative(Guid id, Guid targetId, bool after)
+    {
+        var from = state.Entries.FindIndex(e => e.Id == id);
+        var target = state.Entries.FindIndex(e => e.Id == targetId);
+        if (from < 0 || target < 0 || from == target) return false;
+        var to = target + (after ? 1 : 0);
+        if (from < to) to--;
+        if (from == to) return false;
+        var entry = state.Entries[from]; state.Entries.RemoveAt(from); state.Entries.Insert(to, entry);
+        Rebuild(); return true;
+    }
     public void ClearTransient() { undo = null; repost = null; }
     public void Shared(TreasureLocation location, TreasureOwner self, long now) => repost = (location, self, now + 30_000);
     public bool IsRepost(TreasureOwner owner, TreasureLocation location, long now)
