@@ -11,14 +11,16 @@ internal static unsafe class TreasureQueueUiTests
     public static void Run(ImFontPtr font)
     {
         foreach (var icon in new[] { Dalamud.Interface.FontAwesomeIcon.Trash, Dalamud.Interface.FontAwesomeIcon.ArrowUp,
-            Dalamud.Interface.FontAwesomeIcon.ArrowDown, Dalamud.Interface.FontAwesomeIcon.Plus, Dalamud.Interface.FontAwesomeIcon.GripVertical })
+            Dalamud.Interface.FontAwesomeIcon.ArrowDown, Dalamud.Interface.FontAwesomeIcon.Plus, Dalamud.Interface.FontAwesomeIcon.GripVertical,
+            Dalamud.Interface.FontAwesomeIcon.Flag, Dalamud.Interface.FontAwesomeIcon.ShareAlt, Dalamud.Interface.FontAwesomeIcon.Check,
+            Dalamud.Interface.FontAwesomeIcon.MapMarkerAlt, Dalamud.Interface.FontAwesomeIcon.EllipsisH, Dalamud.Interface.FontAwesomeIcon.Undo })
             Check(font.FindGlyphNoFallback((ushort)icon) != null, "Queue icon missing from actual icon font: " + icon);
         var io = ImGui.GetIO(); var oldDisplay = io.DisplaySize; var oldScale = io.FontGlobalScale;
         var actionCases = 0; var placementCases = 0;
         try
         {
             foreach (var floating in new[] { false, true }) foreach (var theme in new[] { 0, 1 })
-            foreach (var scale in new[] { 1f, 1.5f, 2f }) foreach (var width in new[] { 320f, 620f })
+            foreach (var scale in new[] { 1f, 1.5f, 2f }) foreach (var width in new[] { 320f, 620f, 900f })
             {
                 scenario = $"floating={floating}, theme={theme}, scale={scale}, width={width}";
                 io.DisplaySize = new(1000, 760); io.FontGlobalScale = scale;
@@ -42,7 +44,7 @@ internal static unsafe class TreasureQueueUiTests
                     if (activate is not null)
                     {
                         ImGui.PushID(entries[index].Id.ToString("N"));
-                        var context = ImGui.GetCurrentContext(); context.NavNextActivateId = ImGui.GetID(activate);
+                        var context = ImGui.GetCurrentContext(); context.NavNextActivateId = ImGui.GetID(activate is "Move Up" or "Move Down" ? activate : "###" + activate);
                         ImGui.PopID();
                     }
                     if (floating) window.Draw(); else panel.Queue(view, false);
@@ -111,7 +113,7 @@ internal static unsafe class TreasureQueueUiTests
                     io.AddMousePosEvent(700, 450); Frame(menuIndex, "More..."); Frame(); Frame();
                     var popup = Popup(); var before = actions.Count;
                     var center = popup.Pos + popup.WindowPadding + new Vector2(popup.Size.X / 3,
-                        menuFontHeight / 2 + row * menuLineHeight);
+                        menuFontHeight / 2 + row * ((popup.ContentSize.Y - menuFontHeight) / 3));
                     io.AddMousePosEvent(center.X, center.Y); io.AddMouseButtonEvent(0, true); Frame();
                     io.AddMouseButtonEvent(0, false); Frame();
                     Check(actions.Count == before + 1 && actions[^1] == new TreasureRequest(action, entries[menuIndex].Id),
@@ -126,10 +128,15 @@ internal static unsafe class TreasureQueueUiTests
                 Check(actions.Count == beforeDisabled, $"Last entry Down arrow emitted actions: floating={floating}, theme={theme}, scale={scale}, width={width}; " + string.Join(",", actions.Skip(beforeDisabled)));
                 // Later rows must expose More too, rather than truncating the floating queue.
                 scroll = 1_000_000; Frame(); Frame(); scroll = null;
-                io.AddMousePosEvent(lastMorePoint.X, lastMorePoint.Y); io.AddMouseButtonEvent(0, true); Frame(last);
-                io.AddMouseButtonEvent(0, false); Frame(last); Frame(last); _ = Popup(); ClosePopup();
+                Frame(last, "More..."); Frame(last); Frame(last); _ = Popup(); ClosePopup();
                 scroll = 0; Frame(); Frame(); scroll = null;
-                Activate("Move Down", TreasureAction.Down, 0);
+                var beforeFirstDown = actions.Count;
+                // A tall card at large text scales may need scrolling before its controls are visible.
+                for (var y = 0; y <= 600 && actions.Count == beforeFirstDown; y += 50)
+                {
+                    scroll = y; Frame(); Frame(); scroll = null; Frame(0, "Move Down"); Frame();
+                }
+                Check(actions.Count == beforeFirstDown + 1 && actions[^1] == new TreasureRequest(TreasureAction.Down, entries[0].Id), "First entry Down was inaccessible after scrolling");
                 beforeDisabled = actions.Count; Frame(0, "Move Up"); Frame(0);
                 Check(actions.Count == beforeDisabled, "First entry Up arrow emitted actions: " + string.Join(",", actions.Skip(beforeDisabled)));
                 actionCases++;
@@ -138,6 +145,93 @@ internal static unsafe class TreasureQueueUiTests
         finally { io.DisplaySize = oldDisplay; io.FontGlobalScale = oldScale; io.AddMousePosEvent(-100, -100); }
         Console.WriteLine($"PASS {placementCases} queue popup viewport/width/theme/scale placements and {actionCases} full/floating native menu, arrow and all-row action flows.");
         DragLinks(font);
+        CardLayouts(font);
+    }
+    private static void CardLayouts(ImFontPtr font)
+    {
+        var io = ImGui.GetIO(); var oldDisplay = io.DisplaySize; var oldScale = io.FontGlobalScale;
+        var cases = 0; var inlineCases = 0;
+        try
+        {
+            io.DisplaySize = new(1500, 3000);
+            foreach (var scale in new[] { 1f, 1.2f, 1.5f, 2f }) foreach (var width in new[] { 300f, 420f, 900f })
+            foreach (var compact in new[] { false, true }) foreach (var longText in new[] { false, true })
+            {
+                scenario = $"card scale={scale}, width={width}, compact={compact}, long={longText}"; io.FontGlobalScale = scale;
+                var entry = new TreasureEntry(Guid.NewGuid(), new(longText ? string.Join(" ", Enumerable.Repeat("Map Owner", 12)) : "Map Owner", 42),
+                    new(100, 401, 123456, 987654, longText ? string.Join(" ", Enumerable.Repeat("District", 14)) : "Elpis", 24.2f, 18.5f, []), DateTimeOffset.UtcNow);
+                var actions = new List<TreasureRequest>(); var v = new TreasureView(true, [entry], null, false, "", "");
+                var panel = new TreasureMapsPanel(new(), () => v, r => actions.Add(r), () => { }, () => { }, () => font);
+                Vector2 more = default;
+                void Frame(bool full = false)
+                {
+                    ImGui.NewFrame(); var context = ImGui.GetCurrentContext();
+                    var styles = context.StyleVarStack.Size; var colours = context.ColorStack.Size; var fonts = context.FontStack.Size;
+                    ImGui.SetNextWindowPos(new(20, 20), ImGuiCond.Always); ImGui.SetNextWindowSize(new(width + 32, 2800), ImGuiCond.Always);
+                    ImGui.Begin("Card layout checks");
+                    if (full)
+                    {
+                        panel.Queue(v, compact);
+                        var vertices = ImGui.GetWindowDrawList().VtxBuffer; var cards = 0; var links = 0;
+                        for (var j = 0; j < vertices.Size; j++)
+                        {
+                            if (vertices[j].Col == ImGui.ColorConvertFloat4ToU32(TreasureQueuePalette.Card)) cards++;
+                            if (vertices[j].Col == ImGui.ColorConvertFloat4ToU32(TreasureQueuePalette.Link)) links++;
+                        }
+                        Check(cards >= 4 && links > 0, "Native queue draw data lost the dark card or blue map link");
+                    }
+                    else
+                    {
+                        TreasureMapsPanel.PushQueueStyle();
+                        var cardStart = ImGui.GetCursorScreenPos(); var cardWidth = ImGui.GetContentRegionAvail().X;
+                        var layout = panel.MeasureCard(entry, 0, compact, cardWidth);
+                        var cached = panel.Presentations(v.Entries, compact, cardWidth);
+                        Check(ReferenceEquals(cached, panel.Presentations(v.Entries, compact, cardWidth)), "Unchanged card layout was rebuilt");
+                        if (cases == 0)
+                        {
+                            Check(!ReferenceEquals(cached, panel.Presentations(v.Entries, compact, cardWidth + 50)), "Resize reused stale card layout");
+                            Check(!ReferenceEquals(cached, panel.Presentations(v.Entries.ToArray(), compact, cardWidth)), "Changed queue snapshot reused card layout");
+                        }
+                        var pad = 12 * Dalamud.Interface.Utility.ImGuiHelpers.GlobalScale;
+                        var start = cardStart + new Vector2(pad); var contentRight = cardStart.X + cardWidth - pad;
+                        ImGui.SetCursorScreenPos(start);
+                        panel.EntryLink(entry, 0, true, layout.LinkWidth);
+                        if (!compact)
+                        {
+                            ImGui.SetCursorScreenPos(new(start.X, ImGui.GetCursorScreenPos().Y));
+                            ImGui.PushTextWrapPos(ImGui.GetCursorPosX() + layout.LinkWidth);
+                            ImGui.TextColored(TreasureQueuePalette.Muted, "Received " + entry.ReceivedAt.ToLocalTime().ToString("g")); ImGui.PopTextWrapPos();
+                        }
+                        var metadataEnd = ImGui.GetItemRectMax();
+                        Check(metadataEnd.Y <= start.Y + layout.LinkHeight + 1, "Wrapped map metadata exceeded the measured card area");
+                        var actionPos = layout.Inline ? new Vector2(contentRight - layout.ActionsWidth, start.Y + (layout.ContentHeight - ImGui.GetFrameHeight()) / 2)
+                            : start + new Vector2(0, layout.LinkHeight + 10 * Dalamud.Interface.Utility.ImGuiHelpers.GlobalScale);
+                        if (layout.Inline) Check(metadataEnd.X < actionPos.X, "Inline metadata overlaps buttons");
+                        else Check(metadataEnd.Y < actionPos.Y, "Stacked buttons overlap wrapped metadata");
+                        ImGui.SetCursorScreenPos(actionPos);
+                        panel.RowActions(entry, 0, 2, contentRight);
+                        more = (ImGui.GetItemRectMin() + ImGui.GetItemRectMax()) / 2;
+                        Check(ImGui.GetItemRectMin().X >= start.X - 1 && ImGui.GetItemRectMax().X <= contentRight + 1, "Wrapped buttons escaped the card padding");
+                        Check(ImGui.GetItemRectMax().Y <= start.Y + layout.ContentHeight + 2, "Wrapped controls exceeded card bounds");
+                        if (layout.Inline) Check(Math.Abs(ImGui.GetItemRectMin().Y - actionPos.Y) <= 1, "Inline actions unexpectedly wrapped");
+                        TreasureMapsPanel.PopQueueStyle();
+                    }
+                    ImGui.End();
+                    Check(context.StyleVarStack.Size == styles && context.ColorStack.Size == colours && context.FontStack.Size == fonts, "Card renderer leaked styles/fonts");
+                    ImGui.Render();
+                }
+                io.AddMousePosEvent(-100, -100); Frame(); Frame(); Frame();
+                io.AddMousePosEvent(more.X, more.Y); io.AddMouseButtonEvent(0, true); Frame();
+                io.AddMouseButtonEvent(0, false); Frame(); Frame(); _ = Popup();
+                io.AddKeyEvent(ImGuiKey.Escape, true); Frame(); io.AddKeyEvent(ImGuiKey.Escape, false); Frame();
+                io.AddMousePosEvent(-100, -100); Frame(true); Frame(true);
+                if (width == 900 && scale == 1) inlineCases++; cases++;
+                Check(actions.Count == 0, "Measuring, rendering or opening More changed queue state");
+            }
+        }
+        finally { io.DisplaySize = oldDisplay; io.FontGlobalScale = oldScale; io.AddMousePosEvent(-100, -100); }
+        Check(inlineCases > 0, "No wide inline card layout exercised");
+        Console.WriteLine($"PASS {cases} dark card layout, long wrapped text, inline/stacked geometry, native More mouse clicks, glyph draw data and style isolation cases.");
     }
     private static void DragLinks(ImFontPtr font)
     {

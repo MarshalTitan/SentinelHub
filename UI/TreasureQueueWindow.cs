@@ -31,6 +31,11 @@ public sealed class TreasureQueueWindow : Window, IDisposable
     {
         PopPadding(); style.Pop(); if (settings.Theme == 1) style.PushAppShell(ImGuiHelpers.GlobalScale);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(12) * ImGuiHelpers.GlobalScale); paddingPushed = true;
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 8 * ImGuiHelpers.GlobalScale);
+        ImGui.PushStyleColor(ImGuiCol.WindowBg, TreasureQueuePalette.Background);
+        ImGui.PushStyleColor(ImGuiCol.TitleBg, TreasureQueuePalette.Card);
+        ImGui.PushStyleColor(ImGuiCol.TitleBgActive, TreasureQueuePalette.CardHover);
+        ImGui.PushStyleColor(ImGuiCol.Border, TreasureQueuePalette.Border);
     }
     public override void PostDraw()
     {
@@ -39,7 +44,7 @@ public sealed class TreasureQueueWindow : Window, IDisposable
         // next frame. Save now so PreOpenCheck cannot reopen the closed window.
         if (!IsOpen) OnClose();
     }
-    private void PopPadding() { if (!paddingPushed) return; ImGui.PopStyleVar(); paddingPushed = false; }
+    private void PopPadding() { if (!paddingPushed) return; ImGui.PopStyleColor(4); ImGui.PopStyleVar(2); paddingPushed = false; }
     public override void OnClose()
     {
         if (!settings.TreasureMaps.FloatingOpen) return;
