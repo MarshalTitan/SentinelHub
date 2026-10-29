@@ -1,7 +1,7 @@
-# Sentinel Hub 0.8.1.1
+# Sentinel Hub 0.8.2.0
 
-Both Treasure Maps queue views now show icons beside More menu options: Delete, Move Up, Move Down and Add another. Icons use the existing bundled icon font, with readable native menu labels and the same automatic viewport placement.
+Both Treasure Maps queue windows now use dark rounded cards, teal accents, blue underlined map locations, grip handles and outlined icon buttons. Wide cards place map details beside actions; narrow cards stack the details and wrap the controls. The floating window uses matching dark window colors and retains native close/collapse behavior.
 
-Owner/location links have a drag handle. Drag a link above or below another map to reorder; a placement line previews the destination. Dragging also works between the Hub queue and floating window. A drop moves the original entry once and saves the shared order. Click a link to open its saved flag. Existing Open Flag and Up/Down controls remain available.
+The compact toolbar shows the remaining count, Next Map and brief Undo when available. Open Flag, Share, Complete, Up/Down and the ellipsis More button remain on every card. More retains its icon labels, intrinsic popup sizing and viewport placement. Links remain clickable and draggable between queue windows.
 
-Next Map follows the updated first entry. Complete/Undo, all saved map fields, settings, floating X/Show/Hide behavior, decipher detection, structured chat capture and manual sharing are preserved. Dragging rearranges the local queue; sharing to game chat still uses Share and the prepared /p <flag> command. No native detection, dependency or background scheduling changes. Normal live plugin updates deliver this release.
+Formatted card text and layout are reused while the queue, width and font/style metrics are unchanged. Closed windows still render nothing. Queue order, exact saved flags, Complete/Undo, floating X/Show/Hide, settings, decipher detection and manual sharing are preserved. No controller, game binding, dependency or background scheduling changes. Normal live plugin updates deliver this release.

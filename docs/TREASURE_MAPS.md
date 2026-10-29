@@ -25,6 +25,14 @@ A delivered drop submits one framework-thread request containing source and targ
 
 More uses the existing bundled Font Awesome font for Delete, Move Up, Move Down and Add another icons. Its native MenuItem hit boxes include the reserved icon column and full labels, retaining independent popup sizing, viewport placement and clipping. No image downloads or dependencies were added. Tests check actual glyph availability, popup layout and clicks, link clicks, native mouse drops, cancellation, self/disabled/stale drops, persistence, Next Map and the existing X/Show/Hide lifecycle. Supervised in-game checks should also exercise both views at the active UI scale; fixture results do not certify real game rendering or movement performance.
 
+## Queue card styling (0.8.2.0)
+
+Both queue views use the same dark card palette, teal route/hover accents, blue underlined location links, grip handles and outlined icon action buttons. Wide cards put metadata and controls side by side; narrow cards stack them and wrap controls. Map names, location labels and receipt timestamps wrap within their own measured area. Main Hub keeps receipt timestamps; compact mode omits them. The floating window uses matching dark native chrome while retaining its existing close/collapse controls and geometry.
+
+The ellipsis button opens the existing independent native popup. All row actions, drag/link behavior and controller requests are retained. Card backgrounds use ordinary draw-list rectangles; no clipped child window or additional per-card window is introduced. Presentation arrays cache IDs, formatted labels/timestamps and measured geometry until the queue snapshot, width, font/scale or relevant style metrics change. Caption/glyph strings are reused. Cache work occurs only while a view draws; controller scheduling and dormant behavior are unchanged.
+
+Additional native fixtures cover long text, card bounds, wide inline and narrow stacked layouts, actual ellipsis mouse clicks, rendered card/link colors, glyph availability, cached presentation reuse/invalidation and balanced style/font stacks. Popup coverage now includes a 900-pixel wide case alongside narrow sizes. The existing full Hub/floating, drag, Next/Complete/Undo, persistence, X/Show/Hide and idle suites remain required. An offline render of native draw data was visually inspected; it is fixture evidence rather than an in-game screenshot or gameplay performance acceptance.
+
 ## Automatic detection
 
 The adapter observes the game's treasure-map display call and forwards the original call exactly once before observing anything. It never suppresses the normal treasure-map window. The rank/subrow pair resolves through `TreasureHuntRank` → `TreasureSpot` → `Level.Map`; this preserves map variants. Actual spot subrow zero is valid. Cached rank/item and map/territory metadata is resolved only on demand.

@@ -2,7 +2,7 @@
 
 Optional ecosystem control center for MarshalTitan Sentinel plugins. Open with `/shub`; export sanitized diagnostics with `/shub export`.
 
-## Treasure Maps - 0.8.1.1
+## Treasure Maps - 0.8.2.0
 
 Adds an optional Treasure Maps page and independent floating queue: deciphered-map location detection, Party flags (Alliance opt-in), exact saved map variants, Open/Next, manual flag sharing, Complete with brief Undo, Delete/reorder and character-scoped unfinished queues. Enable the module in Treasure Maps; upgrades leave it Off. Share restores the actual flag and copies `/p <flag>` for manual sending. No teleport/navigation, external service or additional plugin is needed. See [implementation, performance, API/license audit and live checks](docs/TREASURE_MAPS.md). Native detection and real chat/map behavior remain pending supervised validation; automated tests do not certify them.
 
@@ -87,3 +87,5 @@ For normal use, disable the isolated development copy, enable/update live Sentin
 Shared inventory, dormant inactive modules, addon-driven Quest with bounded fallback, cached latency conflict checks and an authoritative Profiles overview are included in this live update. Requires Profiles 0.2.1.8 for the new overview; older builds show a clear compatibility message. Movement/camera and interaction validation remains pending. See [performance evidence and checklist](docs/PERFORMANCE_PROFILES.md).
 
 0.8.1.1 adds icons beside More menu actions and draggable owner/location links in both queue views. Drop above or below another map to reorder, including between the two windows; the placement line previews the destination. Clicking a link opens its flag. Up/Down controls remain available. Saved queue order, Next Map, Complete/Undo and dormant processing are preserved.
+
+0.8.2.0 refreshes both Treasure Map queues with dark rounded cards, teal accents, blue location links and icon action buttons. Wide cards place details beside actions; narrow cards stack and wrap their controls. The floating window has matching dark chrome. Presentation/layout text is cached until the queue, available width or font/style metrics change. Existing queue state, drag ordering, popups, X/Show/Hide and detection remain intact.
