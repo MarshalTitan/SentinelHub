@@ -1,7 +1,7 @@
-# Sentinel Hub 0.8.1.0
+# Sentinel Hub 0.8.1.1
 
-Both Treasure Maps queue views now provide every per-entry action: Open Flag, Share, Complete, visible Up/Down arrows and More with Delete, Move Up, Move Down and Add another. The floating window includes the full scrollable queue. Compact controls wrap to fit narrow windows.
+Both Treasure Maps queue views now show icons beside More menu options: Delete, Move Up, Move Down and Add another. Icons use the existing bundled icon font, with readable native menu labels and the same automatic viewport placement.
 
-More uses native auto-sizing menu items in an independent popup, fixing the clipped menu and allowing ImGui to reposition it inside the game viewport. Boundary reorder controls are disabled. Order is shared immediately and saved by the existing character-scoped queue; Next Map follows its first entry. Complete still removes a row, and Undo restores its prior position when possible.
+Owner/location links have a drag handle. Drag a link above or below another map to reorder; a placement line previews the destination. Dragging also works between the Hub queue and floating window. A drop moves the original entry once and saves the shared order. Click a link to open its saved flag. Existing Open Flag and Up/Down controls remain available.
 
-Existing queues, settings, geometry, floating X/Show/Hide behavior, decipher detection, structured chat capture, manual flag sharing and event-driven performance scheduling are preserved. No native detection, dependency or background processing changes. Normal live plugin updates deliver this release.
+Next Map follows the updated first entry. Complete/Undo, all saved map fields, settings, floating X/Show/Hide behavior, decipher detection, structured chat capture and manual sharing are preserved. Dragging rearranges the local queue; sharing to game chat still uses Share and the prepared /p <flag> command. No native detection, dependency or background scheduling changes. Normal live plugin updates deliver this release.

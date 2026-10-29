@@ -17,6 +17,14 @@ Each location retains its exact territory ID, **specific map ID**, raw signed co
 
 Duplicate identity is owner name plus home world and exact territory/map, with a two-raw-unit tolerance (0.002 world units) solely to absorb flag float round-trips. Stored coordinates and payload bytes are never rounded or altered. Different owners remain independent. Different flags from one owner remain independent. A 30-second explicit-share ticket ignores only the local echo of the prepared flag; it does not suppress another player's matching flag. Identical repeated chat payloads cannot establish whether the same owner has a second physical map, so Add another is available instead of guessing.
 
+## Queue links and icon menus (0.8.1.1)
+
+Both views draw the same owner/location link with a grip icon. Click it to open the saved flag, or drag it onto another link. The upper/lower half inserts before/after that map, with a placement line during the preview. Native ImGui handles drag capture, scrolling and cancellation; drags can cross between queue windows. These are internal queue drags, not structured chat attachments. Share retains its existing manual `/p <flag>` preparation.
+
+A delivered drop submits one framework-thread request containing source and target entry identities, rather than a burst of Up/Down actions. A 200-entry queue can be rearranged in one operation. Missing/stale identities, self-drops and already-adjacent no-ops preserve the current snapshot and schedule no save. Previews never change or save the queue. Existing Up/Down controls remain available. The same character-scoped list persists the result; Next Map, Complete and Undo use that order.
+
+More uses the existing bundled Font Awesome font for Delete, Move Up, Move Down and Add another icons. Its native MenuItem hit boxes include the reserved icon column and full labels, retaining independent popup sizing, viewport placement and clipping. No image downloads or dependencies were added. Tests check actual glyph availability, popup layout and clicks, link clicks, native mouse drops, cancellation, self/disabled/stale drops, persistence, Next Map and the existing X/Show/Hide lifecycle. Supervised in-game checks should also exercise both views at the active UI scale; fixture results do not certify real game rendering or movement performance.
+
 ## Automatic detection
 
 The adapter observes the game's treasure-map display call and forwards the original call exactly once before observing anything. It never suppresses the normal treasure-map window. The rank/subrow pair resolves through `TreasureHuntRank` → `TreasureSpot` → `Level.Map`; this preserves map variants. Actual spot subrow zero is valid. Cached rank/item and map/territory metadata is resolved only on demand.

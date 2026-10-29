@@ -114,14 +114,14 @@ internal static class Program
                     var v=new SentinelHub.TreasureMaps.TreasureView(true,entries,null,true,"Listening", "Flag prepared. Paste /p <flag> into chat.");
                     var actions=0;var before=JsonSerializer.Serialize(settings);
                     using var w=new MainWindow(settings,()=>fixtures[0],new(),()=>{},()=>{},(_,_)=>false,()=>{},()=>true,()=>font,
-                        treasureView:()=>v,treasureRequest:(_,_)=>actions++);
+                        treasureView:()=>v,treasureRequest:_=>actions++);
                     foreach(var width in new[]{480f,1000f,480f}){
                         for(var i=0;i<3;i++)Frame(w,new(width,800),treasureScale);
                         var content=treasureTheme==1?Find(MainWindow.WindowId,"##Modern2Page"):Find(MainWindow.WindowId);
                         Check(content.ContentSize.X<=content.Size.X+1&&!content.ScrollbarX,"Treasure Maps horizontal overflow");
                         Check(before==JsonSerializer.Serialize(settings)&&actions==0,"Drawing Treasure Maps altered queue/preferences or sent action");treasureCases++;
                     }
-                    using var floating=new TreasureQueueWindow(settings,()=>v,(_,_)=>actions++,()=>{},()=>{});
+                    using var floating=new TreasureQueueWindow(settings,()=>v,_=>actions++,()=>{},()=>{},()=>font);
                     floating.PreOpenCheck();Check(!floating.IsOpen,"Closed floating window rendered/opened itself");
                     settings.TreasureMaps.FloatingOpen=true;floating.PreOpenCheck();Check(floating.IsOpen,"Floating queue did not open independently");
                     foreach(var width in new[]{300f,600f,300f}){
@@ -142,8 +142,8 @@ internal static class Program
                     var saved=new List<bool>();var actions=0;
                     void Save()=>saved.Add(settings.TreasureMaps.FloatingOpen);
                     var view=new SentinelHub.TreasureMaps.TreasureView(true,[],null,false,"Listening","");
-                    var panel=new TreasureMapsPanel(settings.TreasureMaps,()=>view,(_,_)=>actions++,()=>{},Save);
-                    using var floating=new TreasureQueueWindow(settings,()=>view,(_,_)=>actions++,()=>{},Save);
+                    var panel=new TreasureMapsPanel(settings.TreasureMaps,()=>view,_=>actions++,()=>{},Save,()=>font);
+                    using var floating=new TreasureQueueWindow(settings,()=>view,_=>actions++,()=>{},Save,()=>font);
                     void Controls(string? activate=null)
                     {
                         ImGui.NewFrame();ImGui.SetNextWindowPos(new(800,50),ImGuiCond.Always);ImGui.SetNextWindowSize(new Vector2(480,800)*scale,ImGuiCond.Always);
@@ -191,7 +191,7 @@ internal static class Program
                     treasureCloseCases++;
                 }
                 Console.WriteLine($"PASS {treasureCloseCases} native floating X close, persistent preference, delayed callback and real Hub Show/Hide button cycles.");
-                TreasureQueueUiTests.Run();
+                TreasureQueueUiTests.Run(font);
                 var profileId=Guid.NewGuid().ToString("D");var appliedId=Guid.NewGuid().ToString("D");
                 var profileCases=0;
                 var profileStates=new[]{ProfilesView.Unavailable,

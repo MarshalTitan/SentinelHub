@@ -64,7 +64,7 @@ public sealed class MainWindow : Window, IDisposable
         Func<SentinelHub.Inspection.InspectorView>? inspectorView=null,
         Func<SentinelHub.Activity.ActivityEntry[]>? activityEntries=null, Action? clearActivity=null,
         Func<ProfilesView>? profilesView=null,Action<string>? openProfile=null,Action? refreshProfiles=null,Func<string?>? profilesNotice=null,
-        Action? dismissInspector=null, Func<TreasureView>? treasureView=null, Action<TreasureAction,Guid>? treasureRequest=null, Action? treasureChanged=null) : base(WindowId)
+        Action? dismissInspector=null, Func<TreasureView>? treasureView=null, Action<TreasureRequest>? treasureRequest=null, Action? treasureChanged=null) : base(WindowId)
     {
         this.antiAfkView = antiAfkView ?? (() => AntiAfkView.Off);
         this.questView = questView ?? (() => QuestConvenienceView.Off);
@@ -73,7 +73,7 @@ public sealed class MainWindow : Window, IDisposable
         this.refreshProfiles=refreshProfiles??(()=>{});this.profilesNotice=profilesNotice??(()=>null);
         health=new(healthView??(()=>SentinelHub.Health.HealthView.Empty),refreshHealth??(()=>{}),publicVersions??(()=>{}));
         activity=new(activityEntries??(()=>[]),clearActivity??(()=>{}));
-        treasures=new(config.TreasureMaps,treasureView??(()=>TreasureView.Empty),treasureRequest??((_,_)=>{}),treasureChanged??(()=>{}),save);
+        treasures=new(config.TreasureMaps,treasureView??(()=>TreasureView.Empty),treasureRequest??(_=>{}),treasureChanged??(()=>{}),save,iconFont);
         compatibility=new(compatibilityView??(()=>SentinelHub.Compatibility.CompatibilityView.Empty));
         inspector=new(config,save,inspectorView??(()=>SentinelHub.Inspection.InspectorView.Empty),OpenMount,OpenFashion,mountIcon,dismissInspector);
         mounts = new(config, mountView ?? (() => MountCollectionView.Empty), save,

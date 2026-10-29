@@ -59,7 +59,8 @@ public sealed class TreasureController : IDisposable
         client.Logout += OnLogout;
     }
     public void Configure() { configureDirty = true; }
-    public void Request(TreasureAction action, Guid id = default) => Publish(new(activeEpoch, WorkKind.Action, Request: new(action, id)));
+    public void Request(TreasureAction action, Guid id = default) => Request(new(action, id));
+    public void Request(TreasureRequest request) => Publish(new(activeEpoch, WorkKind.Action, Request: request));
     private void OnSession() { Interlocked.Increment(ref epoch); detection.SuspendObservation(); retryUntil = 0; sessionDirty = true; }
     private void OnLogout(int _, int __) => OnSession();
     private void OnAdded(InventoryItemAddedArgs args)
@@ -219,6 +220,10 @@ public sealed class TreasureController : IDisposable
             case TreasureAction.Delete: if (queue.Remove(request.EntryId, false, now)) Dirty(now); break;
             case TreasureAction.Up: if (queue.Move(request.EntryId, -1)) Dirty(now); break;
             case TreasureAction.Down: if (queue.Move(request.EntryId, 1)) Dirty(now); break;
+            case TreasureAction.MoveBefore:
+            case TreasureAction.MoveAfter:
+                if (!queue.MoveRelative(request.EntryId, request.TargetId, request.Action == TreasureAction.MoveAfter)) return false;
+                Dirty(now); break;
             case TreasureAction.Undo:
                 if (queue.Undo(now, settings.MaximumEntries)) { undoUntil = 0; Dirty(now); }
                 else notice = "Undo expired or the queue is full."; break;
