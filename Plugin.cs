@@ -19,6 +19,7 @@ using SentinelHub.Coordination;
 using SentinelHub.Activity;
 using SentinelHub.Profiles;
 using SentinelHub.TreasureMaps;
+using SentinelHub.DeathRecaps;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 namespace SentinelHub;
@@ -42,6 +43,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static ITargetManager Targets { get; private set; } = null!;
     [PluginService] internal static IGameInventory Inventory { get; private set; } = null!;
     [PluginService] internal static ISigScanner SigScanner { get; private set; } = null!;
+    [PluginService] internal static IPartyList Party { get; private set; } = null!;
     private readonly MountController mounts;
     private readonly PlayerIdentificationMenu identifyMenu;
     private readonly FashionController fashion;
@@ -63,6 +65,8 @@ public sealed class Plugin : IDalamudPlugin
     private readonly ProfilesIntegration profiles;
     private readonly TreasureController treasures;
     private readonly TreasureQueueWindow treasureWindow;
+    private readonly DeathController deaths;
+    private readonly DeathRecapWindow deathWindow;
     private readonly FrameworkProfiler performance=new();
     private volatile bool sessionInvalidated;
     private bool wasExpanded;
@@ -94,6 +98,7 @@ public sealed class Plugin : IDalamudPlugin
         treasureWindow=new(settings,()=>treasures.View,treasures.Request,treasures.Configure,Save,
             systemReducedMotion:()=>Pi.UiBuilder.ShouldUseReducedMotion);
         quickOpen = new(discovery.Capture, Commands.ProcessCommand, faults);
+        deaths=new(settings.DeathRecaps,Pi,Client,Condition,Objects,Party,Player,Data,Interop,SigScanner,()=>discovery.Inventory);
         window = new(settings, () => discovery.Snapshot, faults, Save, () => healthRefreshRequested=true,
             (id, diagnostics) => quickOpen.Open(id, diagnostics), Export,
             () => Pi.UiBuilder.ShouldUseReducedMotion, antiAfkView: () => antiAfk.View, questView: () => quest.View, latencyView: () => latency.View,
@@ -102,11 +107,16 @@ public sealed class Plugin : IDalamudPlugin
             compatibilityView:()=>compatibility.View,inspectorView:()=>inspector.View,
             activityEntries:()=>activity.Journal.Snapshot(DateTimeOffset.UtcNow),clearActivity:activity.Journal.Clear,
             profilesView:()=>profiles.View,openProfile:profiles.RequestOpen,refreshProfiles:profiles.Refresh,profilesNotice:()=>profiles.Notice,
-            dismissInspector:inspector.Clear,treasureView:()=>treasures.View,treasureRequest:treasures.Request,treasureChanged:treasures.Configure);
+            dismissInspector:inspector.Clear,treasureView:()=>treasures.View,treasureRequest:treasures.Request,treasureChanged:treasures.Configure,
+            deathView:()=>deaths.View,deathRequest:(action,id)=>deaths.Request(action,id),deathChanged:ConfigureDeaths);
+        deathWindow=new(settings,()=>deaths.View,(action,id)=>deaths.Request(action,id),ConfigureDeaths,Save,
+            ()=>{settings.Page=Configuration.HubPage.DeathRecaps;window.OpenAndExpand();Save();},()=>Pi.UiBuilder.ShouldUseReducedMotion,DrawCollectionIcon);
+        deaths.Recorded+=deathWindow.Show;
         identifyMenu = new(ContextMenu, Objects, Client, Player, Framework, Data, settings, () => mounts.Ready && fashion.Ready, window.OpenIdentification, ()=>{window.ClearIdentification();inspector.Clear();}, faults,
             ticket=>{inspector.Select(ticket);window.OpenPlayerInspector();});
         windows.AddWindow(window);
         windows.AddWindow(treasureWindow);
+        windows.AddWindow(deathWindow);
         Commands.AddHandler("/shub", new CommandInfo(OnCommand) { HelpMessage = "Open Sentinel Hub. /shub export saves a sanitized Sentinel diagnostics ZIP." });
         Pi.UiBuilder.Draw += Draw;
         Pi.UiBuilder.OpenConfigUi += Open;
@@ -126,11 +136,12 @@ public sealed class Plugin : IDalamudPlugin
     {
         if(value&&(flag is Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas or Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51))InvalidateSession();
     }
-    private void Draw(){performance.Context(window.IsOpen || treasureWindow.IsOpen);using var timing=performance.Measure(HubService.Draw);windows.Draw();}
+    private void ConfigureDeaths(){deaths.Configure();deathWindow.RefreshSettings();}
+    private void Draw(){performance.Context(window.IsOpen || treasureWindow.IsOpen || deathWindow.IsOpen);using var timing=performance.Measure(HubService.Draw);windows.Draw();}
     private void Update(IFramework _)
     {
         if(disposed)return;
-        performance.Context(window.IsOpen || treasureWindow.IsOpen);using var updateTiming=performance.Measure(HubService.Update);
+        performance.Context(window.IsOpen || treasureWindow.IsOpen || deathWindow.IsOpen);using var updateTiming=performance.Measure(HubService.Update);
         if(sessionInvalidated){sessionInvalidated=false;mounts.Invalidate();fashion.Invalidate();identifyMenu.Invalidate();inspector.Clear();quest.Invalidate();}
         var expanded=window.IsOpen&&!settings.Collapsed;
         var forceHealth=healthRefreshRequested;healthRefreshRequested=false;
@@ -150,6 +161,7 @@ public sealed class Plugin : IDalamudPlugin
         using(performance.Measure(HubService.Inspector))inspector.Tick(window.IsOpen&&!settings.Collapsed&&settings.Page==Configuration.HubPage.PlayerInspector);
         using(performance.Measure(HubService.Profiles))profiles.Tick(expanded&&settings.Page==Configuration.HubPage.Profiles);
         using(performance.Measure(HubService.TreasureMaps))treasures.Tick();
+        using(performance.Measure(HubService.DeathRecaps))deaths.Tick();
         if(exportRequested){exportRequested=false;using(performance.Measure(HubService.Export))WriteExport();}
     }
     private void DrawCollectionIcon(uint id, Vector2 size)
@@ -208,6 +220,7 @@ public sealed class Plugin : IDalamudPlugin
         Client.Login-=InvalidateSession;Client.Logout-=OnLogout;Client.TerritoryChanged-=OnTerritory;Client.InstanceChanged-=OnTerritory;
         Condition.ConditionChange-=OnCondition;
         performance.Stop();profiles.Dispose();
+        deaths.Recorded-=deathWindow.Show;deaths.Dispose();deathWindow.Dispose();
         treasures.Dispose(); treasureWindow.Dispose();
         identifyMenu.Dispose();
         inspector.Clear();

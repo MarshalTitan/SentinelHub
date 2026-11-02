@@ -1,9 +1,10 @@
 using SentinelHub.Utilities.Quest;
 using SentinelHub.Utilities;
 namespace SentinelHub.Configuration;
-public enum HubPage { Dashboard, Plugins, Profiles, Dependencies, Utilities, Diagnostics, Appearance, About, Mounts, Fashion, PlayerInspector, RecentActivity, TreasureMaps = 16 }
+public enum HubPage { Dashboard, Plugins, Profiles, Dependencies, Utilities, Diagnostics, Appearance, About, Mounts, Fashion, PlayerInspector, RecentActivity, TreasureMaps = 16, DeathRecaps = 17 }
 public class HubSettings
 {
+    public SentinelHub.DeathRecaps.DeathSettings DeathRecaps { get; set; } = new();
     public SentinelHub.TreasureMaps.TreasureSettings TreasureMaps { get; set; } = new();
     public int Version { get; set; } = 1;
     public int Theme { get; set; } = 1;
@@ -33,6 +34,7 @@ public class HubSettings
     public float ExpandedHeight { get; set; } = 680;
     public void Normalize()
     {
+        DeathRecaps ??= new(); DeathRecaps.Normalize();
         TreasureMaps ??= new(); TreasureMaps.Normalize();
         Version = 1;
         if (!Enum.IsDefined(LatencyMode)) LatencyMode = SentinelHub.Utilities.LatencyMode.Off;

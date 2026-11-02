@@ -1,7 +1,9 @@
-# Sentinel Hub 0.8.2.1
+# Sentinel Hub 0.9.0.0
 
-The floating Treasure Maps queue now uses the same Sentinel Core Modern 2 application shell as Hub: compact header, map icon rail, midnight-navy canvas and blue/violet/teal ambient background. Its custom minimize, expand and close controls come from Core. Classic selection retains the native title bar.
+- Adds Death Recaps: 10/30/60-second HP/shield/status review, bounded character-local history, privacy and Modern 2 UI.
+- Adds Frontline targeter-job breakdowns, maximum focus, freshness and intervals using HUD 0.8.9.0's existing scan. Targeters remain distinct from damage sources; HUD stays optional.
+- Adds a compact independent death popup and synthetic PvE/PvP previews that are never saved.
+- Optional experimental incoming action-effect damage/healing capture is off by default. Exact fatal attribution, pre-hit HP/shield HP and overkill remain Unknown/Unavailable.
+- Preserves Treasure Maps and prior performance fixes. No extra enemy targeting scans, live target advice, movement/combat actions, telemetry or uploads.
 
-Dark rounded map cards, teal accents, blue location links, outlined icon buttons and responsive layouts are preserved. All queue actions, drag ordering and independent More popups remain available inside the Core scrollable content area.
-
-Minimize remembers the expanded dimensions and minimized preference. X remains synchronized with Hub Show/Hide, and the minimized view does not draw or read the queue. Core respects both Hub and system reduced-motion settings. Existing saved queue data, card caches, detection and event-driven scheduling are retained. Core/UI stay exactly 0.4.1; no dependency or controller changes. Normal live plugin updates deliver this release.
+Automated policy, packet and native-UI fixtures run alongside existing regressions. Native game attribution, Frontline observations and movement acceptance remain explicitly pending; see docs/DEATH_RECAPS.md. Core/UI stay pinned at 0.4.1.

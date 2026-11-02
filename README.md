@@ -91,3 +91,8 @@ Shared inventory, dormant inactive modules, addon-driven Quest with bounded fall
 0.8.2.0 refreshes both Treasure Map queues with dark rounded cards, teal accents, blue location links and icon action buttons. Wide cards place details beside actions; narrow cards stack and wrap their controls. The floating window has matching dark chrome. Presentation/layout text is cached until the queue, available width or font/style metrics change. Existing queue state, drag ordering, popups, X/Show/Hide and detection remain intact.
 
 0.8.2.1 adopts the pinned Sentinel Core Modern 2 shell for the floating queue, matching Hub's existing header, navigation rail, midnight-navy canvas and blue/violet/teal ambient background. Dark rounded map cards, teal accents, blue links, icon buttons and responsive layouts are retained. Core minimize/expand remembers expanded geometry and the minimized preference; X and Hub Show/Hide remain synchronized. Existing Classic selection is preserved. Core/UI dependencies remain exactly 0.4.1.
+
+## Death Recaps (0.9.0.0)
+
+Hub's **Death Recaps** page adds local PvE review, Frontline targeter-job history through optional HUD 0.8.9.0, privacy, a compact popup and synthetic previews. Direct action details are experimental/off by default; unknown fatal attribution stays Unknown. [Evidence, settings and acceptance](docs/DEATH_RECAPS.md).
+
