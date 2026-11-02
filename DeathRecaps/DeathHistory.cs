@@ -9,7 +9,7 @@ public sealed class DeathHistory
     public bool Add(DeathRecord record, int limit)
     {
         if (records.Any(r => r.Id == record.Id)) return false;
-        records.Insert(0, record); Trim(limit); return true;
+        records.Add(record); records.Sort(static (a, b) => b.At.CompareTo(a.At)); Trim(limit); return true;
     }
     public void Trim(int limit) { if (records.Count > Math.Clamp(limit, 5, 100)) records.RemoveRange(Math.Clamp(limit, 5, 100), records.Count - Math.Clamp(limit, 5, 100)); Snapshot = records.ToArray(); }
     public void Delete(Guid id) { records.RemoveAll(r => r.Id == id); Snapshot = records.ToArray(); }

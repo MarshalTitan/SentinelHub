@@ -133,7 +133,7 @@ public sealed class DeathController : IDisposable
             // The observation timestamp is explicit; event packets are not proof of a fatal blow.
             var record = d.Record with { Events = events, Threat = threat,
                 Availability = "Death observed from alive-to-zero HP transition (125 ms). " + incoming.Availability + (ledger.Truncated || incoming.Dropped > 0 ? " Event buffer reached its bound; history may be incomplete." : "") };
-            history.Add(record, settings.MaximumHistory); selected = record.Id; preview = null;
+            history.Add(record, settings.MaximumHistory); selected = history.Snapshot[0].Id; preview = null;
             pending.RemoveAt(i); QueueSave(); Publish(); Recorded?.Invoke(record);
         }
     }
