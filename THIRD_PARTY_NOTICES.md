@@ -29,3 +29,29 @@ Fashion/Data/Corrections.json contains independently authored factual records fr
 ## Player Inspector acquisition facts
 
 The 2026-10-18 FFXIV Collect API review snapshot in Inspection/Data contains short acquisition/introduction-patch facts for 201 unlockable emotes, under the creator's explicit API data reuse invitation linked above. This is not an assumption that the application's MIT license licenses its entire live database. Names/icons/runtime IDs remain local Lumina. No images, descriptions, user statistics, profiles, market prices or current-obtainability flags are imported. Exact numeric ID plus English game identity gates all application of source metadata. Snapshot timestamps/original-response SHA256 and API endpoints are embedded; the review workflow cross-checks identities against a public game-sheet view without bundling that raw table. No WhichMount/HaselTweaks implementation or AGPL dataset is incorporated. Public API/field names consulted for interoperability are distinguished from incorporated implementation. See docs/OPERATIONS_EXPANSION.md for audit, limits and source links.
+# Better Deaths reference
+
+Native action-effect format and recap approaches were reviewed against Better Deaths by Nainaiowo, commit b3ec13eec674dff989ba53f85786fc33e3e6fbe5. No plugin dependency or data catalogs are imported. MIT reference attribution follows.
+
+MIT License
+
+Copyright (c) 2026 Nainaiowo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+

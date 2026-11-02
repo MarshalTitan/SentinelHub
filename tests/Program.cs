@@ -10,6 +10,7 @@ using SentinelHub.Utilities;
 var passed = 0;
 void Test(string name, Action action) { action(); Console.WriteLine("PASS " + name); passed++; }
 void Check(bool value) { if (!value) throw new Exception("Assertion failed"); }
+DeathTests.Run(Test);
 InstalledPlugin Loaded(string id, string? version = "1.2.3.4") => new(id, true, version);
 Test("all components missing", () => {
  var s = StatusPolicy.Build([], true, _ => throw new Exception());

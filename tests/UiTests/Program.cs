@@ -35,6 +35,7 @@ internal static class Program
         IdlePerformanceTests.Run();
         ServiceSchedulingTests.Run();
         TreasureIntegrationTests.Run();
+        DeathRecapUiTests.Integration();
         var context = ImGui.CreateContext();
         try
         {
@@ -48,6 +49,7 @@ internal static class Program
             {
                 var font = io.Fonts.AddFontFromFileTTF(Environment.GetEnvironmentVariable("DALAMUD_ICON_FONT")!, 16, null, range);
                 Check(io.Fonts.Build(), "Font atlas");
+                DeathRecapUiTests.Run(font);
                 var fixtures = new[]
                 {
                     StatusPolicy.Build([], true, _ => Response.Unknown),
