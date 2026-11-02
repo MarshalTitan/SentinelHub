@@ -90,14 +90,14 @@ internal static unsafe class DeathRecapUiTests
     private static void DeathLifecycle()
     {
         var dir = Path.Combine(Path.GetTempPath(), "SentinelDeathLifecycle-" + Guid.NewGuid().ToString("N"));
-        long clock = 0; var origin = DateTimeOffset.UtcNow; uint hp = 100; var inCombat = true;
+        long clock = 0; var origin = DateTimeOffset.UtcNow; uint hp = 100; var inCombat = true; var loaded = false;
         var name = new Dalamud.Game.Text.SeStringHandling.SeString(new List<Dalamud.Game.Text.SeStringHandling.Payload> { new Dalamud.Game.Text.SeStringHandling.Payloads.TextPayload("Private fixture name") });
         var actor = IdlePerformanceTests.Fake<Dalamud.Game.ClientState.Objects.SubKinds.IPlayerCharacter>((m, _) => m.Name switch {
             "get_EntityId" => 42u, "get_CurrentHp" => hp, "get_MaxHp" => 100u, "get_Name" => name,
             _ => IdlePerformanceTests.Default(m.ReturnType) });
         var pi = IdlePerformanceTests.Fake<IDalamudPluginInterface>((m, _) => m.Name == "GetPluginConfigDirectory" ? dir : IdlePerformanceTests.Default(m.ReturnType));
         var client = IdlePerformanceTests.Fake<IClientState>((m, _) => m.Name == "get_IsLoggedIn" ? true : IdlePerformanceTests.Default(m.ReturnType));
-        var player = IdlePerformanceTests.Fake<IPlayerState>((m, _) => m.Name == "get_IsLoaded" ? true : m.Name == "get_ContentId" ? 123UL : IdlePerformanceTests.Default(m.ReturnType));
+        var player = IdlePerformanceTests.Fake<IPlayerState>((m, _) => m.Name == "get_IsLoaded" ? loaded : m.Name == "get_ContentId" ? 123UL : IdlePerformanceTests.Default(m.ReturnType));
         var objects = IdlePerformanceTests.Fake<IObjectTable>((m, _) => m.Name == "get_LocalPlayer" ? actor : IdlePerformanceTests.Default(m.ReturnType));
         var condition = IdlePerformanceTests.Fake<ICondition>((m, a) => m.Name == "get_Item" ? (Dalamud.Game.ClientState.Conditions.ConditionFlag)a![0]! switch {
             Dalamud.Game.ClientState.Conditions.ConditionFlag.BoundByDuty => true,
@@ -106,10 +106,10 @@ internal static unsafe class DeathRecapUiTests
         DeathController Make() => new(settings, pi, client, condition, objects, IdlePerformanceTests.Fake<IPartyList>(), player,
             IdlePerformanceTests.Fake<IDataManager>(), IdlePerformanceTests.Fake<IGameInteropProvider>(), IdlePerformanceTests.Fake<ISigScanner>(), () => [], () => clock, () => origin.AddMilliseconds(clock));
         using (var c = Make()) {
-            c.Tick(); hp = 50; clock = 125; c.Tick(); hp = 0; clock = 250; c.Tick();
-            clock = 600; c.Tick(); Check(c.View.History.Length == 1 && c.View.Selected!.Fatal is null, "PvE death not recorded / fatal source fabricated");
-            hp = 100; clock = 750; c.Tick(); hp = 0; clock = 875; c.Tick();
-            hp = 100; clock = 1000; c.Tick(); clock = 1250; c.Tick();
+            c.Tick(); loaded = true; clock = 250; c.Tick(); hp = 50; clock = 375; c.Tick(); hp = 0; clock = 500; c.Tick();
+            clock = 850; c.Tick(); Check(c.View.History.Length == 1 && c.View.Selected!.Fatal is null, "PvE death not recorded after delayed login readiness / fatal source fabricated");
+            hp = 100; clock = 1000; c.Tick(); hp = 0; clock = 1125; c.Tick();
+            hp = 100; clock = 1250; c.Tick(); clock = 1500; c.Tick();
             Check(c.View.History.Length == 2 && c.View.History[0].Events.Any(e => e.Hp == 0), "Rapid respawn lost detected death evidence");
             clock = 5000; c.Tick(); Check(!Directory.Exists(dir), "History wrote during combat");
         }

@@ -31,7 +31,7 @@ public sealed class DeathController : IDisposable
     private string duty = "Unknown duty";
     private bool dirty = true, sessionDirty = true, eligible, pvp, disposed, savePending, configChanged;
     private bool nativeEnabled, nativeConflict;
-    private long nextSample, saveDue;
+    private long nextSample, saveDue, readyAt, readyUntil;
     private uint territory;
     private Guid selected;
     private DeathRecord? preview;
@@ -60,7 +60,7 @@ public sealed class DeathController : IDisposable
     {
         if (requests.Count < 32) requests.Enqueue((action, id));
     }
-    private void Session() { sessionDirty = true; dirty = true; }
+    private void Session() { sessionDirty = true; dirty = true; readyUntil = 0; }
     private void Logout(int _, int __) => Session();
     private void Territory(uint _) { dirty = true; ResetCombat(); }
     private void Condition(ConditionFlag flag, bool _)
@@ -71,12 +71,18 @@ public sealed class DeathController : IDisposable
     public void Tick()
     {
         if (disposed) return;
+        if (!sessionDirty && readyUntil > 0 && clock() >= readyAt) {
+            if (clock() <= readyUntil) { sessionDirty = true; dirty = true; }
+            else readyUntil = -1;
+        }
         if (persistenceFailed) { persistenceFailed = false; capture = "History could not be saved; recaps remain in memory. Check configuration-folder access."; Publish(); }
         if (sessionDirty) {
             sessionDirty = false;
             if (saveTask is { IsCompleted: false }) saveTask.GetAwaiter().GetResult();
             ResetCombat(); Flush(); hud.Reset(); history.Clear(); preview = null; selected = default;
             path = player.IsLoaded && player.ContentId != 0 ? Path.Combine(directory, player.ContentId.ToString("X16") + ".json") : null;
+            if (path is null && client.IsLoggedIn && readyUntil >= 0) { if (readyUntil == 0) readyUntil = clock() + 10_000; readyAt = clock() + 250; }
+            else if (path is not null) readyUntil = 0;
             if (path is not null && File.Exists(path)) {
                 try { if (new FileInfo(path).Length <= 8_000_000) history.Load(File.ReadAllText(path), settings.MaximumHistory); }
                 catch { capture = "Saved history unavailable; new recaps remain in memory."; }
