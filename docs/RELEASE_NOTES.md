@@ -1,3 +1,7 @@
+# 0.9.0.1
+
+Privacy maintenance: bundle Core 0.4.1.1 with project copyright attribution. Runtime source, configuration, and gameplay behavior are unchanged.
+
 # Sentinel Hub 0.9.0.0
 
 - Adds Death Recaps: 10/30/60-second HP/shield/status review, bounded character-local history, privacy and Modern 2 UI.
