@@ -1,3 +1,7 @@
+# 0.9.0.2
+
+Remove retired projects from supported inventory, quick-open actions and dedicated dependency checks. All supported plugin behavior and saved settings are preserved.
+
 # 0.9.0.1
 
 Privacy maintenance: bundle Core 0.4.1.1 with project copyright attribution. Runtime source, configuration, and gameplay behavior are unchanged.

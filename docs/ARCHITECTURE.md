@@ -1,5 +1,7 @@
 # Hub architecture and verified integration boundaries
 
+> CURRENT SUPPORT OVERRIDE - 21 November 2026: references to former Frontline and experimental hunt projects below describe historical source inspection. They are retired and excluded from current Hub discovery, health checks and quick-open actions.
+
 Inspected live sources 2026-10-16 UTC: Sentinel, SentinelCore, SRankSentinel, PvPSentinel, SentinelHUD, ClassySentinel, SentinelProfiles, SentinelRelay, plus the historical SentinelHunts test identity within SRank; the user has retired that test component from Hub inventory. Canonical ecosystem documents were read before implementation; this explicit Hub MVP request reprioritizes their historical deferral without releasing any navigation gate.
 
 - Ecosystem: fixed known component/dependency catalog, public installed-plugin discovery, pure status policy, fixed quick-open commands.

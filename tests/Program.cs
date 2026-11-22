@@ -30,9 +30,9 @@ Test("restricted installer state is degraded", () => {
  Check(StatusPolicy.PresenceOf(new("SentinelHUD", false, "1.0", true), true) == Presence.Degraded);
 });
 Test("case-insensitive discovery and dependency aliases", () => {
- var s = StatusPolicy.Build([Loaded("sonar"), Loaded("rotationsolverreborn"), Loaded("sentinelprofiles")], true, _ => Response.Responding);
+ var s = StatusPolicy.Build([Loaded("sonar"), Loaded("lifestream"), Loaded("sentinelprofiles")], true, _ => Response.Responding);
  Check(s.Dependencies.Single(p => p.Dependency.Id == "SonarPlugin").State == Presence.Loaded);
- Check(s.Dependencies.Single(p => p.Dependency.Id == "RotationSolver").Response == Response.Responding);
+ Check(s.Dependencies.Single(p => p.Dependency.Id == "Lifestream").Response == Response.Responding);
  Check(s.Plugins.Single(p => p.Component.Id == "SentinelProfiles").State == Presence.Loaded);
 });
 Test("only enabled verified probes are called", () => {
@@ -42,8 +42,8 @@ Test("only enabled verified probes are called", () => {
  Check(s.Dependencies.Single(d => d.Dependency.Id == "vnavmesh").Response == Response.NotReady);
 });
 Test("responding does not claim ready or combat-active", () => {
- var s = StatusPolicy.Build([Loaded("RotationSolver")], true, _ => Response.Responding);
- Check(StatusPolicy.DependencyText(s.Dependencies.Single(d => d.Dependency.Id == "RotationSolver")) == "Responding");
+ var s = StatusPolicy.Build([Loaded("Splatoon")], true, _ => Response.Responding);
+ Check(StatusPolicy.DependencyText(s.Dependencies.Single(d => d.Dependency.Id == "Splatoon")) == "Responding");
 });
 Test("optional absent dependencies do not alter consumer loaded state", () => {
  var s = StatusPolicy.Build([Loaded("SentinelHUD")], true, _ => Response.Unknown);
@@ -70,8 +70,8 @@ Test("fresh unload observation refuses formerly loaded consumer", () => {
 });
 Test("settings commands contain no gameplay actions", () => {
  Check(Catalog.Components.Select(c => c.SettingsCommand).SequenceEqual(new[] {
- "/sranksentinel", "/pvpsentinel config", "/shud", "/classysentinel config", "/sprofiles", "/srelay", "/shub" }));
- Check(Catalog.Components.Count(c => c.DiagnosticsCommand is not null) == 1);
+ "/sranksentinel", "/shud", "/classysentinel config", "/sprofiles", "/srelay", "/shub" }));
+ Check(Catalog.Components.Count(c => c.DiagnosticsCommand is not null) == 0);
 });
 Test("settings normalize corrupt values", () => {
  var c = new HubSettings { Theme = 99, Page = (HubPage)99, ExpandedWidth = float.NaN, ExpandedHeight = -200 };
@@ -111,11 +111,11 @@ Test("remaining utility plans are inactive and compensation is explicit", () => 
 
 Test("quick-open dispatch is fixed, denied actions do not execute", () => {
  var sent = new List<string>(); var loaded = true; var faults = new FaultJournal();
- var router = new QuickOpen(() => [new("PvPSentinel", loaded, "1.0")], cmd => { sent.Add(cmd); return true; }, faults);
- Check(router.Open("PvPSentinel") && sent.Single() == "/pvpsentinel config");
- Check(router.Open("PvPSentinel", true) && sent.Last() == "/pvpsentinel");
- loaded = false; Check(!router.Open("PvPSentinel") && sent.Count == 2);
- Check(!router.Open("/arbitrary enable") && sent.Count == 2);
+ var router = new QuickOpen(() => [new("ClassySentinel", loaded, "1.0")], cmd => { sent.Add(cmd); return true; }, faults);
+ Check(router.Open("ClassySentinel") && sent.Single() == "/classysentinel config");
+ Check(!router.Open("ClassySentinel", true) && sent.Count == 1);
+ loaded = false; Check(!router.Open("ClassySentinel") && sent.Count == 1);
+ Check(!router.Open("/arbitrary enable") && sent.Count == 1);
 });
 Test("quick-open command and capture exceptions are isolated", () => {
  var faults = new FaultJournal();
@@ -816,6 +816,15 @@ Test("Shared menu preserves Mount-only offers and adds the explicit Fashion no-a
  Check(IdentificationPolicy.Offer(true,true,false)&&IdentificationPolicy.Offer(true,true,true));
 });
 
+Test("retired components cannot be advertised, probed or opened", () => {
+ foreach(var id in new[] {"PvPSentinel","SentinelHunts","SentinelRemote","MinionFrontline"}) {
+  Check(Catalog.Find(id) is null);
+  var sent = 0; var router = new QuickOpen(() => [Loaded(id)], _ => { sent++; return true; }, new FaultJournal());
+  Check(!router.Open(id) && !router.Open(id, true) && sent == 0);
+ }
+ Check(!Catalog.Dependencies.Any(d => d.Id == "RotationSolver"));
+});
+
 OperationsTests.Run(Test, Check);
 PerformancePolicyTests.Run(Test, Check);
 TreasureTests.Run(Test, Check);
@@ -841,4 +850,5 @@ struct FakeLatencyCall : ILatencyInterceptedCall
  public void After(bool result){Trace.After++;if(Trace.ThrowAfter)throw new Exception("observer");}
  public void Fault(){Trace.Faults++;if(Trace.ThrowFault)throw new Exception("fault observer");}
 }
+
 
