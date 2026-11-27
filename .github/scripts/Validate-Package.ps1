@@ -26,7 +26,7 @@ try {
   if ($names -contains "$consumer.dll") { throw 'Hub must not bundle or require consumer assemblies' }
  }
  foreach ($dll in @('SentinelCore','SentinelCore.UI')) {
-  $pkg = [IO.Compression.ZipFile]::OpenRead((Resolve-Path ".packages/MarshalTitan.$dll.0.4.1.2.nupkg"))
+  $pkg = [IO.Compression.ZipFile]::OpenRead((Resolve-Path ".packages/MarshalTitan.$dll.0.4.1.3.nupkg"))
   try {
    $source = @($pkg.Entries | Where-Object { $_.FullName -like "lib/*/$dll.dll" })
    if ($source.Count -ne 1) { throw 'Unexpected Core package library layout' }
