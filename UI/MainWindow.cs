@@ -204,8 +204,11 @@ public sealed class MainWindow : Window, IDisposable
     }
     private void DrawPage()
     {
-        ImGui.TextWrapped(PageTitle(config.Page));
-        ImGui.Separator(); ImGui.Spacing();
+        if (!modern)
+        {
+            ImGui.TextWrapped(PageTitle(config.Page));
+            ImGui.Separator(); ImGui.Spacing();
+        }
         if (config.Page is HubPage.Mounts or HubPage.Fashion) DrawIdentification();
         switch (config.Page)
         {
