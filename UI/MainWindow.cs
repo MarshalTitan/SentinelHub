@@ -130,7 +130,7 @@ public sealed class MainWindow : Window, IDisposable
                 Layout = SentinelModernAppLayoutOptions.Default with { RailButtonSize = Math.Clamp((frameSize.Y / ImGuiHelpers.GlobalScale - 108) / PageOrder.Length - 8,22,42) },
                 ReducedMotion = config.ReducedMotion || systemReducedMotion(),
                 EnableWindowDragging = true,
-                RequestCollapse = ToggleCollapse, CollapseTooltip = config.Collapsed ? "Expand" : "Minimize",
+                RequestCollapse = ToggleCollapse, CollapseTooltip = config.Collapsed ? "Expand" : "Minimize", IsCollapsed = config.Collapsed,
                 RequestClose = () => IsOpen = false,
                 DrawPluginIcon = c => DrawIcon(FontAwesomeIcon.ShieldAlt, c.DrawList, c.Minimum, c.Maximum, SentinelModernPalette.Text),
             }, shell, navigation, id => { config.Page = Enum.Parse<HubPage>(id); save(); },

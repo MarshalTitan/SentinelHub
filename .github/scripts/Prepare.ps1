@@ -6,12 +6,12 @@ Invoke-WebRequest 'https://goatcorp.github.io/dalamud-distrib/latest.zip' -OutFi
 Expand-Archive -LiteralPath $zip -DestinationPath $dest -Force
 New-Item -ItemType Directory -Path '.packages' -Force | Out-Null
 $hashes = @{
- 'MarshalTitan.SentinelCore.0.4.1.1.nupkg' = '5c6ae39cc3faf011fed97716265eb7dcd4d8e5cc5f06a2dcc90a7a374e6b742a'
- 'MarshalTitan.SentinelCore.UI.0.4.1.1.nupkg' = '75eadf0a74280fa9cd4f0da3f016d57a10933f4a10ebab98539dda3365ccdc7f'
+ 'MarshalTitan.SentinelCore.0.4.1.2.nupkg' = '82057104351fb05bbcbc579a62a3373ce7f17b46a9f39b06e872c72262c4f949'
+ 'MarshalTitan.SentinelCore.UI.0.4.1.2.nupkg' = 'ee2aec0d063eb1ee1da815de58c58bb2c8ff2199ce395c118c1c3976606a4c1d'
 }
 foreach ($name in $hashes.Keys) {
  $path = Join-Path '.packages' $name
- Invoke-WebRequest "https://github.com/MarshalTitan/SentinelCore/releases/download/v0.4.1.1/$name" -OutFile $path
+ Invoke-WebRequest "https://github.com/MarshalTitan/SentinelCore/releases/download/v0.4.1.2/$name" -OutFile $path
  if ((Get-FileHash $path -Algorithm SHA256).Hash.ToLowerInvariant() -ne $hashes[$name]) { throw 'Core package hash mismatch' }
 }
 $font = Join-Path $env:RUNNER_TEMP 'FontAwesomeFreeSolid.otf'

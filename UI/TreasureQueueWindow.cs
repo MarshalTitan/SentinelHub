@@ -92,7 +92,7 @@ public sealed class TreasureQueueWindow : Window, IDisposable
                 Scale = ImGuiHelpers.GlobalScale, DeltaTime = ImGui.GetIO().DeltaTime,
                 Layout = SentinelModernAppLayoutOptions.Default with { ContentPadding = 12, MinimumContentWidth = 220, MinimumContentHeight = 160 },
                 ReducedMotion = settings.ReducedMotion || systemReducedMotion(), EnableWindowDragging = true,
-                RequestCollapse = collapse, CollapseTooltip = settings.TreasureMaps.FloatingCollapsed ? "Expand" : "Minimize",
+                RequestCollapse = collapse, CollapseTooltip = settings.TreasureMaps.FloatingCollapsed ? "Expand" : "Minimize", IsCollapsed = settings.TreasureMaps.FloatingCollapsed,
                 RequestClose = close, DrawPluginIcon = headerIcon,
             }, shell, navigation, KeepQueue, drawQueue);
         }
