@@ -64,6 +64,7 @@ public sealed class DeathRecapWindow : Window, IDisposable
     public override void Draw()
     {
         if (modern) SentinelModernAppShell.Draw(new("SentinelHub.DeathRecap.Modern", "Death Recap", "Recap") {
+            ContextLabel = string.Empty,
             Scale = ImGuiHelpers.GlobalScale, DeltaTime = ImGui.GetIO().DeltaTime,
             Layout = SentinelModernAppLayoutOptions.Default with { ContentPadding = 12, MinimumContentWidth = 220, MinimumContentHeight = 160 },
             ReducedMotion = settings.ReducedMotion || reducedMotion(), EnableWindowDragging = true, RequestClose = close, DrawPluginIcon = drawIcon,

@@ -89,6 +89,7 @@ public sealed class TreasureQueueWindow : Window, IDisposable
         {
             SentinelModernAppShell.Draw(new("SentinelHub.TreasureQueue.Modern", "Treasure Maps", "Queue")
             {
+                ContextLabel = string.Empty,
                 Scale = ImGuiHelpers.GlobalScale, DeltaTime = ImGui.GetIO().DeltaTime,
                 Layout = SentinelModernAppLayoutOptions.Default with { ContentPadding = 12, MinimumContentWidth = 220, MinimumContentHeight = 160 },
                 ReducedMotion = settings.ReducedMotion || systemReducedMotion(), EnableWindowDragging = true,
